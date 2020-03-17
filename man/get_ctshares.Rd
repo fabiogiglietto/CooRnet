@@ -4,7 +4,7 @@
 \usage{
 get_ctshares(urls, url_column, date_column, platforms="facebook,instagram", nmax, sleep_time=20)}
 \description{
-A function to get the URLs' shares from CrowdTangle
+A function to get the URLs shares from CrowdTangle}
 \arguments{
 \item{urls}{a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date}
 \item{url_column}{name of the column (placed inside quote marks) where the URLs are stored}
