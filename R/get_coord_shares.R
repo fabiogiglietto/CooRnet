@@ -218,7 +218,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
       }
     }
 
-    df <- rbindlist(datalist)
+    df <- bind_rows(datalist)
 
 
     if(nrow(df)==0){
@@ -226,7 +226,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
     }
 
     # unnest and return coordinated_shares in the environment
-    coordinated_shares <- unnest(dat.summary, cols = c(account.url, share_date))
+    coordinated_shares <- unnest(df, cols = c(account.url, share_date))
 
     # mark coordinated shares
     ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
