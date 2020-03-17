@@ -135,7 +135,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
     summarize(shares = n(),
               avg.account.subscriberCount=mean(account.subscriberCount))
 
-  more.account.info <- ct_shares.df[, 35:43]
+  more.account.info <- ct_shares.df[, grepl("account", colnames(ct_shares.df))]
   more.account.info$account.subscriberCount <- NULL
 
   more.account.info <- unique(more.account.info)
@@ -254,7 +254,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
       summarize(shares = n(),
                 avg.account.subscriberCount=mean(account.subscriberCount))
 
-    more.account.info <- ct_shares.df[, 35:43]
+    more.account.info <- ct_shares.df[, grepl("account", colnames(ct_shares.df))]
     more.account.info$account.subscriberCount <- NULL
 
     more.account.info <- unique(more.account.info)
