@@ -9,7 +9,6 @@ A function to get the URLs shares from CrowdTangle}
 \item{urls}{a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date}
 \item{url_column}{name of the column (placed inside quote marks) where the URLs are stored}
 \item{date_column}{name of the column (placed inside quote marks) where the date of the URLs are stored}
-}
 \item{platforms}{default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
 \item{nmax}{max number of results for query (max=500 as per API limit)}
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit}
