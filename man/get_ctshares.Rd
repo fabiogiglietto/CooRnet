@@ -10,7 +10,7 @@ A function to get the URLs shares from CrowdTangle}
 \item{url_column}{name of the column (placed inside quote marks) where the URLs are stored}
 \item{date_column}{name of the column (placed inside quote marks) where the date of the URLs are stored}
 \item{platforms}{default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
-\item{nmax}{max number of results for query (max=500 as per API limit)}
+\item{nmax}{max number of results for query (default 500 as per API limit)}
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit}
 }
 \value{A tibble (tbl_df) containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint}}
