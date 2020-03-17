@@ -1,7 +1,7 @@
 get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, percentile_edge_weight=0.90){
 
   require(tidyr)      # 1.0.2
-  require(dplyr)      # 0.8.5
+  require(dplyr)      # 0.8.3
   require(igraph)     # 1.2.4.2
 
   options(warn=-1)

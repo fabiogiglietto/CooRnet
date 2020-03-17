@@ -9,7 +9,7 @@ estimate_coord_interval <- function(df, q=0.1, p=0.5) {
   }
 
   require(tidyr)      # 1.0.2
-  require(dplyr)      # 0.8.5
+  require(dplyr)      # 0.8.3
 
   # unnest expanded url and clean-up
   ct_shares.df <- unnest(df, cols = expandedLinks)
