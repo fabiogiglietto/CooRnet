@@ -42,7 +42,10 @@ get_top_news <- function(output, order_by = "engagement", component=TRUE, top=10
         arrange(account.url, desc(coord_shares_urls[,order_by])) %>%
         group_by(account.url) %>%
         slice(1:top) %>%
-        arrange(component, account.url, desc(engagement))
+        arrange(component)
+
+      return(top_news)
+
       }
   }
 
