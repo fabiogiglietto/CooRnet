@@ -14,7 +14,7 @@ devtools::install_github("fabiogiglietto/CooRnet")
 ```
 
 ## API key
-This package requires a <A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</> key entry in your R environment file. The R environment file is loaded every time R is started/restarted.
+This package requires a <A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</A> key entry in your R environment file. The R environment file is loaded every time R is started/restarted.
 
 The following steps show how to add the key to your R environment file.
 
