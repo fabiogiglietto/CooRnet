@@ -137,6 +137,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
 
   more.account.info <- ct_shares.df[, grepl("account", colnames(ct_shares.df))]
   more.account.info$account.subscriberCount <- NULL
+  more.account.info$account.profileImage <- NULL
 
   more.account.info <- unique(more.account.info)
   all_account_info <- merge(all_account_info, more.account.info, by="account.url")
@@ -256,6 +257,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=TRUE, perc
 
     more.account.info <- ct_shares.df[, grepl("account", colnames(ct_shares.df))]
     more.account.info$account.subscriberCount <- NULL
+    more.account.info$account.profileImage <- NULL
 
     more.account.info <- unique(more.account.info)
     all_account_info <- merge(all_account_info, more.account.info, by="account.url")
