@@ -1,5 +1,5 @@
 # CooRnet
-* Fabio Giglietto, Nicola Righetti, Luca Rossi
+*Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), Luca Rossi*
 
 ## Overview
 Given a set of URLs, this packages detects coordinated link sharing behavior on social media and outputs the network of entities that performed such behaviour.
