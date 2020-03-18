@@ -2,7 +2,7 @@
 \alias{get_top_news}
 \title{get_top_news}
 \usage{
-get_top_news(output, order_by = "engagement", component=TRUE, top=10)
+get_top_news(output, order_by = "engagement", component=TRUE, top=10)}
 \description{
 A function to get the top n news shared in a coordinated way
 }
