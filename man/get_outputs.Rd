@@ -2,16 +2,16 @@
 \alias{get_outputs}
 \title{get_outputs}
 \usage{
-get_outputs(get_coord_shares_output, ct_shares.df = TRUE, highly_connected_g = TRUE, highly_connected_coordinated_entities = TRUE)
+get_outputs(get_coord_shares_output, ct_shares_marked.df = TRUE, highly_connected_g = TRUE, highly_connected_coordinated_entities = TRUE)
 }
 \description{
 A function to get the outputs of the get_coord_shares function.
 }
 \arguments{
 \item{get_coord_shares_output}{the list from the get_coord_shares function}
-\item{ct_shares.df}{the input data frame (ct_shares.df) of shares with an additional boolean variable (coordinated) that identifies coordinated shares (default TRUE)}
-\item{highly_connected_g}{a igraph graph (highly_connected_g) with networks of coordinated entities (default TRUE)}
-\item{highly_connected_coordinated_entities}{a dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account is verified, account handle, degree and component number (default TRUE)}
+\item{ct_shares_marked.df}{a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated (default TRUE)}
+\item{highly_connected_g}{igraph graph of coordinated networks of pages/groups/accounts (default TRUE)}
+\item{highly_connected_coordinated_entities}{a dataframe that lists coordinated entities and corresponding component (default TRUE)}
 }
 \examples{
 get_outputs(get_coord_shares_output)
