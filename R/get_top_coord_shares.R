@@ -24,25 +24,25 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
 
   if(component==TRUE){
 
-  top_urls <-
+  top_shares <-
     coord_shares_urls %>%
     arrange(component, desc(!!sym(order_by))) %>%
     group_by(component) %>%
     slice(1:top)
 
-  return(top_urls)
+  return(top_shares)
 
   }
 
   if(component!=TRUE){
-    top_urls <-
+    top_shares <-
         coord_shares_urls %>%
         arrange(account.url, desc(!!sym(order_by))) %>%
         group_by(account.url) %>%
         slice(1:top) %>%
         arrange(component)
 
-      return(top_urls)
+      return(top_shares)
 
       }
   }
