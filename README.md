@@ -35,6 +35,11 @@ ct_shares.df <- get_ctshares(df, url_column = "url", platforms = "facebook,insta
 
 # get coordinated shares and networks
 output <- get_coord_shares(df = ct_shares.df)
+
+# creates the output dataframes in the environment
+# 1. ct_shares_marked.df: a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated.
+# 2. highly_connected_g: igraph graph of coordinated networks of pages/groups/accounts
+# 3. highly_connected_coordinated_entities: a dataframe that lists coordinated entities and corresponding component
 get_outputs(output)
 
 
