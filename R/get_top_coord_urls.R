@@ -27,7 +27,7 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
   suppressMessages(top_urls <-
       coord_shares_urls %>%
       group_by(component, expanded) %>%
-      summarize(n_urls = n(),
+      summarize(n_shares = n(),
                 eng = sum(!!sym(order_by))) %>%
       top_n(top) %>%
       arrange(.by_group=T))
@@ -60,7 +60,7 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     suppressMessages(top_urls <-
       coord_shares_urls %>%
       group_by(expanded) %>%
-      summarize(n_urls = n(),
+      summarize(n_shares = n(),
                 eng = sum(!!sym(order_by))) %>%
       top_n(top) %>%
       arrange(desc(eng)))
@@ -70,6 +70,7 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     urls_account_id <- unique(coord_shares_urls[, c("expanded", "account.name", "account.url")])
 
     top_urls$account.names <- NA
+    top_urls$account.urls <- NA
 
     for (i in 1:nrow(top_urls)){
       for (j in 1:nrow(urls_account_id)){
