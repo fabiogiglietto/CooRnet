@@ -61,7 +61,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   }
 
   # remove possible inconsistent rows with entity URL "https://facebook.com/null"
-  ct_shares.df <- shares[ct_shares.df$account.url!="https://facebook.com/null",]
+  ct_shares.df <- ct_shares.df[ct_shares.df$account.url!="https://facebook.com/null",]
 
   write(paste("#################### CLSB - LOG FILE #####################",
               "\nnumber of URLs:", nrow(urls),
