@@ -37,16 +37,17 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     urls_account_id <- unique(coord_shares_urls[, c("expanded", "account.name", "account.url")])
 
     top_urls$account.names <- NA
+    top_urls$account.urls <- NA
 
     for (i in 1:nrow(top_urls)){
       for (j in 1:nrow(urls_account_id)){
         if (urls_account_id$expanded[j] == top_urls$expanded[i]) {
-          urls_account_id_names_sub <- unique(urls_account_id$account.name[urls_account_id$expanded == urls_account_id$expanded[i]])
+          urls_account_id_names_sub <- unique(urls_account_id$account.name[urls_account_id$expanded == urls_account_id$expanded[j]])
           top_urls$account.names[i] <- paste(urls_account_id_names_sub, collapse = ", ")
         }
 
         if (urls_account_id$expanded[j] == top_urls$expanded[i]) {
-          urls_account_id_urls_sub <- unique(urls_account_id$account.url[urls_account_id$expanded == urls_account_id$expanded[i]])
+          urls_account_id_urls_sub <- unique(urls_account_id$account.url[urls_account_id$expanded == urls_account_id$expanded[j]])
           top_urls$account.urls[i] <- paste(urls_account_id_urls_sub, collapse = ", ")
         }
       }
@@ -75,12 +76,12 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     for (i in 1:nrow(top_urls)){
       for (j in 1:nrow(urls_account_id)){
         if (urls_account_id$expanded[j] == top_urls$expanded[i]) {
-          urls_account_id_names_sub <- unique(urls_account_id$account.name[urls_account_id$expanded == urls_account_id$expanded[i]])
+          urls_account_id_names_sub <- unique(urls_account_id$account.name[urls_account_id$expanded == urls_account_id$expanded[j]])
           top_urls$account.names[i] <- paste(urls_account_id_names_sub, collapse = ", ")
         }
 
         if (urls_account_id$expanded[j] == top_urls$expanded[i]) {
-          urls_account_id_urls_sub <- unique(urls_account_id$account.url[urls_account_id$expanded == urls_account_id$expanded[i]])
+          urls_account_id_urls_sub <- unique(urls_account_id$account.url[urls_account_id$expanded == urls_account_id$expanded[j]])
           top_urls$account.urls[i] <- paste(urls_account_id_urls_sub, collapse = ", ")
         }
       }
