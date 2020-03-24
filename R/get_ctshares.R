@@ -4,6 +4,9 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   require(jsonlite)  # 1.6.9
   require(tidyr)     # 1.0.2
 
+  # remove duplicated rows
+  urls <- urls[!duplicated(urls),]
+
   # set column names
   colnames(urls)[colnames(urls)==url_column] <- "url"
   colnames(urls)[colnames(urls)==date_column] <- "date"
