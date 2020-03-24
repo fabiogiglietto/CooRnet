@@ -11,12 +11,15 @@ estimate_coord_interval <- function(df, q=0.1, p=0.5) {
   require(tidyr)      # 1.0.2
   require(dplyr)      # 0.8.3
 
+  # remove unnecessary columns
+  df <- df[, c("id", "date", "expandedLinks"),]
+
   # unnest expanded url and clean-up
   ct_shares.df <- unnest(df, cols = expandedLinks)
   ct_shares.df$original <- NULL
 
   # remove duplicates created by the unnesting
-  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
   # get a list of all shared URLs
   URLs <- as.data.frame(table(ct_shares.df$expanded))
