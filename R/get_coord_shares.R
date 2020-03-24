@@ -6,7 +6,7 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=FALSE, per
 
   options(warn=-1)
 
-  # estimate coordination interval if not specify by the users
+  # estimate coordination interval if not specified by the users
   if(is.null(coordination_interval)){
     coordination_interval <- estimate_coord_interval(df)
     coordination_interval <- coordination_interval[[2]]
@@ -135,7 +135,13 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=FALSE, per
     summarize(shares = n(),
               avg.account.subscriberCount=mean(account.subscriberCount))
 
-  more.account.info <- ct_shares.df[, c("account.id", "account.name", "account.handle",
+  # group the pages that changed names
+  ct_shares.df <- ct_shares.df %>%
+   group_by(account.url) %>%
+   mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
+          account.name = paste(unique(account.name), collapse = " | "))
+
+  more.account.info <- ct_shares.df[, c("account.id", "account.name", "name.changed", "account.handle",
                                         "account.url", "account.platform", "account.platformId", "account.verified")]
 
   more.account.info <- unique(more.account.info)
@@ -162,6 +168,9 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=FALSE, per
 
   highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
   rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
+  colnames(more.account.info)[5] <- "name"
+  highly_connected_coordinated_entities <- merge(highly_connected_coordinated_entities, unique(more.account.info[, c("name", "name.changed")]), by="name", all.x=T)
+  highly_connected_coordinated_entities <- highly_connected_coordinated_entities[, c(1:5,10,6:9)]
 
   uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
@@ -254,7 +263,13 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=FALSE, per
       summarize(shares = n(),
                 avg.account.subscriberCount=mean(account.subscriberCount))
 
-    more.account.info <- ct_shares.df[, c("account.id", "account.name", "account.handle",
+    # group the pages that changed names
+    ct_shares.df <- ct_shares.df %>%
+      group_by(account.url) %>%
+      mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
+             account.name = paste(unique(account.name), collapse = " | "))
+
+    more.account.info <- ct_shares.df[, c("account.id", "account.name", "name.changed", "account.handle",
                                           "account.url", "account.platform", "account.platformId", "account.verified")]
 
     more.account.info <- unique(more.account.info)
@@ -280,6 +295,9 @@ get_coord_shares <- function(df, coordination_interval=NULL, parallel=FALSE, per
 
     highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
     rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
+    colnames(more.account.info)[5] <- "name"
+    highly_connected_coordinated_entities <- merge(highly_connected_coordinated_entities, unique(more.account.info[, c("name", "name.changed")]), by="name", all.x=T)
+    highly_connected_coordinated_entities <- highly_connected_coordinated_entities[, c(1:5,10,6:9)]
 
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
