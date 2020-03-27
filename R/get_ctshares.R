@@ -1,4 +1,4 @@
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE) {
 
   require(httr)      # 1.4.1
   require(jsonlite)  # 1.6.9
@@ -10,6 +10,11 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # set column names
   colnames(urls)[colnames(urls)==url_column] <- "url"
   colnames(urls)[colnames(urls)==date_column] <- "date"
+
+  # clean urls
+  if(clean_urls==TRUE){
+    urls <- clean_urls(urls, "url")
+  }
 
   # create empty object to store results
   ct_shares.df <- NULL
@@ -76,5 +81,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
 
   return(ct_shares.df)
+
 }
 
