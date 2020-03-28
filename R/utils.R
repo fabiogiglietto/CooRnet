@@ -129,7 +129,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   highly_connected_coordinated_entities <- merge(highly_connected_coordinated_entities, unique(more.account.info[, c("name", "name.changed")]), by="name", all.x=T)
   highly_connected_coordinated_entities <- highly_connected_coordinated_entities[, c(1:5,10,6:9)]
   
-  highly_c_list <- list(highly_connected_g, highly_connected_coordinated_entities)
+  highly_c_list <- list(highly_connected_g, highly_connected_coordinated_entities, q)
   
   return(highly_c_list)
 }
