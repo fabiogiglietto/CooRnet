@@ -48,7 +48,7 @@ unnest_ctshares <- function(ct_shares.df, clean_urls=FALSE) {
   return(ct_shares.df)
 }
 
-build_coord_graph <- function(ct_shares.df, coordinated_shares) {
+build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_weight) {
   
   ###########################################
   # Get coordinated entities and network ####
