@@ -105,7 +105,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
     
     
-    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares)
+    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares, percentile_edge_weight)
     
     highly_connected_g <- highly_c_list[[1]]
     highly_connected_coordinated_entities <- highly_c_list[[1]]
@@ -183,7 +183,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
     
     
-    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares)
+    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares, percentile_edge_weight)
     
     highly_connected_g <- highly_c_list[[1]]
     highly_connected_coordinated_entities <- highly_c_list[[1]]
