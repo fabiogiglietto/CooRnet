@@ -8,26 +8,18 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # estimate coordination interval if not specified by the users
   if(is.null(coordination_interval)){
-    coordination_interval <- estimate_coord_interval(df)
+    coordination_interval <- estimate_coord_interval(ct_shares.df)
     coordination_interval <- coordination_interval[[2]]
 
     # unnest expanded url and clean-up
-    ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
-    ct_shares.df$original <- NULL
-
-    # remove duplicates created by the unnesting
-    ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+    ct_shares.df <- unnest_ctshares(ct_shares.df)
   }
 
   if(is.list(coordination_interval)){
     coordination_interval <- coordination_interval[[2]]
 
     # unnest expanded url and clean-up
-    ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
-    ct_shares.df$original <- NULL
-
-    # remove duplicates created by the unnesting
-    ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+    ct_shares.df <- unnest_ctshares(ct_shares.df)
   }
 
   if(is.numeric(coordination_interval)){
@@ -35,16 +27,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     coordination_interval <- paste(coordination_interval, "secs")
 
     # unnest expanded url and clean-up
-    ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
-    ct_shares.df$original <- NULL
-
-    # clean urls
-    if(clean_urls==TRUE){
-      ct_shares.df <- clean_urls(ct_shares.df, "expanded")
-    }
-
-    # remove duplicates created by the unnesting
-    ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+    ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = TRUE)
 
     if (file.exists("log.txt")) {
       write(paste("coordination interval set by the user:", coordination_interval), file="log.txt", append=TRUE)
