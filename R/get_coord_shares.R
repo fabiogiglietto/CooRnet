@@ -186,7 +186,8 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares, percentile_edge_weight)
     
     highly_connected_g <- highly_c_list[[1]]
-    highly_connected_coordinated_entities <- highly_c_list[[1]]
+    highly_connected_coordinated_entities <- highly_c_list[[2]]
+    q <- highly_c_list[[3]]
     rm(highly_c_list)
     
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
