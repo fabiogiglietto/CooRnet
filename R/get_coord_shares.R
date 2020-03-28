@@ -149,24 +149,24 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # timestamp of coordinated sharing as edge atribute
 
-    full_g <-  set.edge.attribute(graph = full_g,name = "t_coord_share",value = 0)
-    for (v in 1:length(shared)){
-      timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$timestamp
-      n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")$name
-      edges <- expand.grid(n,n)
-      edges <- edges[edges$Var1 != edges$Var2,]
-      edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-      if(nrow(edges) >0){
-        e <- get.edge.ids(full_g, as.vector(t(edges)))
-        for (i in 1:length(e)){
-          if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
-          if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
-
-
-        }
-      }
-
-    }
+    # full_g <-  set.edge.attribute(graph = full_g,name = "t_coord_share",value = 0)
+    # for (v in 1:length(shared)){
+    #   timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$timestamp
+    #   n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")$name
+    #   edges <- expand.grid(n,n)
+    #   edges <- edges[edges$Var1 != edges$Var2,]
+    #   edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
+    #   if(nrow(edges) >0){
+    #     e <- get.edge.ids(full_g, as.vector(t(edges)))
+    #     for (i in 1:length(e)){
+    #       if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
+    #       if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
+    #       
+    #       
+    #     }
+    #   }
+    #   
+    # }
 
 
     # keep only highly coordinated entities
@@ -297,27 +297,24 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     V(full_g)$account.verified <- sapply(V(full_g)$name, function(x) vertex.info$account.verified[vertex.info$account.url == x])
     V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
 
-    # timestamp of coordinated sharing as edge atribute
-    full_g <-  set.edge.attribute(graph = full_g,name = "t_coord_share",value = 0)
-    for (v in 1:length(shared)){
-      timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$timestamp
-      n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")$name
-      edges <- expand.grid(n,n)
-      edges <- edges[edges$Var1 != edges$Var2,]
-      edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-      if(nrow(edges) >0){
-        e <- get.edge.ids(full_g, as.vector(t(edges)))
-        for (i in 1:length(e)){
-          if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
-          if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
-
-
-        }
-      }
-
-    }
-
-
+    # full_g <-  set.edge.attribute(graph = full_g,name = "t_coord_share",value = 0)
+    # for (v in 1:length(shared)){
+    #   timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$timestamp
+    #   n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")$name
+    #   edges <- expand.grid(n,n)
+    #   edges <- edges[edges$Var1 != edges$Var2,]
+    #   edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
+    #   if(nrow(edges) >0){
+    #     e <- get.edge.ids(full_g, as.vector(t(edges)))
+    #     for (i in 1:length(e)){
+    #       if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
+    #       if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
+    #       
+    #       
+    #     }
+    #   }
+    #   
+    # }
 
     # keep only highly coordinated entities
     V(full_g)$degree <- degree(full_g)
