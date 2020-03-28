@@ -97,6 +97,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # unnest and return coordinated_shares in the environment
     coordinated_shares <- unnest(dat.summary, cols = c(account.url, share_date))
+    rm(dat.summary)
 
     # mark coordinated shares
     ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
@@ -247,7 +248,8 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # unnest and return coordinated_shares in the environment
     coordinated_shares <- unnest(df, cols = c(account.url, share_date))
-
+    rm(datalist, df)
+    
     # mark coordinated shares
     ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                            ct_shares.df$date %in% coordinated_shares$share_date &
