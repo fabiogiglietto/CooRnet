@@ -78,6 +78,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares) {
   more.account.info <- ct_shares.df[, c("account.id", "account.name", "name.changed", "account.handle",
                                         "account.url", "account.platform", "account.platformId", "account.verified")]
   
+  rm(ct_shares.df, coordinated_shares)
+  
   more.account.info <- unique(more.account.info)
   all_account_info <- merge(all_account_info, more.account.info, by="account.url")
   
