@@ -32,9 +32,6 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
 
   ct_shares.df <- ct_shares.df[order(ct_shares.df$date),] # sort by date
-  
-  # cleanup
-  rm(ct_shares.df)
 
   ranked_shares <- ct_shares.df %>%
     group_by(expanded) %>%
@@ -46,6 +43,9 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
            perc_of_shares = rank/ct_shares_count) %>%
     select(expanded, ct_shares_count, first_share_date, rank, date, sec_from_first_share, perc_of_shares) %>%
     arrange(expanded)
+  
+  # cleanup
+  rm(ct_shares.df)
 
   # find URLs with an unusual fast second share and keep the quickest
   rank_2 <- ranked_shares %>%
