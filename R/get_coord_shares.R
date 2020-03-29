@@ -150,7 +150,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
       # subset temp (all shares of one URL) by time published by differnet entities in a coordination.interval
       
-      if (length(unique(temp$account.url)) > 1) {
+      if (length(unique(dat.summary$account.url)) > 1) {
         dat.summary <- dat.summary %>%
           mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
           group_by(cut) %>%
