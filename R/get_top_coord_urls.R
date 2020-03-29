@@ -1,3 +1,4 @@
+#' @export
 
 get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, top=10){
 
