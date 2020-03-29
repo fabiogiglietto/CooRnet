@@ -1,3 +1,5 @@
+#' @export
+
 get_outputs <- function(get_coord_shares_output,
                         ct_shares_marked.df = TRUE,
                         highly_connected_g = TRUE,
