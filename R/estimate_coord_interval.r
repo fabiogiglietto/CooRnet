@@ -1,3 +1,5 @@
+#' @export
+
 estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
 
   if(p < 0 | p > 1){
