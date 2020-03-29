@@ -32,6 +32,9 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
 
   ct_shares.df <- ct_shares.df[order(ct_shares.df$date),] # sort by date
+  
+  # cleanup
+  rm(ct_shares.df)
 
   ranked_shares <- ct_shares.df %>%
     group_by(expanded) %>%
@@ -61,9 +64,12 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
     mutate(sec_from_first_share = min(sec_from_first_share)) %>%
     select(expanded, sec_from_first_share) %>%
     unique()
-
+  
   summary_secs <- summary(as.numeric(ranked_shares_sub$sec_from_first_share))
   coordination_interval <- paste0(quantile(ranked_shares_sub$sec_from_first_share, p), " secs")
+  
+  # cleanup
+  rm(ranked_shares, rank_2, ranked_shares_sub)
 
   coord_interval <- list(summary_secs, coordination_interval)
 
