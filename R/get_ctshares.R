@@ -1,3 +1,5 @@
+#' @export
+
 get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE) {
 
   require(httr)      # 1.4.1
