@@ -2,13 +2,13 @@
 \alias{estimate_coord_interval}
 \title{estimate_coord_interval}
 \usage{
-estimate_coord_interval(df, q=0.1, p=0.5)
+estimate_coord_interval(ct_shares.df, q=0.1, p=0.5)
 }
 \description{
 This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.1) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares
 }
 \arguments{
-\item{df}{a tibble resulting from the function get_ctshares}
+\item{ct_shares.df}{a tibble resulting from the function get_ctshares}
 \item{q}{parameter that controls the quantile of quickest URLs to be filtered. Default to 0.1 [0-1]}
 \item{p}{parameter that controls the percentage of total shares to be reached. Default to 0.5 [0-1]}
 }
