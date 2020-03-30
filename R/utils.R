@@ -51,9 +51,7 @@ unnest_ctshares <- function(ct_shares.df, clean_urls=FALSE) {
   
   ct_shares.df <- ct_shares.df %>%
   group_by(expanded) %>%
-  mutate(first_to_last = max(date)-min(date)) %>%
-  filter(first_to_last <= 604800) %>%
-  select(-first_to_last)
+  filter(max(date)-min(date) <= 604800)
   
   return(ct_shares.df)
 }
@@ -119,8 +117,6 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
        for (i in 1:length(e)){
          if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
          if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
-
-
        }
      }
 
