@@ -100,7 +100,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     # unnest and return coordinated_shares in the environment
     coordinated_shares <- unnest(dat.summary, cols = c(account.url, share_date))
     # cleanup
-    rm(dat.summary, cores, cl, i, pb, progress, progress_bar)
+    rm(dat.summary, cores, cl, pb, progress, progress_bar)
 
     # mark coordinated shares
     ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
