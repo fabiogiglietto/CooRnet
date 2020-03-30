@@ -51,7 +51,9 @@ unnest_ctshares <- function(ct_shares.df, clean_urls=FALSE) {
   
   ct_shares.df <- ct_shares.df %>%
   group_by(expanded) %>%
-  filter(max(date)-min(date) <= 604800)
+  mutate(first_to_last = ) %>%
+  filter(max(date)-min(date) <= 604800) %>%
+  select(-first_to_last)
   
   return(ct_shares.df)
 }
