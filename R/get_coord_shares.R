@@ -10,7 +10,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # estimate coordination interval if not specified by the users
   if(is.null(coordination_interval)){
-    coordination_interval <- estimate_coord_interval(ct_shares.df)
+    coordination_interval <- estimate_coord_interval(ct_shares.df, clean_urls = clean_urls)
     coordination_interval <- coordination_interval[[2]]
 
     # unnest expanded url and clean-up
