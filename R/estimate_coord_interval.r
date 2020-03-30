@@ -1,6 +1,6 @@
 #' @export
 
-estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
+estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE) {
 
   if(p < 0 | p > 1){
     stop("The p value must be between 0 and 1")
@@ -15,14 +15,11 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5) {
 
   # remove unnecessary columns
   ct_shares.df <- ct_shares.df[, c("id", "date", "expandedLinks"),]
-
+  
   # unnest expanded url and clean-up
-  ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
-  ct_shares.df$original <- NULL
-
-  # remove duplicates created by the unnesting
-  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
-
+  ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
+  rm(clean_urls)
+  
   # get a list of all shared URLs
   URLs <- as.data.frame(table(ct_shares.df$expanded))
   names(URLs) <- c("URL", "ct_shares")
