@@ -47,7 +47,7 @@ unnest_ctshares <- function(ct_shares.df, clean_urls=FALSE) {
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
 
   # remove shares performed more than one week from first share
-  ct_shares.df3c <- ct_shares.df %>%
+  ct_shares.df <- ct_shares.df %>%
     group_by(expanded) %>%
     filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
