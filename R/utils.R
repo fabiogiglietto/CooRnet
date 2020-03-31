@@ -100,31 +100,41 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
 
 
-  # timestamp of coordinated sharing as edge atribute
 
-  shared <- V(g2.bp)[V(g2.bp)$type==0]
-   full_g <-  set.edge.attribute(graph = full_g,name = "t_coord_share",value = 0)
-   for (v in 1:length(shared)){
-     timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$timestamp
-     n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")$name
-     edges <- expand.grid(n,n)
-     edges <- edges[edges$Var1 != edges$Var2,]
-     edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-     if(nrow(edges) >0){
-       e <- get.edge.ids(full_g, as.vector(t(edges)))
-       for (i in 1:length(e)){
-         if (E(full_g)[e][i]$t_coord_share != 0){E(full_g)[e][i]$t_coord_share <-  paste(E(full_g)[e][i]$t_coord_share,min(timestamps),sep = ";")}
-         if (E(full_g)[e][i]$t_coord_share == 0){E(full_g)[e][i]$t_coord_share <-  min(timestamps)}
-       }
-     }
-
-   }
 
   # keep only highly coordinated entities
   V(full_g)$degree <- degree(full_g)
   q <- quantile(E(full_g)$weight, percentile_edge_weight) # set the percentile_edge_weight number of repetedly coordinated link sharing to keep
   highly_connected_g <- induced_subgraph(graph = full_g, vids = V(full_g)[V(full_g)$degree > 0 ]) # filter for degree
   highly_connected_g <- subgraph.edges(highly_connected_g, eids = which(E(highly_connected_g)$weight >= q),delete.vertices = T) # filter for edge weight
+
+
+  # timestamp of coordinated sharing as edge atribute
+
+  shared <- V(g2.bp)[V(g2.bp)$type==0]
+  highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
+  for (v in 1:length(shared)){
+    timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$share_date
+    n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")
+    n <- n[n %in% V(highly_connected_g)]
+    n <- n$name
+    if(length(n) >0){
+      edges <- expand.grid(n,n)
+      edges <- edges[edges$Var1 != edges$Var2,]
+      edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
+      if(nrow(edges) >0){
+        for (e in 1:nrow(edges)){
+          e_h <- get.edge.ids(highly_connected_g, as.vector(edges[e,]))
+          e_f <- get.edge.ids(full_g, as.vector(edges[e,]))
+          if (E(highly_connected_g)[e]$t_coord_share != 0){E(highly_connected_g)[e]$t_coord_share <-  paste(E(highly_connected_g)[e]$t_coord_share,min(timestamps),sep = ";")}
+          if (E(highly_connected_g)[e]$t_coord_share == 0){E(highly_connected_g)[e]$t_coord_share <-  min(timestamps)}
+        }
+      }
+    }
+  }
+
+
+
 
   # find and annotate nodes-components
   V(highly_connected_g)$component <- components(highly_connected_g)$membership
