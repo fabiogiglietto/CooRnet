@@ -21,3 +21,9 @@ estimate_coord_interval(ct_shares.df, q = 0.1, p = 0.5, clean_urls = FALSE)
 \description{
 This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.1) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares
 }
+\examples{
+cord_int <- estimate_coord_interval(df, q=0.1, p=0.5, clean_urls=TRUE)
+cord_int[[1]]
+cord_int[[2]]
+
+}

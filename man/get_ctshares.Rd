@@ -37,3 +37,7 @@ A function to get the URLs shares from CrowdTangle
 To start using the library you need to set the CrowdTangle API key.
   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 }
+\examples{
+  df <- get_ctshares(urls, url_column=â€œurlâ€, date_column=â€œdateâ€, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE)
+
+}

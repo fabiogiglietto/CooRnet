@@ -8,7 +8,7 @@
 #' @param clean_urls clean up unnecessary url paramters and malformed urls
 #'
 #' @return A list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares}
-#' @ examples
+#' @examples
 #' cord_int <- estimate_coord_interval(df, q=0.1, p=0.5, clean_urls=TRUE)
 #' cord_int[[1]]
 #' cord_int[[2]]
