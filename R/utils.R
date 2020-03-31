@@ -116,7 +116,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   for (v in 1:length(shared)){
     timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$share_date
     n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")
-    n <- n[n %in% V(highly_connected_g)]
+    n <- n[n$name %in% V(highly_connected_g)$name]
     n <- n$name
     if(length(n) >0){
       edges <- expand.grid(n,n)
@@ -124,10 +124,10 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
       edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
       if(nrow(edges) >0){
         for (e in 1:nrow(edges)){
-          e_h <- get.edge.ids(highly_connected_g, as.vector(edges[e,]))
-          e_f <- get.edge.ids(full_g, as.vector(edges[e,]))
-          if (E(highly_connected_g)[e]$t_coord_share != 0){E(highly_connected_g)[e]$t_coord_share <-  paste(E(highly_connected_g)[e]$t_coord_share,min(timestamps),sep = ";")}
-          if (E(highly_connected_g)[e]$t_coord_share == 0){E(highly_connected_g)[e]$t_coord_share <-  min(timestamps)}
+          e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
+          e_f <- get.edge.ids(full_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
+          if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
+          if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
         }
       }
     }
