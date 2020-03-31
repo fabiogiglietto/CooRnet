@@ -132,7 +132,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
       }
     }
   }
-
+  E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
 
 
 
