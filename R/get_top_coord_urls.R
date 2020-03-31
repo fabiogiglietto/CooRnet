@@ -1,3 +1,21 @@
+#' get_top_coord_urls
+#'
+#' A function to get the top n URLs shared in a coordinated way
+#'
+#' @param output the output list resulting from the function get_coord_shares
+#' @param order_by name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
+#' @param component return the top URLs by network component (TRUE, default) or just the top URLs (FALSE)
+#' @param top number of the top URLs to be retrieved
+#'
+#' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
+#'
+#' @examples{
+#' # get the top ten URLs shared in a coordinated way by each network component, by engagement
+#' df <- get_top_coord_urls(output, order_by = "engagement", component = TRUE, top=10)
+#'
+#' # get the top ten URLs shared in a coordinated way, by engagement
+#' df <- get_top_news(output, order_by = "engagement", top=10)
+#'
 #' @export
 
 get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, top=10){
