@@ -1,15 +1,16 @@
-# CooRnet
-*Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), Luca Rossi*
+![enter image description here](https://docs.google.com/drawings/d/e/2PACX-1vQ8V_WGl9RZ7rYzWA6sfXhbODgsZv4UwJGgS3sgoE3b_wXLh-3zJYRWtHwLyXveLZkmSW7C1iZAqC6w/pub?w=414&h=113)
+
+*Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), [Luca Rossi](https://github.com/lrossi79)*
 
 ## Overview
-Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behaviour.
+Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
 
-## What do we mean by coordinated link sharing behaviour?
-CLSB refers to a specific coordinated activities performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repetedly shared the same news articles in a very short time from each other.
+## What do we mean by coordinated link sharing behavior?
+CLSB refers to a specific coordinated activities performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repeatedly shared the same news articles in a very short time from each other.
 
 To identify such networks, we designed, implemented and tested an algorithm that, detects sets of Facebook public entities which performed CLSB by (1) estimating a time threshold that identify URLs shares performed by multiple distinguished entities within an unusually short period of time (as compared to the entire dataset), and (2) grouping the entities that repeatedly shared the same news story within this coordination interval. The rationale is that while it may be common that several entities share the same URLs, it is unlikely, unless a consistent coordination exists, that this occurs within the time threshold and repeatedly.
 
-See also references for a more detailed description and real-world applications.
+See also <>references for a more detailed description and real-world applications.
 
 ## Installation
 You can install CooRnet from GitHub.
@@ -55,6 +56,9 @@ get_outputs(output)
 
 ## References
 
-Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding Coordinated and Inauthentic Link Sharing Behavior on Facebook in the Run-up to 2018 General Election and 2019 European Election in Italy. https://doi.org/10.31235/osf.io/3jteh
-
-Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732
+ - Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding
+   Coordinated and Inauthentic Link Sharing Behavior on Facebook in the
+   Run-up to 2018 General Election and 2019 European Election in Italy.
+   https://doi.org/10.31235/osf.io/3jteh
+ - Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes
+   a village to manipulate the media: coordinated link sharing behavior   during 2018 and 2019 Italian elections. Information, Communication   and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732tem
