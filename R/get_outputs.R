@@ -18,9 +18,9 @@ get_outputs <- function(coord_shares_output,
                         highly_connected_coordinated_entities = TRUE){
 
  if (ct_shares_marked.df)
-    ct_shares_marked.df <<- as.data.frame(get_coord_shares_output[[1]])
+    ct_shares_marked.df <<- as.data.frame(coord_shares_output[[1]])
  if (highly_connected_g)
-    highly_connected_g <<- get_coord_shares_output[2][[1]]
+    highly_connected_g <<- coord_shares_output[2][[1]]
  if (highly_connected_coordinated_entities)
-   highly_connected_coordinated_entities <<- get_coord_shares_output[[3]]
+   highly_connected_coordinated_entities <<- coord_shares_output[[3]]
 }
