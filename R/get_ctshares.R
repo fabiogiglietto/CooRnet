@@ -33,27 +33,25 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   colnames(urls)[colnames(urls)==url_column] <- "url"
   colnames(urls)[colnames(urls)==date_column] <- "date"
 
-  # clean urls
+  # clean the URLs
   if(clean_urls==TRUE){
     urls <- clean_urls(urls, "url")
   }
 
-  # create empty object to store results
   ct_shares.df <- NULL
 
-  # set progress bar
+  # progress bar
   total <- nrow(urls)
   pb <- txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
-  # query the API
+  # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
 
-    # show progress...
     setTxtProgressBar(pb, pb$getVal()+1)
 
-    # set date limits
+    # set date limits: one week after date_published
     startDate <- as.POSIXct(urls$date[i], origin="1970-01-01", tz = "UTC")
-    endDate <- startDate+604800 # one week after date_published
+    endDate <- startDate+604800
 
     link <- urls$url[i]
 
@@ -90,13 +88,15 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       })
   }
 
-  # remove possible inconsistent rows with entity URL "https://facebook.com/null"
+  # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   ct_shares.df <- ct_shares.df[ct_shares.df$account.url!="https://facebook.com/null",]
 
-  # remove duplicated rows
+  # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
-  write(paste("#################### CLSB - LOG FILE #####################",
+  # write log
+  write(paste("#################### CooRnet #####################",
+              "\n", print(Sys.time()),
               "\nnumber of URLs:", nrow(urls),
               "\nnumber of shares:", nrow(ct_shares.df)),
         file="log.txt")
