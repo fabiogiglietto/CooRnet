@@ -2,7 +2,14 @@
 *Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), Luca Rossi*
 
 ## Overview
-Given a set of URLs, this packages detects coordinated link sharing behavior on social media and outputs the network of entities that performed such behaviour.
+Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behaviour.
+
+## What do we mean by coordinated link sharing behaviour?
+CLSB refers to a specific coordinated activities performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repetedly shared the same news articles in a very short time from each other.
+
+To identify such networks, we designed, implemented and tested an algorithm that, detects sets of Facebook public entities which performed CLSB by (1) estimating a time threshold that identify URLs shares performed by multiple distinguished entities within an unusually short period of time (as compared to the entire dataset), and (2) grouping the entities that repeatedly shared the same news story within this coordination interval. The rationale is that while it may be common that several entities share the same URLs, it is unlikely, unless a consistent coordination exists, that this occurs within the time threshold and repeatedly.
+
+See also references for a more detailed description and real-world applications.
 
 ## Installation
 You can install CooRnet from GitHub.
@@ -24,6 +31,9 @@ The following steps show how to add the key to your R environment file.
 3) Save the file and restart your current R session to start using CooRnet.
 
 ## Usage
+CooRnet requires a list of urls with respective publication date. Such list can be collected from various sources including CrowdTangle itself (e.g. Historical Data with a link post type filter), Twitter APIs (filtering for tweets with a url) and GDELT.
+
+In this example, we use a CSV file exported from <A HREF="https://explorer.mediacloud.org/#/home">MediaCloud Explorer</A>.
 
 ``` r
 df <- read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
@@ -41,6 +51,10 @@ output <- get_coord_shares(df = ct_shares.df)
 # 2. highly_connected_g: igraph graph of coordinated networks of pages/groups/accounts
 # 3. highly_connected_coordinated_entities: a dataframe that lists coordinated entities and corresponding component
 get_outputs(output)
+```
 
+## References
 
+Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding Coordinated and Inauthentic Link Sharing Behavior on Facebook in the Run-up to 2018 General Election and 2019 European Election in Italy. https://doi.org/10.31235/osf.io/3jteh
 
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732
