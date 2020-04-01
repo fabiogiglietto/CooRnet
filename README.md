@@ -3,7 +3,7 @@
 *Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), [Luca Rossi](https://github.com/lrossi79)*
 
 ## Overview
-Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
+Given a set of URLs, this package detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
 
 ## What do we mean by coordinated link sharing behavior?
 CLSB refers to a specific coordinated activity performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repeatedly shared the same news articles in a very short time from each other.
