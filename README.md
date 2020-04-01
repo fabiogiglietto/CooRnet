@@ -61,4 +61,4 @@ get_outputs(output)
    Run-up to 2018 General Election and 2019 European Election in Italy.
    https://doi.org/10.31235/osf.io/3jteh
  - Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes
-   a village to manipulate the media: coordinated link sharing behavior   during 2018 and 2019 Italian elections. Information, Communication   and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732tem
+   a village to manipulate the media: coordinated link sharing behavior   during 2018 and 2019 Italian elections. Information, Communication   and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732
