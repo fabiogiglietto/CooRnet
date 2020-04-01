@@ -5,7 +5,7 @@
 Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behaviour and their graph.
 
 ## What do we mean by coordinated link sharing behaviour?
-CLSB refers to a specific coordinated activities performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repetedly shared on social media the same news articles in a very short time from each other.
+CLSB refers to a specific coordinated activities performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repetedly shared the same news articles in a very short time from each other.
 
 To identify such networks, we designed, implemented and tested an algorithm that, detects sets of Facebook public entities which performed CLSB by (1) estimating a time threshold that identify URLs shares performed by multiple distinguished entities within an unusually short period of time (as compared to the entire dataset), and (2) grouping the entities that repeatedly shared the same news story within this coordination interval. The rationale is that while it may be common that several entities share the same URLs, it is unlikely, unless a consistent coordination exists, that this occurs within the time threshold and repeatedly.
 
