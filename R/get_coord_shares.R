@@ -68,11 +68,11 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
 
     if (file.exists("log.txt")) {
-      write(paste("\n", print(Sys.time()),
+      write(paste("\n", Sys.time(),
                   "\ncoordination interval set by the user:", coordination_interval), file="log.txt", append=TRUE)
     } else {
       write(paste0("#################### CooRnet #####################\n",
-                  "\n", print(Sys.time()),
+                  "\n", Sys.time(),
                   "\ncoordination interval set by the user:", coordination_interval),
             file="log.txt")
       }
@@ -155,7 +155,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
     # write the log
-    write(paste("\n", print(Sys.time()),
+    write(paste("\n", Sys.time(),
                 "\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\npercentile_edge_weight:", percentile_edge_weight, paste0("(quantile: ", q, ")"),
@@ -228,7 +228,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
     # write the log
-    write(paste("\n", print(Sys.time()),
+    write(paste("\n", Sys.time(),
                 "\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\npercentile_edge_weight:", percentile_edge_weight, paste0("(quantile: ", q, ")"),

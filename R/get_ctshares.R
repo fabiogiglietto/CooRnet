@@ -96,7 +96,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # write log
   write(paste("#################### CooRnet #####################",
-              "\n", print(Sys.time()),
+              "\n", Sys.time(),
               "\nnumber of URLs:", nrow(urls),
               "\nnumber of shares:", nrow(ct_shares.df)),
         file="log.txt")

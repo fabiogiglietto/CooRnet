@@ -85,7 +85,7 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
 
     if (file.exists("log.txt")) {
       write(paste0("\n",
-                  print(Sys.time()),
+                  Sys.time(),
                   "\nq (quantile of quickest URLs to be filtered): ", q,
                   "\np (percentage of total shares to be reached): ", p,
                   "\ncoordination interval from estimate_coord_interval: ", coordination_interval,
@@ -93,7 +93,7 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
     } else {
       write(paste0("#################### CooRnet #####################\n",
                   "\n",
-                  print(Sys.time()),
+                  Sys.time(),
                   "\nq (quantile of quickest URLs to be filtered): ", q,
                   "\np (percentage of total shares to be reached): ", p,
                   "\ncoordination interval from estimate_coord_interval: ", coordination_interval,
@@ -107,13 +107,13 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   coord_interval <- list(summary_secs, coordination_interval)
 
   if (file.exists("log.txt")) {
-    write(paste0("\n", print(Sys.time()),
+    write(paste0("\n", Sys.time(),
                 "\nq (quantile of quickest URLs to be filtered): ", q,
                 "\np (percentage of total shares to be reached): ", p,
                 "\ncoordination interval from estimate_coord_interval: ", coordination_interval), file="log.txt", append=TRUE)
   } else {
     write(paste0("#################### CooRnet #####################\n",
-                "\n", print(Sys.time()),
+                "\n", Sys.time(),
                 "\nq (quantile of quickest URLs to be filtered): ", q,
                 "\np (percentage of total shares to be reached): ", p,
                 "\ncoordination interval from estimate_coord_interval: ", coordination_interval), file="log.txt")
