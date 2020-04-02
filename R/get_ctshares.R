@@ -10,9 +10,9 @@
 #' @param sleep_time pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit
 #' @param clean_urls clean the URLs from tracking parameters (default FALSE)
 #'
-#' @return A list containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
+#' @return a list containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
 #'
-#' @details To start using the library you need to set the CrowdTangle API key.
+#' @details to start using the library you need to set the CrowdTangle API key.
 #'   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 #'
 #' @examples

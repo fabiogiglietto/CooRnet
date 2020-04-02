@@ -2,12 +2,12 @@
 #'
 #' This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.5) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares
 #'
-#' @param ct_shares.df a tibble resulting from the function get_ctshares
+#' @param ctshares_output the list resulting from the function get_ctshares
 #' @param q parameter that controls the quantile of quickest URLs to be filtered. Default to 0.1 [0-1]
 #' @param p parameter that controls the percentage of total shares to be reached. Default to 0.5 [0-1]
-#' @param clean_urls clean up unnecessary url paramters and malformed urls
+#' @param clean_urls clean up unnecessary url paramters and malformed urls, and keep just the URLs included in the original data set (default FALSE)
 #'
-#' @return A list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares}
+#' @return a list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares}
 #' @examples
 #' cord_int <- estimate_coord_interval(df, q=0.1, p=0.5, clean_urls=TRUE)
 #' cord_int[[1]]
@@ -15,7 +15,7 @@
 #'
 #' @export
 
-estimate_coord_interval <- function(get_ctshares_output, q=0.1, p=0.5, clean_urls=FALSE) {
+estimate_coord_interval <- function(ctshares_output, q=0.1, p=0.5, clean_urls=FALSE) {
 
   if(p < 0 | p > 1){
     stop("The p value must be between 0 and 1")
@@ -29,7 +29,7 @@ estimate_coord_interval <- function(get_ctshares_output, q=0.1, p=0.5, clean_url
   require(dplyr)      # 0.8.3
 
   # unnest expanded urls and clean-up
-  ct_shares.df <- unnest_ctshares(get_ctshares_output, clean_urls = clean_urls)
+  ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
   rm(clean_urls)
 
   ct_shares.df <- ct_shares.df[, c("id", "date", "expanded"),]
