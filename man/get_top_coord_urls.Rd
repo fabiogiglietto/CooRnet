@@ -21,3 +21,11 @@ A data frame (grouped_df) containing the top URLs shared in a coordinated way by
 \description{
 A function to get the top n URLs shared in a coordinated way
 }
+\examples{
+# get the top ten URLs shared in a coordinated way by each network component, by engagement
+df <- get_top_coord_urls(output, order_by = "engagement", component = TRUE, top=10)
+
+# get the top ten URLs shared in a coordinated way, by engagement
+df <- get_top_news(output, order_by = "engagement", top=10)
+
+}

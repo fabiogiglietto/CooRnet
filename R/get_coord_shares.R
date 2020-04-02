@@ -2,7 +2,7 @@
 #'
 #' Given a dataset of CrowdTangle shares and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
 #'
-#' @param ct_shares.df a dataframe of social media shares in the format provided by \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint}
+#' @param ctshares_output a dataframe of social media shares in the format provided by \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint}
 #' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
 #' @param parallel enables parallel processing to speed up the process taking advantage of multiple cores (default FALSE). The number of cores is automatically set to all the available cores minus one
 #' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
