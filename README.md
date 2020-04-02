@@ -3,14 +3,14 @@
 *Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), [Luca Rossi](https://github.com/lrossi79)*
 
 ## Overview
-Given a set of URLs, this packages detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
+Given a set of URLs, this package detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
 
 ## What do we mean by coordinated link sharing behavior?
 CLSB refers to a specific coordinated activity performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repeatedly shared the same news articles in a very short time from each other.
 
 To identify such networks, we designed, implemented and tested an algorithm that detects sets of Facebook public entities which performed CLSB by (1) estimating a time threshold that identifies URLs shares performed by multiple distinguished entities within an unusually short period of time (as compared to the entire dataset), and (2) grouping the entities that repeatedly shared the same news story within this coordination interval. The rationale is that, while it may be common that several entities share the same URLs, it is unlikely, unless a consistent coordination exists, that this occurs within the time threshold and repeatedly.
 
-See also <>references for a more detailed description and real-world applications.
+See also <A HREF="#References">references</A> for a more detailed description and real-world applications.
 
 ## Installation
 You can install CooRnet from GitHub.
@@ -55,9 +55,9 @@ get_outputs(output)
 ```
 ## Acknowledgements
 
-CooRnet has been developed as a branch of [Mapping Italian News - Social Media and Democracy](https://sites.google.com/uniurb.it/mine/home) activities. 
+CooRnet has been developed as part of [Patterns of Facebook Interactions around Insular and Cross-Partisan Media Sources in the Run-up of the 2018 Italian Election](https://sites.google.com/uniurb.it/mine/home) research project activities. 
 
-The project is part of [Social Media & Democracy initiative](https://www.google.com/url?q=https%3A%2F%2Fwww.ssrc.org%2Ffellowships%2Fview%2Fsocial-media-and-democracy-research-grants%2Fgrantees%2Fgiglietto%2F&sa=D&sntz=1&usg=AFQjCNGp6qJ0haJ6SiZ4PuMJaH1d-vrFlA) supported by Facebook and Social Science Research Council research grants.
+The project is supported, in part, by a grant by a grant from Social Science Research Council. Data and tools provided by Facebook.
 
 ## References
 
