@@ -15,7 +15,7 @@
 #'
 #' @export
 
-estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE) {
+estimate_coord_interval <- function(get_ctshares_output, q=0.1, p=0.5, clean_urls=FALSE) {
 
   if(p < 0 | p > 1){
     stop("The p value must be between 0 and 1")
@@ -29,7 +29,7 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   require(dplyr)      # 0.8.3
 
   # unnest expanded urls and clean-up
-  ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
+  ct_shares.df <- unnest_ctshares(get_ctshares_output, clean_urls = clean_urls)
   rm(clean_urls)
 
   ct_shares.df <- ct_shares.df[, c("id", "date", "expanded"),]

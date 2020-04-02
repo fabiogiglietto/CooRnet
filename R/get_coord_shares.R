@@ -33,7 +33,7 @@
 #'
 #' @export
 
-get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE){
+get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE){
 
   require(tidyr)      # 1.0.2
   require(dplyr)      # 0.8.3
@@ -43,17 +43,17 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # estimate the coordination interval if not specified by the users
   if(is.null(coordination_interval)){
-    coordination_interval <- estimate_coord_interval(ct_shares.df, clean_urls = clean_urls)
+    coordination_interval <- estimate_coord_interval(ctshares_output, clean_urls = clean_urls)
     coordination_interval <- coordination_interval[[2]]
 
-    ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
+    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
   }
 
   # use the coordination interval resulting from estimate_coord_interval
   if(is.list(coordination_interval)){
     coordination_interval <- coordination_interval[[2]]
 
-    ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
+    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
   }
 
   # use the coordination interval set by the user
@@ -65,7 +65,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     coordination_interval <- paste(coordination_interval, "secs")
 
-    ct_shares.df <- unnest_ctshares(ct_shares.df, clean_urls = clean_urls)
+    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
 
     if (file.exists("log.txt")) {
       write(paste("\n", Sys.time(),
