@@ -126,8 +126,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
         for (e in 1:nrow(edges)){
           e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
           e_f <- get.edge.ids(full_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
-          if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
-          if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
+          if (length(E(highly_connected_g)[e_h]$t_coord_share) != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
+          if (length(E(highly_connected_g)[e_h]$t_coord_share) == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
         }
       }
     }
