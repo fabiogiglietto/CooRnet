@@ -60,6 +60,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   # Get coordinated entities and network ####
   ###########################################
 
+  cat("\nBuilding the graph...")
+
   el <- coordinated_shares[,c(3,5,4)] # drop unnecesary columns
   el$account.url <- trimws(el$account.url) # remove white space from platform.id
   v1 <- data.frame(node=unique(el$account.url), type=1) # create a dataframe with nodes and type 0=url 1=page
@@ -147,5 +149,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   highly_c_list <- list(highly_connected_g, highly_connected_coordinated_entities, q)
 
+  cat("\nDone!")
+
   return(highly_c_list)
+
 }
