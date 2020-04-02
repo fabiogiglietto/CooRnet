@@ -6,7 +6,7 @@
 #' @param order_by name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
 #' @param component return the top posts grouped by network component (TRUE, default) or by account (FALSE)
 #' @param top number of the top news to be retrieved
-#' }
+#'
 #' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
 #'
 #' @examples

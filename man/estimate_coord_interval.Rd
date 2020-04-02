@@ -16,7 +16,7 @@ estimate_coord_interval(ctshares_output, q = 0.1, p = 0.5, clean_urls = FALSE)
 \item{clean_urls}{clean up unnecessary url paramters and malformed urls, and keep just the URLs included in the original data set (default FALSE)}
 }
 \value{
-
+a list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares
 }
 \description{
 This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.5) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares

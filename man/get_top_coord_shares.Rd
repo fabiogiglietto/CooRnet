@@ -17,6 +17,8 @@ get_top_coord_shares(
 \item{order_by}{name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
 
 \item{component}{return the top posts grouped by network component (TRUE, default) or by account (FALSE)}
+
+\item{top}{number of the top news to be retrieved}
 }
 \value{
 A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes

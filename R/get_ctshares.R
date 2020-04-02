@@ -5,7 +5,7 @@
 #' @param urls a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date
 #' @param url_column name of the column (placed inside quote marks) where the URLs are stored
 #' @param date_column name of the column (placed inside quote marks) where the date of the URLs are stored
-#' @param platforms default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
+#' @param platforms default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
 #' @param nmax max number of results for query (default 500 as per API limit)
 #' @param sleep_time pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit
 #' @param clean_urls clean the URLs from tracking parameters (default FALSE)

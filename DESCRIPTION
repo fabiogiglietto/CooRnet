@@ -2,15 +2,14 @@ Package: CooRnet
 Version: 0.1.0
 Date: 2020-03-27
 Type: Package
-Title: Detect coordinated link sharing behavior on social media.
+Title: Detect coordinated link sharing behavior on social media
 Description: Given a set of URLs, this packages detects coordinated link sharing behavior on social media and outputs the network of entities that performed such behavior.
-    Use four spaces when indenting paragraphs within the Description.
-Authors: Fabio Giglietto, Nicola Righetti, Luca Rossi
+Author: Fabio Giglietto, Nicola Righetti, Luca Rossi
 Maintainer: Fabio Giglietto <fabio.giglietto@uniurb.it>
 URL: https://github.com/fabiogiglietto/CooRnet
 License: What license is it under?
-Depends: R (>= 3.6), doSNOW (>= 1.0), dplyr (>= 0.8), httr (>= 1.4), igraph (>= 1.2), jsonlite (>= 1.6), parallel (>= 3.6), tidyr (>= 1.0) 
-Imports: doSNOW (>= 1.0), dplyr (>= 0.8), httr (>= 1.4), igraph (>= 1.2), jsonlite (>= 1.6), parallel (>= 3.6), tidyr (>= 1.0)  
+Depends: R (>= 3.6)
+Imports: doSNOW (>= 1.0), dplyr (>= 0.8), httr (>= 1.4), igraph (>= 1.2), jsonlite (>= 1.6), parallel (>= 3.6), tidyr (>= 1.0)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
