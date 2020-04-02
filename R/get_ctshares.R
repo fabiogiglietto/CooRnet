@@ -103,7 +103,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   ctshares_output <- list(ct_shares.df, urls)
 
-  return(get_ctshares_output)
-
+  return(ctshares_output)
 }
 
