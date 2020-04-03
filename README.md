@@ -45,7 +45,7 @@ library("mediacloudr")
 # Save the file and restart your current R session to start using mediacloudr.
 
 df <- get_story_list(rows = 100,
-                           fq = "(text:coronavirus OR text:'covid-19' OR text:'SARS-CoV-2') AND publish_date:[2020-03-02T00:00:00.000Z TO 2020-04-03T00:00:00.000Z]")
+                           fq = "(text:coronavirus OR text:'covid-19' OR text:'SARS-CoV-2') AND (tags_id_media:186572515 OR tags_id_media:186572435 OR tags_id_media:186572516 OR tags_id_media:162546808 OR tags_id_media:162546809) AND publish_date:[2020-03-02T00:00:00.000Z TO 2020-04-03T00:00:00.000Z]")
 
 # Alternative using a file exported from MediaCloud Explorer and uploaded into r
 # df <- read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
