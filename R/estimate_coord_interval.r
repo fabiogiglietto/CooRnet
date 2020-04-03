@@ -2,20 +2,21 @@
 #'
 #' This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.5) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares
 #'
-#' @param ctshares_output the list resulting from the function get_ctshares
+#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
 #' @param q parameter that controls the quantile of quickest URLs to be filtered. Default to 0.1 [0-1]
 #' @param p parameter that controls the percentage of total shares to be reached. Default to 0.5 [0-1]
 #' @param clean_urls clean up unnecessary url paramters and malformed urls, and keep just the URLs included in the original data set (default FALSE)
+#' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
 #'
 #' @return a list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares
 #' @examples
-#' cord_int <- estimate_coord_interval(df, q=0.1, p=0.5, clean_urls=TRUE)
+#' cord_int <- estimate_coord_interval(df, q=0.1, p=0.5, clean_urls=TRUE, keep_ourl_only=FALSE)
 #' cord_int[[1]]
 #' cord_int[[2]]
 #'
 #' @export
 
-estimate_coord_interval <- function(ctshares_output, q=0.1, p=0.5, clean_urls=FALSE) {
+estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE, keep_ourl_only=FALSE) {
 
   if(p < 0 | p > 1){
     stop("The p value must be between 0 and 1")
@@ -28,9 +29,22 @@ estimate_coord_interval <- function(ctshares_output, q=0.1, p=0.5, clean_urls=FA
   require(tidyr)      # 1.0.2
   require(dplyr)      # 0.8.3
 
-  # unnest expanded urls and clean-up
-  ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
-  rm(clean_urls)
+  # initialize logfile
+  if (!file.exists("log.txt")) {
+    write(paste("#################### CooRnet #####################",
+                "\nestimate_coord_interval script executed on:", format(Sys.time(), format = "%F %R %Z")),
+          file="log.txt")
+  }
+  else {
+    write(paste("\nestimate_coord_interval script executed on:", format(Sys.time(), format = "%F %R %Z")),
+          file="log.txt", append = TRUE)
+  }
+
+  # keep original URLs only?
+  if(keep_ourl_only==TRUE){
+    ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
+    write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
+  }
 
   ct_shares.df <- ct_shares.df[, c("id", "date", "expanded"),]
 
@@ -83,41 +97,25 @@ estimate_coord_interval <- function(ctshares_output, q=0.1, p=0.5, clean_urls=FA
 
     coord_interval <- list(summary_secs, coordination_interval)
 
-    if (file.exists("log.txt")) {
-      write(paste0("\n",
-                  Sys.time(),
+    write(paste0("\n",
                   "\nq (quantile of quickest URLs to be filtered): ", q,
                   "\np (percentage of total shares to be reached): ", p,
                   "\ncoordination interval from estimate_coord_interval: ", coordination_interval,
                   "\nWarning: with the specified parameters p and q the median was 0 secs. The coordination interval has been automatically set to 1 secs"), file="log.txt", append=TRUE)
-    } else {
-      write(paste0("#################### CooRnet #####################\n",
-                  "\n",
-                  Sys.time(),
-                  "\nq (quantile of quickest URLs to be filtered): ", q,
-                  "\np (percentage of total shares to be reached): ", p,
-                  "\ncoordination interval from estimate_coord_interval: ", coordination_interval,
-                  "\nWarning: with the specified parameters p and q the median was 0 secs. The coordination interval has been automatically set to 1 secs"), file="log.txt")
-    }
 
     return(coord_interval)
   }
 
-  # get results in case of median > 0 secs
-  coord_interval <- list(summary_secs, coordination_interval)
+  else {
+    # get results in case of median > 0 secs
+    coord_interval <- list(summary_secs, coordination_interval)
 
-  if (file.exists("log.txt")) {
-    write(paste0("\n", Sys.time(),
-                "\nq (quantile of quickest URLs to be filtered): ", q,
-                "\np (percentage of total shares to be reached): ", p,
-                "\ncoordination interval from estimate_coord_interval: ", coordination_interval), file="log.txt", append=TRUE)
-  } else {
-    write(paste0("#################### CooRnet #####################\n",
-                "\n", Sys.time(),
-                "\nq (quantile of quickest URLs to be filtered): ", q,
-                "\np (percentage of total shares to be reached): ", p,
-                "\ncoordination interval from estimate_coord_interval: ", coordination_interval), file="log.txt")
-  }
+    write(paste0("\nq (quantile of quickest URLs to be filtered): ", q,
+                 "\np (percentage of total shares to be reached): ", p,
+                 "\ncoordination interval from estimate_coord_interval: ", coordination_interval),
+        file="log.txt",
+        append=TRUE)
 
   return(coord_interval)
+  }
 }
