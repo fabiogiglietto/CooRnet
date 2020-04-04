@@ -2,18 +2,19 @@
 #'
 #' Given a dataset of CrowdTangle shares and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
 #'
-#' @param ctshares_output a dataframe of social media shares in the format provided by \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint}
+#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
 #' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
 #' @param parallel enables parallel processing to speed up the process taking advantage of multiple cores (default FALSE). The number of cores is automatically set to all the available cores minus one
 #' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
 #' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
+#' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
 #'
 #' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
 #'
 #' @examples
 #' output <- get_coord_shares(ct_shares.df)
 #'
-#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, cores = detectCores(), threshold=0.9, clean_urls=FALSE)
+#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
 #'
 #' # Get the data frame of CrowdTangle shares marked with the “iscoordinated” column
 #' ct_shares.dt <- as.data.frame(output[[1]])
@@ -33,7 +34,7 @@
 #'
 #' @export
 
-get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE){
+get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE){
 
   require(tidyr)      # 1.0.2
   require(dplyr)      # 0.8.3
@@ -43,17 +44,13 @@ get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parall
 
   # estimate the coordination interval if not specified by the users
   if(is.null(coordination_interval)){
-    coordination_interval <- estimate_coord_interval(ctshares_output, clean_urls = clean_urls)
+    coordination_interval <- estimate_coord_interval(ct_shares.df, clean_urls = clean_urls, keep_ourl_only= keep_ourl_only)
     coordination_interval <- coordination_interval[[2]]
-
-    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
   }
 
   # use the coordination interval resulting from estimate_coord_interval
   if(is.list(coordination_interval)){
     coordination_interval <- coordination_interval[[2]]
-
-    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
   }
 
   # use the coordination interval set by the user
@@ -65,18 +62,23 @@ get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parall
 
     coordination_interval <- paste(coordination_interval, "secs")
 
-    ct_shares.df <- unnest_ctshares(ctshares_output, clean_urls = clean_urls)
-
     if (file.exists("log.txt")) {
-      write(paste("\n", Sys.time(),
+      write(paste("\nget_coord_shares script executed on:", format(Sys.time(), format = "%F %R %Z"),
                   "\ncoordination interval set by the user:", coordination_interval), file="log.txt", append=TRUE)
     } else {
       write(paste0("#################### CooRnet #####################\n",
-                  "\n", Sys.time(),
+                   "\nScript executed on:", format(Sys.time(), format = "%F %R %Z"),
                   "\ncoordination interval set by the user:", coordination_interval),
             file="log.txt")
       }
     }
+  }
+
+  # keep original URLs only?
+  if(keep_ourl_only==TRUE){
+    ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
+    if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    write("Analysis performed on shares matching original URLs", file = "log.txt", append = TRUE)
   }
 
   # get a list of all the shared URLs
@@ -84,6 +86,9 @@ get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parall
   names(URLs) <- c("URL", "ct_shares")
   URLs <- subset(URLs, URLs$ct_shares>1) # remove the URLs shared just 1 time
   URLs$URL <- as.character(URLs$URL)
+
+  # keep only shares of URLs shared more than one time
+  ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
 
   ###############
   # Parallel ####
@@ -155,10 +160,9 @@ get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parall
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
     # write the log
-    write(paste("\n", Sys.time(),
-                "\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
-                "\npercentile_edge_weight:", percentile_edge_weight, paste0("(quantile: ", q, ")"),
+                "\npercentile_edge_weight:", percentile_edge_weight, paste0("(minimum coordination repetition: ", q, ")"),
                 "\nhighly connected coordinated entities:", length(unique(highly_connected_coordinated_entities$name)),
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
@@ -228,10 +232,9 @@ get_coord_shares <- function(ctshares_output, coordination_interval=NULL, parall
     uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
 
     # write the log
-    write(paste("\n", Sys.time(),
-                "\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
-                "\npercentile_edge_weight:", percentile_edge_weight, paste0("(quantile: ", q, ")"),
+                "\npercentile_edge_weight:", percentile_edge_weight, paste0("(minimum coordination repetition: ", q, ")"),
                 "\nhighly connected coordinated entities:", length(unique(highly_connected_coordinated_entities$name)),
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)

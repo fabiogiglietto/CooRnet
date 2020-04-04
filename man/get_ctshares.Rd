@@ -11,7 +11,8 @@ get_ctshares(
   platforms = "facebook,instagram",
   nmax = 500,
   sleep_time = 20,
-  clean_urls = FALSE
+  clean_urls = FALSE,
+  save_ctapi_output = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ get_ctshares(
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit}
 
 \item{clean_urls}{clean the URLs from tracking parameters (default FALSE)}
+
+\item{save_ctapi_output}{saves the original CT API output in ./rawdata/ct_shares.df.0.rds}
 }
 \value{
 a list containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
@@ -40,6 +43,6 @@ to start using the library you need to set the CrowdTangle API key.
   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 }
 \examples{
-  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE)
+  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE)
 
 }

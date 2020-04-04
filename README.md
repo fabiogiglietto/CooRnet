@@ -18,7 +18,7 @@ You can install CooRnet from GitHub.
 ``` r
 # install.packages("devtools")
 
-library(devtools)
+library("devtools"")
 devtools::install_github("fabiogiglietto/CooRnet")
 ```
 
@@ -34,15 +34,26 @@ The following steps show how to add the key to your R environment file.
 ## Usage
 CooRnet requires a list of urls with respective publication date. Such list can be collected from various sources including CrowdTangle itself (e.g. Historical Data with a link post type filter), Twitter APIs (filtering for tweets with a url) and GDELT.
 
-In this example, we use a CSV file exported from <A HREF="https://explorer.mediacloud.org/#/home">MediaCloud Explorer</A>.
+In this example, we use <A HREF="https://github.com/jandix/mediacloudr">mediacloudr</A>, an API Wrapper for the mediacloud.org API, to retrieve our initial list of news stories. Alternatively, is it also possible to use a CSV file exported from <A HREF="https://explorer.mediacloud.org/#/home">MediaCloud Explorer</A>.
 
 ``` r
-df <- read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
+library("mediacloudr")
 
-library(CooRnet)
+# add API key to your R environment file.
+# Open your .Renviron file. The file is usually located in your home directory. If the file does not exist, just create one and name it .Renviron.
+# Add a new line and enter your API key in the following format: MEDIACLOUD_API_KEY=<YOUR_API_KEY>.
+# Save the file and restart your current R session to start using mediacloudr.
+
+df <- get_story_list(rows = 100,
+                           fq = "(text:coronavirus OR text:'covid-19' OR text:'SARS-CoV-2') AND (tags_id_media:186572515 OR tags_id_media:186572435 OR tags_id_media:186572516 OR tags_id_media:162546808 OR tags_id_media:162546809) AND publish_date:[2020-03-02T00:00:00.000Z TO 2020-04-03T00:00:00.000Z]")
+
+# Alternative using a file exported from MediaCloud Explorer and uploaded into r
+# df <- read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
+
+library("CooRnet")
 
 # get public shares of MediaCloud URLs on Facebook and Instagram (assumes a valid CROWDTANGLE_API_KEY in Env).
-ct_shares.df <- get_ctshares(df, url_column = "url", platforms = "facebook,instagram", date_column = "publish_date", sleep_time = 1, nmax = 100)
+ct_shares.df <- get_ctshares(df, url_column = "url", date_column = "publish_date", platforms = "facebook,instagram", sleep_time = 1, nmax = 100, clean_urls = TRUE)
 
 # get coordinated shares and networks
 output <- get_coord_shares(df = ct_shares.df)

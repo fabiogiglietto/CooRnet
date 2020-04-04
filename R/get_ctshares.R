@@ -9,6 +9,7 @@
 #' @param nmax max number of results for query (default 500 as per API limit)
 #' @param sleep_time pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit
 #' @param clean_urls clean the URLs from tracking parameters (default FALSE)
+#' @param save_ctapi_output saves the original CT API output in ./rawdata/ct_shares.df.0.rds
 #'
 #' @return a list containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
 #'
@@ -16,15 +17,21 @@
 #'   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 #'
 #' @examples
-#'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE)
+#'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE)
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
 
   require(httr)      # 1.4.1
   require(jsonlite)  # 1.6.9
   require(tidyr)     # 1.0.2
+  require(dplyr)     # 0.8.3
+
+  # initialize logfile
+  write(paste("#################### CooRnet #####################",
+              "\nget_ctshares script executed on:", format(Sys.time(), format = "%F %R %Z")),
+        file="log.txt")
 
   # remove duplicated rows
   urls <- urls[!duplicated(urls),]
@@ -36,6 +43,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # clean the URLs
   if(clean_urls==TRUE){
     urls <- clean_urls(urls, "url")
+    write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
   ct_shares.df <- NULL
@@ -78,14 +86,22 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         }
         else {
           print(paste(c$status, i))
+          write(paste("Unexpected http response code", c$status, "on url with id", i), file = "log.txt", append = TRUE)
         }
       },
       error=function(cond) {
         print(paste("Error:", message(cond), "on URL:", i))
+        write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
       },
       finally={
         Sys.sleep(sleep_time)
       })
+  }
+
+  # save original API output
+  if(save_ctapi_output==TRUE){
+    suppressWarnings(dir.create("./rawdata"))
+    saveRDS(ct_shares.df, "./rawdata/ct_shares.df.0.rds")
   }
 
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
@@ -94,15 +110,27 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
+  ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
+  ct_shares.df$original <- NULL
+
+  # remove duplicates created by the unnesting
+  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+
+  # remove shares performed more than one week from first share
+  ct_shares.df <- ct_shares.df %>%
+    group_by(expanded) %>%
+    filter(difftime(max(date), min(date), units = "secs") <= 604800)
+
+  ct_shares.df$is_orig <- ct_shares.df$expanded %in% urls$url
+  rm(urls)
+
   # write log
-  write(paste("#################### CooRnet #####################",
-              "\n", Sys.time(),
-              "\nnumber of URLs:", nrow(urls),
-              "\nnumber of shares:", nrow(ct_shares.df)),
-        file="log.txt")
+  write(paste("Original URLs:", nrow(urls),
+              "\nCT shares:", nrow(ct_shares.df),
+              "\nUnique URLs in CT shares:", length(unique(ct_shares.df$expanded)),
+              "\nLink in CT shares matching original URLs:", as.numeric(table(ct_shares.df$account.verified)["TRUE"])),
+        file = "log.txt",
+        append = TRUE)
 
-  ctshares_output <- list(ct_shares.df, urls)
-
-  return(ctshares_output)
+  return(ct_shares.df)
 }
-
