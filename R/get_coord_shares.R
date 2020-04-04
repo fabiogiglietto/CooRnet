@@ -14,7 +14,7 @@
 #' @examples
 #' output <- get_coord_shares(ct_shares.df)
 #'
-#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, cores = detectCores(), threshold=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
+#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
 #'
 #' # Get the data frame of CrowdTangle shares marked with the “iscoordinated” column
 #' ct_shares.dt <- as.data.frame(output[[1]])
