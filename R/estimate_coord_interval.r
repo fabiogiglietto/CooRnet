@@ -43,7 +43,7 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   # keep original URLs only?
   if(keep_ourl_only==TRUE){
     ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
-    if (nrow(ct_shares.df)) < 2 stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
     write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
   }
 
