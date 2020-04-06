@@ -105,7 +105,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   }
 
   if (is.null(ct_shares.df)){
-    stop("\nNo shares were found!")
+    stop("\nNo ct_shares were found!")
   }
 
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
