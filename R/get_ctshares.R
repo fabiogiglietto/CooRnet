@@ -29,11 +29,11 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   require(dplyr)     # 0.8.3
 
   if(missing(url_column)) {
-    stop("Please specify the name of the URLs column in the dataset (inside quote marks)")
+    stop("Please check that specified column exists")
   }
 
   if(missing(date_column)) {
-    stop("Please specify the name of the date column in the dataset (inside quote marks)")
+    stop("Please check that specified column exists")
   }
 
 
