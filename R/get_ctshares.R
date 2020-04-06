@@ -126,7 +126,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
   ct_shares.df$is_orig <- ct_shares.df$expanded %in% urls$url
-  rm(urls)
 
   # write log
   write(paste("Original URLs:", nrow(urls),
@@ -136,5 +135,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         file = "log.txt",
         append = TRUE)
 
+  rm(urls)
+  
   return(ct_shares.df)
 }
