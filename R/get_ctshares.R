@@ -28,6 +28,15 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   require(tidyr)     # 1.0.2
   require(dplyr)     # 0.8.3
 
+  if(missing(url_column)) {
+    stop("Please specify the name of the URLs column in the dataset (inside quote marks)")
+  }
+
+  if(missing(date_column)) {
+    stop("Please specify the name of the date column in the dataset (inside quote marks)")
+  }
+
+
   # initialize logfile
   write(paste("#################### CooRnet #####################",
               "\nget_ctshares script executed on:", format(Sys.time(), format = "%F %R %Z")),
@@ -136,6 +145,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         append = TRUE)
 
   rm(urls)
-  
+
   return(ct_shares.df)
 }
