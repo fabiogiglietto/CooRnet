@@ -104,6 +104,10 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     saveRDS(ct_shares.df, "./rawdata/ct_shares.df.0.rds")
   }
 
+  if (is.null(ct_shares.df)){
+    stop("\nNo shares were found!")
+  }
+
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   ct_shares.df <- ct_shares.df[ct_shares.df$account.url!="https://facebook.com/null",]
 
