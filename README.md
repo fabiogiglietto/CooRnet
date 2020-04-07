@@ -18,7 +18,7 @@ You can install CooRnet from GitHub.
 ``` r
 # install.packages("devtools")
 
-library("devtools"")
+library("devtools")
 devtools::install_github("fabiogiglietto/CooRnet")
 ```
 
