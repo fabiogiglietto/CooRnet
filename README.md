@@ -64,6 +64,9 @@ output <- get_coord_shares(df = ct_shares.df)
 # 3. highly_connected_coordinated_entities: a dataframe that lists coordinated entities and corresponding component
 get_outputs(output)
 ```
+
+For a more step-by-step approach, you may want to take a look to our <A HREF="TUTORIAL.md">MediaCloud+CooRnet tutorial</A>.
+
 ## Acknowledgements
 
 CooRnet has been developed as part of [Patterns of Facebook Interactions around Insular and Cross-Partisan Media Sources in the Run-up of the 2018 Italian Election](https://sites.google.com/uniurb.it/mine/home) research project activities. 
