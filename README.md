@@ -65,7 +65,7 @@ output <- get_coord_shares(df = ct_shares.df)
 get_outputs(output)
 ```
 
-For a more step-by-step approach, you may want to take a look to our <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.md">MediaCloud+CooRnet tutorial</A>.
+For a more step-by-step approach, you may want to take a look to our <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet tutorial</A>.
 
 ## Acknowledgements
 
