@@ -7,7 +7,7 @@ Description: Given a set of URLs, this packages detects coordinated link sharing
 Author: Fabio Giglietto, Nicola Righetti, Luca Rossi
 Maintainer: Fabio Giglietto <fabio.giglietto@uniurb.it>
 URL: https://github.com/fabiogiglietto/CooRnet
-License: MIT
+License: MIT | file LICENSE
 Depends: R (>= 3.6)
 Imports: doSNOW (>= 1.0), plyr (>= 1.8), dplyr (>= 0.8), httr (>= 1.4), igraph (>= 1.2), jsonlite (>= 1.6), parallel (>= 3.6), tidyr (>= 1.0)
 Encoding: UTF-8
