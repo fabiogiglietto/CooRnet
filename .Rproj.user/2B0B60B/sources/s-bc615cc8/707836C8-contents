@@ -9,5 +9,5 @@ navbar:
       href: tutorial.html
 output:
   html_document:
-    theme: flatly
+    theme: simplex
     css: style.css

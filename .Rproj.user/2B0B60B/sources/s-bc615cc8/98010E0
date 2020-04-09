@@ -1,20 +1,20 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1586439387677.000,
+    "created" : 1586440753865.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "309966786",
-    "id" : "627C470B",
-    "lastKnownWriteTime" : 1586440161,
-    "last_content_update" : 1586440161638,
-    "path" : "~/CooRnet_website/tutorial.Rmd",
-    "project_path" : "tutorial.Rmd",
+    "hash" : "1493491163",
+    "id" : "98010E0",
+    "lastKnownWriteTime" : 1586440269,
+    "last_content_update" : 1586440269,
+    "path" : "~/CooRnet_website/index.Rmd",
+    "project_path" : "index.Rmd",
     "properties" : {
-        "cursorPosition" : "1,27",
+        "cursorPosition" : "0,0",
         "scrollLine" : "0",
-        "tempName" : "Untitled2"
+        "tempName" : "Untitled1"
     },
     "read_only" : false,
     "read_only_alternatives" : [
