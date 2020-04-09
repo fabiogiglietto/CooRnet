@@ -3,7 +3,7 @@ output: html_document
 pagetitle: "MediaCloud tutorial"
 author: "Fabio Giglietto"
 ---
-
+<div style="margin-top:15px;">
 # MediaCloud tutorial
 
 In this tutorial we show how to combine [MediaCloud](https://mediacloud.org/) and CooRnet to detect coordinated link sharing behavior on a dataset of news stories related to a specific topic.

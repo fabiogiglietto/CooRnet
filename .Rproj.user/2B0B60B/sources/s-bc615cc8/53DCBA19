@@ -5,14 +5,14 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "1770713368",
+    "hash" : "3107109242",
     "id" : "53DCBA19",
-    "lastKnownWriteTime" : 1586442390,
-    "last_content_update" : 1586442390653,
+    "lastKnownWriteTime" : 1586442777,
+    "last_content_update" : 1586442777878,
     "path" : "~/CooRnet_website/tutorial.Rmd",
     "project_path" : "tutorial.Rmd",
     "properties" : {
-        "cursorPosition" : "6,1",
+        "cursorPosition" : "5,25",
         "scrollLine" : "0",
         "tempName" : "Untitled2"
     },
