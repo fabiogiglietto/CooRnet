@@ -1,9 +1,0 @@
-name: "coornet-website"
-output_dir: "."
-navbar:
-  title: "CooRnet Website"
-  left:
-    - text: "Home"
-      href: index.html
-    - text: "MediaCloud tutorial"
-      href: tutorial.html
