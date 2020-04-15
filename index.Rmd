@@ -1,5 +1,6 @@
 ---
 output: html_document
+pagetitle: "CooRnet: an r package to detect coordinated link sharing behaviour"
 html: "R/CooRnet"
 author: "Fabio Giglietto"
 ---
