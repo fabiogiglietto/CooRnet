@@ -1,12 +1,14 @@
 name: "coornet-website"
 output_dir: "."
 navbar:
-  title: ""<img id=\"coornet-logo\" src=\"logo_small.png\" />""
+  title: "<img id=\'coornet-logo\' src=\'logo_small.png\' />"
   left:
     - text: "Home"
       href: index.html
     - text: "MediaCloud tutorial"
-      href: tutorial.html
+      href: tutorial00.html
+    - text: "CT Historical tutorial"
+      href: tutorial01.html
 output:
   html_document:
     theme: simplex

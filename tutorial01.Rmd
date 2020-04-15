@@ -1,0 +1,47 @@
+---
+output: html_document
+pagetitle: "Tutorial CrowdTangle Historical Data"
+author: "Nicola Righetti"
+---
+
+<div style="margin-top:15px;">
+# Detecting coordinated entities with CrowdTangle Historical Data
+
+In this tutorial we show how to use a list of entities sharing URLs on Facebook and/or Instagram to detect other entities linked to them by means of coordinated sharing of the same URLs, and therefore potentially associated with the same agenda. Detecting coordinated entities starting from a CrowdTangle list or saved searches has many applications including keeping a list of problematic entities updated over time and dipediving on a specific issue. 
+
+For the sake of this tutorial, we start from the Facebook pages of German alternative news media listed in [this paper](https://arxiv.org/abs/2004.02566?fbclid=IwAR1oxVcJnngUsMnhihK7nlanh1MAcnxlDTc1pp32mVe5ZgBkPBsf_9aVNfg)
+
+First, we [create a list on CrowdTangle](https://help.crowdtangle.com/en/articles/1140912-what-is-a-list) including all the pages from which the research will begin.
+
+Then, we use the [CrowdTangle Historical Search](https://help.crowdtangle.com/en/articles/1194215-using-crowdtangle-s-historical-data) to get all the post including links that have been shared by the pages included in the starting list. The user has to indicate a time window. We used the same time frame used by the authors of the study we are building on (from January 7, 2020 to March 22, 2020). You should get an email with a link to a CSV file containing the requested data (a list of link type posts). You can either download this file or save the link for later.
+
+We then start our R Studio environment or the free R Studio Cloud ([https://rstudio.cloud](https://rstudio.cloud)) environment and [set up the CooRnet package](http://coornet.org/).
+
+To quickly get a list of URLs shared by our original list of pages we use the brand new CooRnet “get_urls_from_ct_histdata” function with the file that CrowdTangle sent us by email. You can either download this file and upload it to R Studio or you can simply copy/paste the link received by email to let CooRnet download the file for you (note that in this case no copy of the original CT output will be kept). The function outputs a dataset with a column “url” and “date” that can be used in the next step.
+
+```r
+urls <- get_urls_from_ct_histdata(ct_histdata_csv="./2020-04-09-11-29-46-CEST-Historical-Report-German-Alternative-Media-2020-01-07--2020-03-02.csv")
+```
+
+With our new “urls” data.frame, we can now call the “get_ctshares” function to get a list of posts that link or mention these URLs. We set the “clean_urls” equal TRUE for cleaning the URLs from the tracking parameters and keeping, whenever possible, just the canonical form of the URL.
+
+```r
+ctshares <- get_ctshares(urls, "url", "date", clean_urls = TRUE)
+```
+
+Now, we use the “get_coord_shares” function to obtain the list of the entities that shared the URLs in a coordinated way. We set the “parallel” option to TRUE to use parallel computing and speed up the process, the “clean_urls” equal TRUE to clean the URLs from the tracking parameters so as to avoid two identical links are recognized as different just because of the presence of unnecessary parameters, and the “keep_ourl_only” equal TRUE to be sure to limit the analysis to the original URLs we started from.
+
+```r
+output <- get_coord_shares(ctshares , parallel = TRUE, clean_urls = TRUE, keep_ourl_only = TRUE)
+```
+
+Finally, we use the “get_outputs” function to access the results of the function. In this specific case we are interested just in the “highly_connected_coordinated_entities” file, thus we extract just this file by setting the other options equal FALSE.
+
+```r
+get_outputs(output, ct_shares_marked.df = FALSE, highly_connected_g = FALSE, highly_connected_coordinated_entities = TRUE)
+```
+
+The “highly_connected_coordinated_entities” is a csv file that includes the entities that performed coordinated link sharing around the starting list of links (those we downloaded thanks to the Historical Search of CrowdTangle). 
+
+Such a list can be potentially interesting, since it can point out new entities that share the same agenda of the starting entities. We created a [CrowdTangle Live Display Dashboard](https://www.crowdtangle.com/resources/livedisplays) with the new entities we discovered. You can access the Live Display by [clicking here](https://apps.crowdtangle.com/mine2018/boards/germancoordinatedentities?fbclid=IwAR2F7BDsAzuSzHaxkGill9k_kG59sNzoexnO9AK1UXZOzP1x_CvvZVpFPCA). In the first column you can see the activity of the original list of German alternative media, while in the second and third columns you can see the activity of the coordinated pages and groups discovered with CooRnet.
+
