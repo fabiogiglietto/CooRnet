@@ -1,14 +1,21 @@
 name: "coornet-website"
 output_dir: "."
 navbar:
-  title: "<img id=\'coornet-logo\' src=\'logo_small.png\' />"
+  title: "<img id=\'coornet-logo\' src=\'logo_small.png\'/>"
   left:
-    - text: "Home"
+    - text: "Intro"
       href: index.html
-    - text: "MediaCloud tutorial"
-      href: tutorial00.html
-    - text: "CT Historical tutorial"
-      href: tutorial01.html
+    - text: "Tutorials"
+      menu:
+        - text: "MediCloud"
+          href: tutorial00.html
+        - text: "CT Historical tutorial"
+          href: tutorial01.html
+  right:
+    - text: "GitHub"
+      icon: fa-github
+      href: https://github.com/fabiogiglietto/CooRnet/
+      
 output:
   html_document:
     theme: simplex
