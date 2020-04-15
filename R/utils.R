@@ -1,3 +1,6 @@
+#' @import igraph
+#' @importFrom dplyr group_by mutate %>% summarize
+
 clean_urls <- function(df, url){
   df <- df[!grepl("\\.\\.\\.$", df[[url]]),]
   length(df[[url]][grepl("\\.\\.\\.$", df[[url]])]) == 0
@@ -78,15 +81,11 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.verified <- sapply(V(full_g)$name, function(x) vertex.info$account.verified[vertex.info$account.url == x])
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
 
-
-
-
   # keep only highly coordinated entities
   V(full_g)$degree <- degree(full_g)
   q <- quantile(E(full_g)$weight, percentile_edge_weight) # set the percentile_edge_weight number of repetedly coordinated link sharing to keep
   highly_connected_g <- induced_subgraph(graph = full_g, vids = V(full_g)[V(full_g)$degree > 0 ]) # filter for degree
   highly_connected_g <- subgraph.edges(highly_connected_g, eids = which(E(highly_connected_g)$weight >= q),delete.vertices = T) # filter for edge weight
-
 
   # timestamp of coordinated sharing as edge atribute
 
@@ -113,9 +112,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
       }
     }
   }
+
   E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
-
-
 
   # find and annotate nodes-components
   V(highly_connected_g)$component <- components(highly_connected_g)$membership
@@ -131,5 +129,4 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   cat("\nDone!")
 
   return(highly_c_list)
-
 }

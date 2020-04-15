@@ -14,11 +14,12 @@
 #' # Use the new urls dataset to call get_ct_shares function
 #' ct_shares.dt <- get_ctshares(urls, url_column="url", date_column="date", save_ctapi_output=TRUE)
 #'
+#' @importFrom readr read_csv cols col_character col_skip
+#' @importFrom dplyr group_by summarise %>% select
+#'
 #' @export
 
 get_urls_from_ct_histdata <- function(ct_histdata_csv=NULL) {
-  require(readr) # 1.2.0
-  require(dplyr) # 0.8.3
 
   if(is.null(ct_histdata_csv)) {
     stop("The function requires a valid CSV local or remote link to run")
@@ -37,9 +38,11 @@ df$url <- ifelse(is.na(df$`Final Link`), df$Link, df$`Final Link`) # keep expand
 
 urls <- df %>%
   group_by(url) %>%
-  summarise(Created = min(Created))
+  summarise(Created = min(Created)) %>%
+  select(url, date=Created)
 
-names(urls) <- c("url", "date")
+attr(urls, 'spec') <- NULL
+
 rm(df)
 return(urls)
 }
