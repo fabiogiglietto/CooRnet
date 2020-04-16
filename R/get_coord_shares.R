@@ -19,7 +19,8 @@
 #' # Get the data frame of CrowdTangle shares marked with the “iscoordinated” column
 #' ct_shares.dt <- as.data.frame(output[[1]])
 #' # Save the data frame in csv format
-#' save.csv(ct_shares.dt, file=“ct_shares.dt.csv”)
+#' library(readr)
+#' write_csv(ct_shares.dt, file=“ct_shares.dt.csv”)
 #'
 #' # Get the graph of highly connected entities
 #' highly_connected_g <- output[[2]]
@@ -30,7 +31,8 @@
 #' # Get the data frame containing the information about the highly connected coordinated entities
 #' highly_connected_coordinated_entities <- as.data.frame(output[[3]])
 #' # Save the data frame in csv format
-#' save.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
+#' library(readr)
+#' write_csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 #'
 #' @export
 
