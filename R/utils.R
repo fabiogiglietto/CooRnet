@@ -89,12 +89,14 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   if (timestamps==TRUE) {
     cat("\n\nAdding timestamps. Please be patient... :)")
-    # timestamp of coordinated sharing as edge atribute
-    shared <- V(g2.bp)[V(g2.bp)$type==0]
+  # timestamp of coordinated sharing as edge atribute
+    h_vertex <- V(highly_connected_g)$name
+    l <- adjacent_vertices(graph = g2.bp,v = V(g2.bp)[V(g2.bp)$name %in% h_vertex],mode = "out")
+    shared <- unique(unlist(l, use.names = FALSE))
     highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
     for (v in 1:length(shared)){
-      timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$share_date
-      n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")
+      timestamps <- incident(g2.bp,v = V(g2.bp)[shared[v]])$share_date
+      n <- neighbors(g2.bp,v = V(g2.bp)[shared[v]],mode = "in")
       n <- n[n$name %in% V(highly_connected_g)$name]
       n <- n$name
       if(length(n) >0){
