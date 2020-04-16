@@ -16,23 +16,18 @@
 #'
 #' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
 #'
-#' # Get the data frame of CrowdTangle shares marked with the “iscoordinated” column
-#' ct_shares.dt <- as.data.frame(output[[1]])
-#' # Save the data frame in csv format
-#' library(readr)
-#' write_csv(ct_shares.dt, file=“ct_shares.dt.csv”)
+#' # Extract the outputs
+#' get_outputs(output)
 #'
-#' # Get the graph of highly connected entities
-#' highly_connected_g <- output[[2]]
-#' # To save the graph in a Gephi readable format
+#' # Save the data frame of CrowdTangle shares marked with the “iscoordinated” column
+#' write.csv(ct_shares_marked.df, file=“ct_shares_marked.df.csv”)
+#'
+#' # Save the graph in a Gephi readable format
 #' library(igraph)
-#' write.graph(highly_connected_g, "./data/highly_connected_g.graphml", format = "graphml")
+#' write.graph(highly_connected_g, file="highly_connected_g.graphml", format = "graphml")
 #'
-#' # Get the data frame containing the information about the highly connected coordinated entities
-#' highly_connected_coordinated_entities <- as.data.frame(output[[3]])
-#' # Save the data frame in csv format
-#' library(readr)
-#' write_csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
+#' # Save the data frame with the information about the highly connected coordinated entities
+#' write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 #'
 #' @export
 
