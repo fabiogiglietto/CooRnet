@@ -8,13 +8,14 @@
 #' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
 #' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
 #' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
+#' @param gtimestamps add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)
 #'
 #' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
 #'
 #' @examples
 #' output <- get_coord_shares(ct_shares.df)
 #'
-#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
+#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE)
 #'
 #' # Extract the outputs
 #' get_outputs(output)
@@ -31,7 +32,7 @@
 #'
 #' @export
 
-get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE){
+get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE){
 
   require(tidyr)      # 1.0.2
   require(dplyr)      # 0.8.3
@@ -147,7 +148,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
                                            ct_shares.df$date %in% coordinated_shares$share_date &
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
 
-    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares, percentile_edge_weight)
+    highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
 
     highly_connected_g <- highly_c_list[[1]]
     highly_connected_coordinated_entities <- highly_c_list[[2]]
@@ -219,7 +220,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
                                            ct_shares.df$date %in% coordinated_shares$share_date &
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
 
-    highly_c_list <- build_coord_graph(ct_shares.df, coordinated_shares, percentile_edge_weight)
+    highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
 
     highly_connected_g <- highly_c_list[[1]]
     highly_connected_coordinated_entities <- highly_c_list[[2]]

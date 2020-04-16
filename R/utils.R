@@ -34,7 +34,7 @@ clean_urls <- function(df, url){
   return(df)
 }
 
-build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_weight=0.90) {
+build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_weight=0.90, timestamps=FALSE) {
 
   ###########################################
   # Get coordinated entities and network ####
@@ -87,33 +87,35 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   highly_connected_g <- induced_subgraph(graph = full_g, vids = V(full_g)[V(full_g)$degree > 0 ]) # filter for degree
   highly_connected_g <- subgraph.edges(highly_connected_g, eids = which(E(highly_connected_g)$weight >= q),delete.vertices = T) # filter for edge weight
 
-  # timestamp of coordinated sharing as edge atribute
+  if (timestamps==TRUE) {
+    cat("\n\nAdding timestamps. Please be patient... :)")
+    # timestamp of coordinated sharing as edge atribute
+    shared <- V(g2.bp)[V(g2.bp)$type==0]
+    highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
+    for (v in 1:length(shared)){
+      timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$share_date
+      n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")
+      n <- n[n$name %in% V(highly_connected_g)$name]
+      n <- n$name
+      if(length(n) >0){
+        edges <- expand.grid(n,n)
+        edges <- edges[edges$Var1 != edges$Var2,]
+        edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
+        if(nrow(edges) >0){
+          for (e in 1:nrow(edges)){
+            e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
 
-  shared <- V(g2.bp)[V(g2.bp)$type==0]
-  highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
-  for (v in 1:length(shared)){
-    timestamps <- incident(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name])$share_date
-    n <- neighbors(g2.bp,v = V(g2.bp)[V(g2.bp)$name==shared[v]$name],mode = "in")
-    n <- n[n$name %in% V(highly_connected_g)$name]
-    n <- n$name
-    if(length(n) >0){
-      edges <- expand.grid(n,n)
-      edges <- edges[edges$Var1 != edges$Var2,]
-      edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-      if(nrow(edges) >0){
-        for (e in 1:nrow(edges)){
-          e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
-
-          if(e_h != 0){
-          if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
-          if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
+            if(e_h != 0){
+              if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
+              if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
+            }
           }
         }
       }
     }
-  }
 
-  E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
+    E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
+  }
 
   # find and annotate nodes-components
   V(highly_connected_g)$component <- components(highly_connected_g)$membership
