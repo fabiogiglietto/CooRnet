@@ -10,7 +10,8 @@ get_coord_shares(
   parallel = FALSE,
   percentile_edge_weight = 0.9,
   clean_urls = FALSE,
-  keep_ourl_only = FALSE
+  keep_ourl_only = FALSE,
+  gtimestamps = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ get_coord_shares(
 \item{clean_urls}{clean the URLs from the tracking parameters (default FALSE)}
 
 \item{keep_ourl_only}{restrict the analysis to ct shares links matching the original URLs (default=FALSE)}
+
+\item{gtimestamps}{add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)}
 }
 \value{
 A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
@@ -35,19 +38,19 @@ Given a dataset of CrowdTangle shares and a time threshold, this function detect
 \examples{
 output <- get_coord_shares(ct_shares.df)
 
-output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE)
+output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE)
 
 # Extract the outputs
 get_outputs(output)
 
-# Save the data frame of CrowdTangle shares marked with the â€œiscoordinatedâ€ column
-write.csv(ct_shares_marked.df, file=â€œct_shares_marked.df.csvâ€)
+# Save the data frame of CrowdTangle shares marked with the “iscoordinated” column
+write.csv(ct_shares_marked.df, file=“ct_shares_marked.df.csv”)
 
 # Save the graph in a Gephi readable format
 library(igraph)
 write.graph(highly_connected_g, file="highly_connected_g.graphml", format = "graphml")
 
 # Save the data frame with the information about the highly connected coordinated entities
-write.csv(highly_connected_coordinated_entities, file=â€œhighly_connected_coordinated_entities.csvâ€)
+write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 
 }
