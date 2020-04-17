@@ -121,6 +121,9 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   # find and annotate nodes-components
   V(highly_connected_g)$component <- components(highly_connected_g)$membership
+  V(highly_connected_g)$degree <- degree(highly_connected_g) # re-calculate the degree on the subgraph
+  V(highly_connected_g)$strength <- strength(highly_connected_g) # sum up the edge weights of the adjacent edges for each vertex
+
 
   highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
   rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
