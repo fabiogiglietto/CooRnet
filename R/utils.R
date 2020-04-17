@@ -57,11 +57,13 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
     summarize(shares = n(),
               avg.account.subscriberCount=mean(account.subscriberCount))
 
-  # group the pages that changed names
+  # group the pages that changed names or handles
   ct_shares.df <- ct_shares.df %>%
     group_by(account.url) %>%
     mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
-           account.name = paste(unique(account.name), collapse = " | "))
+           account.name = paste(unique(account.name), collapse = " | "),
+           handle.changed = ifelse(length(unique(account.handle))>1, TRUE, FALSE),
+           account.handle = paste(unique(account.handle), collapse = " | "),)
 
   more.account.info <- ct_shares.df[, c("account.id", "account.name", "name.changed", "account.handle",
                                         "account.url", "account.platform", "account.platformId", "account.verified")]
