@@ -33,7 +33,7 @@ get_ctshares(
 \item{save_ctapi_output}{saves the original CT API output in ./rawdata/ct_shares.df.0.rds}
 }
 \value{
-a list containing the entities that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
+a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
 }
 \description{
 A function to get the URLs shares from CrowdTangle
