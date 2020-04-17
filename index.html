@@ -380,7 +380,7 @@ library(&quot;CooRnet&quot;)
 ct_shares.df &lt;- get_ctshares(df, url_column = &quot;url&quot;, date_column = &quot;publish_date&quot;, platforms = &quot;facebook,instagram&quot;, sleep_time = 1, nmax = 100, clean_urls = TRUE)
 
 # get coordinated shares and networks
-output &lt;- get_coord_shares(df = ct_shares.df)
+output &lt;- get_coord_shares(ct_shares.df = ct_shares.df)
 
 # creates the output objects in the environment
 # 1. ct_shares_marked.df: a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated.
