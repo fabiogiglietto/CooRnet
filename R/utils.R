@@ -82,6 +82,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.name <- sapply(V(full_g)$name, function(x) vertex.info$account.name[vertex.info$account.url == x])
   V(full_g)$account.verified <- sapply(V(full_g)$name, function(x) vertex.info$account.verified[vertex.info$account.url == x])
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
+  V(full_g)$name.changed <- sapply(V(full_g)$name, function(x) vertex.info$name.changed[vertex.info$account.url == x])
+  V(full_g)$handle.changed <- sapply(V(full_g)$name, function(x) vertex.info$handle.changed[vertex.info$account.url == x])
 
   # keep only highly coordinated entities
   V(full_g)$degree <- degree(full_g)
@@ -130,7 +132,6 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
   rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
   colnames(more.account.info)[5] <- "name" # please use column name and not number
-  highly_connected_coordinated_entities <- merge(highly_connected_coordinated_entities, unique(more.account.info[, c("name", "name.changed", "handle.changed")]), by="name", all.x=T)
 
   highly_c_list <- list(highly_connected_g, highly_connected_coordinated_entities, q)
 
