@@ -1,11 +1,11 @@
 #' get_top_coord_shares
 #'
-#' A function to get the top n posts containing URLs shared in a coordinated way
+#' A function to get the top n posts by engagement containing URLs shared in a coordinated way
 #'
 #' @param output the output list resulting from the function get_coord_shares
-#' @param order_by name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
+#' @param order_by name of the column used to order the top shares. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
 #' @param component return the top posts grouped by network component (TRUE, default) or by account (FALSE)
-#' @param top number of the top news to be retrieved
+#' @param top number of the top shares to be retrieved
 #'
 #' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
 #'
@@ -56,10 +56,8 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
   if(component!=TRUE){
     top_shares <-
         coord_shares_urls %>%
-        arrange(account.url, desc(!!sym(order_by))) %>%
-        group_by(account.url) %>%
-        slice(1:top) %>%
-        arrange(component)
+        arrange(desc(!!sym(order_by))) %>%
+        slice(1:top)
 
       return(top_shares)
 
