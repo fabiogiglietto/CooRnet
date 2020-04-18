@@ -90,33 +90,60 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   if (timestamps==TRUE) {
     cat("\n\nAdding timestamps. Please be patient... :)")
   # timestamp of coordinated sharing as edge atribute
-    h_vertex <- V(highly_connected_g)$name
-    l <- adjacent_vertices(graph = g2.bp,v = V(g2.bp)[V(g2.bp)$name %in% h_vertex],mode = "out")
-    shared <- unique(unlist(l, use.names = FALSE))
-    highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
-    for (v in 1:length(shared)){
-      timestamps <- incident(g2.bp,v = V(g2.bp)[shared[v]])$share_date
-      n <- neighbors(g2.bp,v = V(g2.bp)[shared[v]],mode = "in")
-      n <- n[n$name %in% V(highly_connected_g)$name]
-      n <- n$name
-      if(length(n) >0){
-        edges <- expand.grid(n,n)
-        edges <- edges[edges$Var1 != edges$Var2,]
-        edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-        if(nrow(edges) >0){
-          for (e in 1:nrow(edges)){
-            e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
+    # h_vertex <- V(highly_connected_g)$name
+    # l <- adjacent_vertices(graph = g2.bp,v = V(g2.bp)[V(g2.bp)$name %in% h_vertex],mode = "out")
+    # shared <- unique(unlist(l, use.names = FALSE))
+    # highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
+    # for (v in 1:length(shared)){
+    #   timestamps <- incident(g2.bp,v = V(g2.bp)[shared[v]])$share_date
+    #   n <- neighbors(g2.bp,v = V(g2.bp)[shared[v]],mode = "in")
+    #   n <- n[n$name %in% V(highly_connected_g)$name]
+    #   n <- n$name
+    #   if(length(n) >0){
+    #     edges <- expand.grid(n,n)
+    #     edges <- edges[edges$Var1 != edges$Var2,]
+    #     edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
+    #     if(nrow(edges) >0){
+    #       for (e in 1:nrow(edges)){
+    #         e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
+    #
+    #         if(e_h != 0){
+    #           if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
+    #           if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
+    #         }
+    #       }
+    #     }
+    #   }
+    # }
+    #
+    # E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
 
-            if(e_h != 0){
-              if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
-              if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
-            }
-          }
-        }
-      }
+
+    EL <- as.data.frame(as_edgelist(highly_connected_g))
+    EL$weight <- E(highly_connected_g)$weight
+    EL$coord_shares <- 0
+    names(EL) <- c("V1","V2","weight","coord_share")
+
+    coord_shares <- list()
+
+    EL <- as_tibble(EL)
+
+    ts_on_edge <- function(x,output){
+      shared_2 <- intersect(neighbors(graph = g2.bp,v = V(g2.bp)[name==x[1]],mode = "out"),
+                            neighbors(graph = g2.bp,v = V(g2.bp)[name==x[2]],mode = "out"))
+      cs <- rep(NA,length(shared_2))
+      cs <- sapply(shared_2, function(i) E(g2.bp)[get.edge.ids(graph = g2.bp,directed = F,vp = c(i,V(g2.bp)[name==x[1]]))]$share_date)
+
+      return(cs)
     }
 
-    E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
+    time1 <- Sys.time()
+    E(highly_connected_g)$t_coord_share <- apply(EL,1,ts_on_edge)
+    time2 <- Sys.time()
+    time2-time1
+
+
+
   }
 
   # find and annotate nodes-components
