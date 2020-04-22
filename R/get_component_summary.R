@@ -68,4 +68,6 @@ get_component_summary <- function(output){
 
   component_summary <- merge(summary1, summary2, by = "component")
   component_summary <- merge(component_summary, dfgini, by = "component")
+
+  return(component_summary)
 }
