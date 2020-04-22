@@ -42,41 +42,41 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   cat("\nBuilding the graph...")
 
-  el <- coordinated_shares[,c(3,5,4)] # drop unnecesary columns
+  el <- coordinated_shares[,c("account.url", "url", "share_date")] # drop unnecesary columns
   el$account.url <- trimws(el$account.url) # remove white space from platform.id
   v1 <- data.frame(node=unique(el$account.url), type=1) # create a dataframe with nodes and type 0=url 1=page
   v2 <- data.frame(node=unique(el$url), type=0)
   v <- rbind(v1,v2)
 
   g2.bp <- graph.data.frame(el,directed = T, vertices = v) # makes the biap
-  g2.bp <- igraph::simplify(g2.bp, remove.multiple = T, remove.loops = T ,edge.attr.comb = "min") # simply the bipartite netwrok to avoid problems with resulting edge weight in projected network
-  full_g <- suppressWarnings(bipartite.projection(g2.bp, multiplicity = T)$proj2) # project page-page network
+  g2.bp <- igraph::simplify(g2.bp, remove.multiple = T, remove.loops = T, edge.attr.comb = "min") # simply the bipartite network to avoid problems with resulting edge weight in projected network
+  full_g <- suppressWarnings(bipartite.projection(g2.bp, multiplicity = T)$proj2) # project entity-entity network
 
   all_account_info <- ct_shares.df %>%
-    group_by(account.url) %>%
-    summarize(shares = n(),
-              avg.account.subscriberCount=mean(account.subscriberCount))
-
-  # group the pages that changed names or handles
-  ct_shares.df <- ct_shares.df %>%
     group_by(account.url) %>%
     mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
            handle.changed = ifelse(length(unique(account.handle))>1, TRUE, FALSE),
            account.name = paste(unique(account.name), collapse = " | "),
-           account.handle = paste(unique(account.handle), collapse = " | "))
-
-  more.account.info <- ct_shares.df[, c("account.id", "account.name", "name.changed", "handle.changed", "account.handle",
-                                        "account.url", "account.platform", "account.platformId", "account.verified")]
+           account.handle = paste(unique(account.handle), collapse = " | ")) %>%
+    summarize(shares = n(),
+              coord.shares = sum(is_coordinated==TRUE),
+              avg.account.subscriberCount=mean(account.subscriberCount),
+              account.id = first(account.id),
+              account.name=first(account.name),
+              name.changed=first(name.changed),
+              handle.changed=first(handle.changed),
+              account.handle=first(account.handle),
+              account.platform=first(account.platform),
+              account.platformId=first(account.platformId),
+              account.verified=first(account.verified))
 
   rm(ct_shares.df, coordinated_shares)
-
-  more.account.info <- unique(more.account.info)
-  all_account_info <- merge(all_account_info, more.account.info, by="account.url")
 
   # add vertex attributes
   vertex.info <- subset(all_account_info, as.character(all_account_info$account.url) %in% V(full_g)$name)
 
   V(full_g)$shares <- sapply(V(full_g)$name, function(x) vertex.info$shares[vertex.info$account.url == x])
+  V(full_g)$coord.shares <- sapply(V(full_g)$name, function(x) vertex.info$coord.shares[vertex.info$account.url == x])
   V(full_g)$avg.account.subscriberCount <- sapply(V(full_g)$name, function(x) vertex.info$avg.account.subscriberCount[vertex.info$account.url == x])
   V(full_g)$account.platform <- sapply(V(full_g)$name, function(x) vertex.info$account.platform[vertex.info$account.url == x])
   V(full_g)$account.name <- sapply(V(full_g)$name, function(x) vertex.info$account.name[vertex.info$account.url == x])
@@ -93,35 +93,8 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   if (timestamps==TRUE) {
     cat("\n\nAdding timestamps. Please be patient... :)")
-  # timestamp of coordinated sharing as edge atribute
-    # h_vertex <- V(highly_connected_g)$name
-    # l <- adjacent_vertices(graph = g2.bp,v = V(g2.bp)[V(g2.bp)$name %in% h_vertex],mode = "out")
-    # shared <- unique(unlist(l, use.names = FALSE))
-    # highly_connected_g <-  set.edge.attribute(graph = highly_connected_g,name = "t_coord_share",value = 0)
-    # for (v in 1:length(shared)){
-    #   timestamps <- incident(g2.bp,v = V(g2.bp)[shared[v]])$share_date
-    #   n <- neighbors(g2.bp,v = V(g2.bp)[shared[v]],mode = "in")
-    #   n <- n[n$name %in% V(highly_connected_g)$name]
-    #   n <- n$name
-    #   if(length(n) >0){
-    #     edges <- expand.grid(n,n)
-    #     edges <- edges[edges$Var1 != edges$Var2,]
-    #     edges <- edges[!duplicated(t(apply(edges, 1, sort))),]
-    #     if(nrow(edges) >0){
-    #       for (e in 1:nrow(edges)){
-    #         e_h <- get.edge.ids(highly_connected_g, c(as.character(edges[e,1]), as.character(edges[e,2])))
-    #
-    #         if(e_h != 0){
-    #           if (E(highly_connected_g)[e_h]$t_coord_share != 0){E(highly_connected_g)[e_h]$t_coord_share <-  paste(E(highly_connected_g)[e_h]$t_coord_share,min(timestamps),sep = ";")}
-    #           if (E(highly_connected_g)[e_h]$t_coord_share == 0){E(highly_connected_g)[e_h]$t_coord_share <-  min(timestamps)}
-    #         }
-    #       }
-    #     }
-    #   }
-    # }
-    #
-    # E(highly_connected_g)$t_coord_share <- strsplit(E(highly_connected_g)$t_coord_share,";")
 
+    # timestamp of coordinated sharing as edge atribute
 
     EL <- as.data.frame(as_edgelist(highly_connected_g))
     EL$weight <- E(highly_connected_g)$weight
@@ -145,9 +118,6 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
     E(highly_connected_g)$t_coord_share <- apply(EL,1,ts_on_edge)
     time2 <- Sys.time()
     time2-time1
-
-
-
   }
 
   # find and annotate nodes-components
@@ -158,7 +128,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
   rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
-  colnames(more.account.info)[5] <- "name" # please use column name and not number
+  #colnames(all_account_info)["name"] <- "name" # please use column name and not number
 
   highly_c_list <- list(highly_connected_g, highly_connected_coordinated_entities, q)
 

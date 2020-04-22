@@ -20,7 +20,7 @@
 #' # Extract the outputs
 #' get_outputs(output)
 #'
-#' # Save the data frame of CrowdTangle shares marked with the “iscoordinated” column
+#' # Save the data frame of CrowdTangle shares marked with the “is_coordinated” column
 #' write.csv(ct_shares_marked.df, file=“ct_shares_marked.df.csv”)
 #'
 #' # Save the graph in a Gephi readable format
@@ -144,7 +144,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     rm(dat.summary, cores, cl, pb, progress, progress_bar)
 
     # mark the coordinated shares in the data set
-    ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
+    ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                            ct_shares.df$date %in% coordinated_shares$share_date &
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
 
@@ -155,11 +155,11 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     q <- highly_c_list[[3]]
     rm(highly_c_list)
 
-    uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
+    uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "is_coordinated")])
 
     # write the log
-    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
-                "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$is_coordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$is_coordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+                "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$is_coordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$is_coordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\npercentile_edge_weight:", percentile_edge_weight, paste0("(minimum coordination repetition: ", q, ")"),
                 "\nhighly connected coordinated entities:", length(unique(highly_connected_coordinated_entities$name)),
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
@@ -216,7 +216,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     rm(datalist, df)
 
     # mark the coordinated shares in the data set
-    ct_shares.df$iscoordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
+    ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                            ct_shares.df$date %in% coordinated_shares$share_date &
                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
 
@@ -227,11 +227,11 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     q <- highly_c_list[[3]]
     rm(highly_c_list)
 
-    uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "iscoordinated")])
+    uniqueURLs_shared <- unique(ct_shares.df[, c("expanded", "is_coordinated")])
 
     # write the log
-    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$iscoordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
-                "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$iscoordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$iscoordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+    write(paste("\nnumber of unique URLs shared in coordinated way:", table(uniqueURLs_shared$is_coordinated)[2][[1]], paste0("(", round((table(uniqueURLs_shared$is_coordinated)[2][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
+                "\nnumber of unique URLs shared in non-coordinated way:", table(uniqueURLs_shared$is_coordinated)[1][[1]], paste0("(", round((table(uniqueURLs_shared$is_coordinated)[1][[1]]/nrow(uniqueURLs_shared)),4)*100, "%)"),
                 "\npercentile_edge_weight:", percentile_edge_weight, paste0("(minimum coordination repetition: ", q, ")"),
                 "\nhighly connected coordinated entities:", length(unique(highly_connected_coordinated_entities$name)),
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
