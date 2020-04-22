@@ -22,8 +22,7 @@ The Gini coefficient is a measure of the degree of concentration (inequality) of
 It ranges between 0 and 1: the more nearly equal the distribution, the lower its Gini index. When a component shared just one domain, the value of the variable is set to 1.
 
 The coorshare_ratio is a measure of how much coordinated is a component.
-Its value is calculated by dividing the number of coordinated shares of each coordinated entities by the number of entities with which it has shared links in a coordinated way (its degree),
-and then calculating the average by component of these values.
+Its value is calculated by dividing, for each entity in a coordinated netwok, its \code{\link[igraph]{strength}} by its \code{\link[igraph]{degree}}, and then calculating the average by component of these values.
 }
 \examples{
   # get the top ten posts containing URLs shared by each network component and by engagement
