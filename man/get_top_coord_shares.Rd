@@ -14,23 +14,23 @@ get_top_coord_shares(
 \arguments{
 \item{output}{the output list resulting from the function get_coord_shares}
 
-\item{order_by}{name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
+\item{order_by}{name of the column used to order the top shares. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
 
-\item{component}{return the top posts grouped by network component (TRUE, default) or by account (FALSE)}
+\item{component}{return the top posts grouped by network component (TRUE, default) or just the top posts by engagement (FALSE)}
 
-\item{top}{number of the top news to be retrieved}
+\item{top}{number of the top shares to be retrieved}
 }
 \value{
-A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
+A data frame (grouped_df) containing the posts with the highest engagement shared in a coordinated way by the highly coordinated entities, with a set of attributes
 }
 \description{
-A function to get the top n posts containing URLs shared in a coordinated way
+A function to get the top n posts by engagement containing URLs shared in a coordinated way
 }
 \examples{
   # get the top ten posts containing URLs shared by each network component and by engagement
   df <- get_top_news(output, order_by = "engagement", top=10)
 
-  # get the top ten posts containing URLs shared in a coordinated way, by each entity and by engagement
+  # get the top ten posts containing URLs shared in a coordinated way, by engagement
   df <- get_top_news(output, order_by = "engagement", top=10)
 
 }
