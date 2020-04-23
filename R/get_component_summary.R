@@ -19,54 +19,45 @@
 #'   # get the top ten posts containing URLs shared by each network component and by engagement
 #'   component_summary <- get_component_summary(output)
 #'
-#'   # clustering the components
+#'   # clustering the components rowwise mutate
 #'   clusters <- hclust(dist(component_summary[, 2:4]))
 #'   plot(clusters)
+#'
+#' @importFrom dplyr %>% group_by summarise
+#' @importFrom urltools suffix_extract domain
+#' @importFrom DescTools Gini
 #'
 #' @export
 
 get_component_summary <- function(output){
 
-  require(dplyr)
-  require(urltools)
-  require(DescTools)
+  ct_shares_marked.df <- output[[1]]
+  highly_connected_coordinated_entities <- output[[3]]
+  rm(output)
 
-  colnames(output[[3]])[1] <- "account.url"
-  output[[1]] <- merge(output[[1]], output[[3]][,c("account.url", "degree", "component", "strength")], by = "account.url", all.x=T)
+  ct_shares_marked.df <- subset(ct_shares_marked.df, ct_shares_marked.df$is_coordinated==TRUE) # subset to save resource by working on coordinated shares only
 
-  # coordinated vs non coordinated shares ratio
-  summary1 <- output[[1]] %>%
+  # average gini-domains and hosts
+  ct_shares_marked.df$full_domain <- urltools::domain(ct_shares_marked.df$expanded) # eg. www.foxnews.com, video.foxnews.com, nation.foxnews.com
+  ct_shares_marked.df$parent_domain <- paste(urltools::suffix_extract(ct_shares_marked.df$full_domain)$domain, urltools::suffix_extract(ct_shares_marked.df$full_domain)$suffix, sep = ".")
+
+  ct_shares_marked.df <- merge(x=ct_shares_marked.df,
+                               y=highly_connected_coordinated_entities[,c("name", "component")],
+                               by.x = "account.url",
+                               by.y = "name")
+
+  summary <- highly_connected_coordinated_entities %>% #
     group_by(component) %>%
-    summarize(iscoord = length(is_coordinated[is_coordinated==TRUE]),
-              isNOTcoord = length(is_coordinated[is_coordinated==FALSE])) %>%
-    mutate(coorshare_ratio = iscoord/(iscoord+isNOTcoord)) %>%
-    select(component, coorshare_ratio)
+    summarise(entities = n(),
+              cooRshare_ratio = mean(coord.shares/(shares+coord.shares)),
+              cooRscore = mean(strength/degree))
 
-  # average cooRscore
-  summary2 <- output[[3]] %>%
-    mutate(cooRscore = strength/degree) %>%
-    group_by(component) %>%
-    summarize(avg_cooRscore = mean(cooRscore))
+  summary <- summary %>%
+    rowwise() %>%
+    mutate(gini.full_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"]))),
+           gini.parent_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])))) %>%
+    mutate(gini.full_domain = ifelse(is.nan(gini.full_domain), 1, gini.full_domain),
+           gini.parent_domain = ifelse(is.nan(gini.parent_domain), 1, gini.parent_domain))
 
-  # average gini-domains
-  output[[1]]$domain <- suffix_extract(domain(output[[1]]$expanded))$host
-  output[[1]]$domain <- gsub("www.", "", output[[1]]$domain)
-
-  ginidomains <- function(dataset, component) {
-    Gini(prop.table(table(dataset[dataset$component==component, "domain"])))
-  }
-
-  dfgini <- subset(output[[1]], !is.na(output[[1]]$component))
-
-  for (i in 1:nrow(dfgini)){
-    dfgini$gini[i] <- ginidomains(dfgini, component = dfgini$component[i])
-    if (is.nan(dfgini$gini[i])) dfgini$gini[i] <- 1
-  }
-
-  dfgini <- unique(dfgini[,c("component", "gini")])
-
-  component_summary <- merge(summary1, summary2, by = "component")
-  component_summary <- merge(component_summary, dfgini, by = "component")
-
-  return(component_summary)
+  return(summary)
 }

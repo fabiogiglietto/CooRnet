@@ -28,7 +28,7 @@ Its value is calculated by dividing, for each entity in a coordinated netwok, it
   # get the top ten posts containing URLs shared by each network component and by engagement
   component_summary <- get_component_summary(output)
 
-  # clustering the components
+  # clustering the components rowwise mutate
   clusters <- hclust(dist(component_summary[, 2:4]))
   plot(clusters)
 
