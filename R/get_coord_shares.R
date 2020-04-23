@@ -30,13 +30,17 @@
 #' # Save the data frame with the information about the highly connected coordinated entities
 #' write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 #'
+#' @importFrom tidyr unnest
+#' @importFrom stats quantile
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @import dplyr
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doSNOW registerDoSNOW
+#'
+#'
 #' @export
 
-get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE){
-
-  require(tidyr)      # 1.0.2
-  require(dplyr)      # 0.8.3
-  require(igraph)     # 1.2.4.2
+get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE) {
 
   options(warn=-1)
 
@@ -94,17 +98,14 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   if(parallel==TRUE){
 
-    require(doSNOW)     # 1.0.18
-    require(parallel)   # 3.6.3
-
     # setup parallel backend
-    cores <- detectCores()-1
-    cl <- makeCluster(cores)
-    registerDoSNOW(cl)
+    cores <- parallel::detectCores()-1
+    cl <- parallel::makeCluster(cores)
+    doSNOW::registerDoSNOW(cl)
 
     # progress bar
-    pb <- txtProgressBar(max=nrow(URLs), style=3)
-    progress <- function(n) setTxtProgressBar(pb, n)
+    pb <- utils::txtProgressBar(max=nrow(URLs), style=3)
+    progress <- function(n) utils::setTxtProgressBar(pb, n)
     progress_bar <- list(progress=progress)
 
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
@@ -112,7 +113,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       foreach(i=seq(1:nrow(URLs)), .combine = rbind, .packages="dplyr", .options.snow=progress_bar) %dopar% {
 
         # show progress...
-        setTxtProgressBar(pb, pb$getVal()+1)
+        utils::setTxtProgressBar(pb, pb$getVal()+1)
 
         url <- URLs$URL[i]
         dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
@@ -133,13 +134,13 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
         }
       }
 
-    stopCluster(cl)
+    parallel::stopCluster(cl)
 
     if(nrow(dat.summary)==0){
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- unnest(dat.summary, cols = c(account.url, share_date))
+    coordinated_shares <- tidyr::unnest(dat.summary, cols = c(account.url, share_date))
 
     rm(dat.summary, cores, cl, pb, progress, progress_bar)
 
@@ -184,7 +185,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     for (i in 1:nrow(URLs)) {
 
-      setTxtProgressBar(pb, pb$getVal()+1)
+      utils::setTxtProgressBar(pb, pb$getVal()+1)
 
       url <- URLs$URL[i]
       dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
@@ -212,7 +213,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- unnest(df, cols = c(account.url, share_date))
+    coordinated_shares <- tidyr::unnest(df, cols = c(account.url, share_date))
     rm(datalist, df)
 
     # mark the coordinated shares in the data set

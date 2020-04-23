@@ -19,12 +19,16 @@
 #' @examples
 #'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE)
 #'
+#' @importFrom httr GET content
+#' @importFrom jsonlite fromJSON rbind_pages
+#' @importFrom tidyr unnest
+#' @importFrom dplyr group_by filter %>%
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#'
 #' @export
 
 get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
 
-  require(httr)      # 1.4.1
-  require(jsonlite)  # 1.6.9
   require(tidyr)     # 1.0.2
   require(dplyr)     # 0.8.3
 
@@ -59,12 +63,12 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # progress bar
   total <- nrow(urls)
-  pb <- txtProgressBar(min = 0, max = total, width = 100, style = 3)
+  pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
   # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
 
-    setTxtProgressBar(pb, pb$getVal()+1)
+    utils::setTxtProgressBar(pb, pb$getVal()+1)
 
     # set date limits: one week after date_published
     startDate <- as.POSIXct(urls$date[i], origin="1970-01-01", tz = "UTC")
@@ -72,7 +76,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     link <- urls$url[i]
 
-    query <- GET("https://api.crowdtangle.com/links",
+    query <- httr::GET("https://api.crowdtangle.com/links",
                  query = list(
                    link = link,
                    platforms = platforms,
@@ -87,10 +91,10 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     tryCatch(
       {
         json <- httr::content(query, as = "text", encoding = "UTF-8")
-        c <- fromJSON(json, flatten = TRUE)
+        c <- jsonlite::fromJSON(json, flatten = TRUE)
         if (c$status == 200) {
           if (length(c$result$posts) > 0) {
-            ct_shares.df <- rbind_pages(list(ct_shares.df, c$result$posts))
+            ct_shares.df <- jsonlite::rbind_pages(list(ct_shares.df, c$result$posts))
           }
         }
         else {
@@ -123,7 +127,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
-  ct_shares.df <- unnest(ct_shares.df, cols = expandedLinks)
+  ct_shares.df <- tidyr::unnest(ct_shares.df, cols = expandedLinks)
   ct_shares.df$original <- NULL
 
   # remove duplicates created by the unnesting
@@ -131,8 +135,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # remove shares performed more than one week from first share
   ct_shares.df <- ct_shares.df %>%
-    group_by(expanded) %>%
-    filter(difftime(max(date), min(date), units = "secs") <= 604800)
+    dplyr::group_by(expanded) %>%
+    dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
   ct_shares.df$is_orig <- ct_shares.df$expanded %in% urls$url
 

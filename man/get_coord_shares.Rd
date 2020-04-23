@@ -43,14 +43,14 @@ output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = 
 # Extract the outputs
 get_outputs(output)
 
-# Save the data frame of CrowdTangle shares marked with the â€œis_coordinatedâ€ column
-write.csv(ct_shares_marked.df, file=â€œct_shares_marked.df.csvâ€)
+# Save the data frame of CrowdTangle shares marked with the “is_coordinated” column
+write.csv(ct_shares_marked.df, file=“ct_shares_marked.df.csv”)
 
 # Save the graph in a Gephi readable format
 library(igraph)
 write.graph(highly_connected_g, file="highly_connected_g.graphml", format = "graphml")
 
 # Save the data frame with the information about the highly connected coordinated entities
-write.csv(highly_connected_coordinated_entities, file=â€œhighly_connected_coordinated_entities.csvâ€)
+write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 
 }
