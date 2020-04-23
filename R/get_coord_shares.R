@@ -35,6 +35,7 @@
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @import dplyr
 #' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom foreach foreach %dopar%
 #' @importFrom doSNOW registerDoSNOW
 #'
 #'
@@ -110,7 +111,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
     dat.summary <-
-      foreach(i=seq(1:nrow(URLs)), .combine = rbind, .packages="dplyr", .options.snow=progress_bar) %dopar% {
+      foreach::foreach(i=seq(1:nrow(URLs)), .combine = rbind, .packages="dplyr", .options.snow=progress_bar) %dopar% {
 
         # show progress...
         utils::setTxtProgressBar(pb, pb$getVal()+1)
