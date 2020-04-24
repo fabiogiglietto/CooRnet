@@ -16,11 +16,11 @@
 #'   # get the top ten posts containing URLs shared in a coordinated way, by engagement
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
+#' @import dplyr
+#'
 #' @export
 
-get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE, top=10){
-
-  require(dplyr) # 0.8.3
+get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE, top=10) {
 
   coord_shares_urls <- output[[1]][output[[1]]$iscoordinated==TRUE & output[[1]]$account.url %in% output[[3]]$name,]
   coord_shares_urls$engagement <- apply(coord_shares_urls[,c("statistics.actual.likeCount",
@@ -43,24 +43,23 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
 
   if(component==TRUE){
 
-  top_shares <-
-    coord_shares_urls %>%
-    arrange(component, desc(!!sym(order_by))) %>%
-    group_by(component) %>%
-    slice(1:top)
+    top_shares <-
+      coord_shares_urls %>%
+      arrange(component, desc(!!sym(order_by))) %>%
+      group_by(component) %>%
+      slice(1:top)
 
-  return(top_shares)
+    return(top_shares)
 
   }
 
   if(component!=TRUE){
     top_shares <-
-        coord_shares_urls %>%
-        arrange(desc(!!sym(order_by))) %>%
-        slice(1:top)
+      coord_shares_urls %>%
+      arrange(desc(!!sym(order_by))) %>%
+      slice(1:top)
 
-      return(top_shares)
+    return(top_shares)
 
-      }
   }
-
+}
