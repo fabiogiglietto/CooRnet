@@ -16,7 +16,7 @@ get_top_coord_urls(output, order_by = "engagement", component = TRUE, top = 10)
 \item{top}{number of the top URLs to be retrieved}
 }
 \value{
-A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
+A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with shares and engagement statistics, list of entities and components that shared the link
 }
 \description{
 A function to get the top n URLs shared in a coordinated way
