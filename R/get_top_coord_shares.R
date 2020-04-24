@@ -22,44 +22,53 @@
 
 get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE, top=10) {
 
-  coord_shares_urls <- output[[1]][output[[1]]$is_coordinated==TRUE & output[[1]]$account.url %in% output[[3]]$name,]
-  coord_shares_urls$engagement <- apply(coord_shares_urls[,c("statistics.actual.likeCount",
-                                                             "statistics.actual.shareCount",
-                                                             "statistics.actual.commentCount",
-                                                             "statistics.actual.loveCount",
-                                                             "statistics.actual.wowCount",
-                                                             "statistics.actual.hahaCount",
-                                                             "statistics.actual.sadCount",
-                                                             "statistics.actual.angryCount")], 1, sum)
-  colnames(output[[3]])[1] <- "account.url"
-  coord_shares_urls <- merge(coord_shares_urls, output[[3]][,c("account.url","component")], by="account.url", all.x=T)
-  coord_shares_urls <- coord_shares_urls[,c("account.url","date","title","description","message","link","postUrl",
-                                            "account.name","account.handle","account.subscriberCount","expanded",
-                                            "statistics.actual.likeCount", "statistics.actual.shareCount",
-                                            "statistics.actual.commentCount", "statistics.actual.loveCount",
-                                            "statistics.actual.wowCount", "statistics.actual.hahaCount",
-                                            "statistics.actual.sadCount","statistics.actual.angryCount",
-                                            "engagement","component")]
+  ct_shares_marked.df <- output[[1]]
+  highly_connected_coordinated_entities <- output[[3]]
+  rm(output)
 
-  if(component==TRUE){
+  urls <- ct_shares_marked.df %>%
+    filter(is_coordinated==TRUE & account.url %in% highly_connected_coordinated_entities$name) %>%
+    left_join(highly_connected_coordinated_entities[, c("name", "component")], by = c("account.url" = "name")) %>%
+    rowwise() %>%
+    mutate(engagement = sum(statistics.actual.likeCount,
+                               statistics.actual.shareCount,
+                               statistics.actual.commentCount,
+                               statistics.actual.loveCount,
+                               statistics.actual.wowCount,
+                               statistics.actual.hahaCount,
+                               statistics.actual.sadCount,
+                               statistics.actual.angryCount),
+              statistics.actual.likeCount = sum(statistics.actual.likeCount),
+              statistics.actual.shareCount = sum(statistics.actual.shareCount),
+              statistics.actual.commentCount = sum(statistics.actual.commentCount),
+              statistics.actual.wowCount = sum(statistics.actual.wowCount),
+              statistics.actual.hahaCount = sum(statistics.actual.hahaCount),
+              statistics.actual.likeCount = sum(statistics.actual.likeCount),
+              statistics.actual.sadCount = sum(statistics.actual.sadCount),
+              statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
+    select(c("account.url","date","title","description","message","link","postUrl",
+             "account.name","account.handle","account.subscriberCount","expanded",
+             "statistics.actual.likeCount", "statistics.actual.shareCount",
+             "statistics.actual.commentCount", "statistics.actual.loveCount",
+             "statistics.actual.wowCount", "statistics.actual.hahaCount",
+             "statistics.actual.sadCount","statistics.actual.angryCount",
+             "engagement","component")) %>%
+    as.data.frame()
 
-    top_shares <-
-      coord_shares_urls %>%
+  if(component==TRUE) {
+    urls <- urls %>%
       arrange(component, desc(!!sym(order_by))) %>%
       group_by(component) %>%
-      slice(1:top)
-
-    return(top_shares)
-
+      mutate(rank = rank(!!sym(order_by), ties.method = "first")) %>%
+      filter(rank <= top)
+  }
+  else {
+    urls <- urls %>%
+      top_n(top, wt=!!sym(order_by)) %>%
+      arrange(-!!sym(order_by)) %>%
+      as_tibble()
   }
 
-  if(component!=TRUE){
-    top_shares <-
-      coord_shares_urls %>%
-      arrange(desc(!!sym(order_by))) %>%
-      slice(1:top)
-
-    return(top_shares)
-
-  }
+  return(urls)
 }
+
