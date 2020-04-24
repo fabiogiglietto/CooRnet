@@ -7,7 +7,7 @@
 #' @param component return the top URLs by network component (TRUE, default) or just the top URLs (FALSE)
 #' @param top number of the top URLs to be retrieved
 #'
-#' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with a set of attributes
+#' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with shares and engagement statistics, list of entities and components that shared the link
 #'
 #' @examples
 #' # get the top ten URLs shared in a coordinated way by each network component, by engagement
