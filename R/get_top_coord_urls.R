@@ -54,7 +54,8 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
            account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=", "),
            cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=", "),
            components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ", ")) %>%
-    select(-cooR.account.url.list)
+    select(-cooR.account.url.list) %>%
+    as.data.frame()
 
   if(component==TRUE) {
     urls <- urls %>%
@@ -66,7 +67,8 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
   else {
     urls <- urls %>%
       arrange(-!!sym(order_by)) %>%
-      top_n(top)
+      top_n(top) %>%
+      as_tibble()
     }
 
   return(urls)
