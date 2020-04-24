@@ -22,7 +22,7 @@
 
 get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE, top=10) {
 
-  coord_shares_urls <- output[[1]][output[[1]]$iscoordinated==TRUE & output[[1]]$account.url %in% output[[3]]$name,]
+  coord_shares_urls <- output[[1]][output[[1]]$is_coordinated==TRUE & output[[1]]$account.url %in% output[[3]]$name,]
   coord_shares_urls$engagement <- apply(coord_shares_urls[,c("statistics.actual.likeCount",
                                                              "statistics.actual.shareCount",
                                                              "statistics.actual.commentCount",
