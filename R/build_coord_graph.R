@@ -1,5 +1,5 @@
 #' @importFrom dplyr group_by mutate %>% summarize
-#' @importFrom igraph graph.data.frame simplify bipartite.projection induced_subgraph subgraph.edges degree V V<- E E<- components strength
+#' @importFrom igraph graph.data.frame simplify bipartite.projection induced_subgraph subgraph.edges degree V V<- E E<- components strength as_edgelist get.edge.ids neighbors
 
 build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_weight=0.90, timestamps=FALSE) {
 
@@ -63,7 +63,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
     # timestamp of coordinated sharing as edge atribute
 
-    EL <- as.data.frame(as_edgelist(highly_connected_g))
+    EL <- as.data.frame(igraph::as_edgelist(highly_connected_g))
     EL$weight <- E(highly_connected_g)$weight
     EL$coord_shares <- 0
     names(EL) <- c("V1","V2","weight","coord_share")
@@ -73,18 +73,14 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
     EL <- as_tibble(EL)
 
     ts_on_edge <- function(x,output){
-      shared_2 <- intersect(neighbors(graph = g2.bp,v = V(g2.bp)[name==x[1]],mode = "out"),
-                            neighbors(graph = g2.bp,v = V(g2.bp)[name==x[2]],mode = "out"))
+      shared_2 <- intersect(igraph::neighbors(graph = g2.bp,v = V(g2.bp)[name==x[1]],mode = "out"),
+                            igraph::neighbors(graph = g2.bp,v = V(g2.bp)[name==x[2]],mode = "out"))
       cs <- rep(NA,length(shared_2))
-      cs <- sapply(shared_2, function(i) E(g2.bp)[get.edge.ids(graph = g2.bp,directed = F,vp = c(i,V(g2.bp)[name==x[1]]))]$share_date)
+      cs <- sapply(shared_2, function(i) E(g2.bp)[igraph::get.edge.ids(graph = g2.bp,directed = F,vp = c(i,V(g2.bp)[name==x[1]]))]$share_date)
 
       return(cs)
     }
-
-    time1 <- Sys.time()
     E(highly_connected_g)$t_coord_share <- apply(EL,1,ts_on_edge)
-    time2 <- Sys.time()
-    time2-time1
   }
 
   # find and annotate nodes-components
