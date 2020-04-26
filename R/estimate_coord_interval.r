@@ -47,6 +47,12 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
     write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
   }
 
+  # clean urls?
+  if(clean_urls==TRUE){
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+    write("Coordination interval estimated on cleaned URLs", file = "log.txt", append = TRUE)
+  }
+
   ct_shares.df <- ct_shares.df[, c("id", "date", "expanded"),]
 
   # get a list of all shared URLs

@@ -84,6 +84,12 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     write("Analysis performed on shares matching original URLs", file = "log.txt", append = TRUE)
   }
 
+  # clean urls?
+  if(clean_urls==TRUE){
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+    write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
+  }
+
   # get a list of all the shared URLs
   URLs <- as.data.frame(table(ct_shares.df$expanded))
   names(URLs) <- c("URL", "ct_shares")
