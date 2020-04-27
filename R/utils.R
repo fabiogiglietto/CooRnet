@@ -2,7 +2,7 @@ clean_urls <- function(df, url){
 
   df <- df[!grepl("\\.\\.\\.$", df[[url]]),]
 
-  paramters_to_clean <- paste0(c("\\?utm_.*",
+  paramters_to_clean <- paste("\\?utm_.*",
                                  "\\?ref.*",
                                  "\\?fbclid.*",
                                  "\\?rss.*",
@@ -22,7 +22,7 @@ clean_urls <- function(df, url){
                                  "\\?mobile.*",
                                  "&fbclid.*",
                                  "/$",
-                                 collapse = "|"))
+                                 sep = "|")
 
   df[[url]] <- gsub(paramters_to_clean, "", df[[url]])
 
