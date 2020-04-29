@@ -60,8 +60,8 @@ get_component_summary <- function(output){
            gini.parent_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])))) %>%
     mutate(gini.full_domain = ifelse(is.nan(gini.full_domain), 1, gini.full_domain),
            gini.parent_domain = ifelse(is.nan(gini.parent_domain), 1, gini.parent_domain)) %>%
-    mutate(top.full.domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"])), desc(Freq)), 5)$Var1, collapse = ", "),
-           top.parent.domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])), desc(Freq)), 5)$Var1, collapse = ", "))
+    mutate(top.full.domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"])), desc(Freq)), 5, wt="Freq")$Var1, collapse = ", "),
+           top.parent.domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])), desc(Freq)), 5, wt="Freq")$Var1, collapse = ", "))
 
 
   return(summary)
