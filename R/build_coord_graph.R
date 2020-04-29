@@ -10,7 +10,11 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   cat("\nBuilding the graph...")
 
   el <- coordinated_shares[,c("account.url", "url", "share_date")] # drop unnecesary columns
-  el$url[el$url %in% el$account.url] <- sapply(el$url[el$url %in% el$account.url], function(x) paste(as.character(x),"?coornet_type=URL",sep = "")) # remove white space from account.url and add a custom parameter to avoid issue with duplicated vertexed when the URL of an entity is also in the list of shared URLs
+
+  if (any(el$url %in% el$account.url)) {
+    el$url[el$url %in% el$account.url] <- sapply(el$url[el$url %in% el$account.url], function(x) paste(as.character(x),"?coornet_type=URL",sep = "")) # remove white space from account.url and add a custom parameter to avoid issue with duplicated vertexed when the URL of an entity is also in the list of shared URLs
+  }
+
   v1 <- data.frame(node=unique(el$account.url), type=1) # create a dataframe with nodes and type 0=url 1=page
   v2 <- data.frame(node=unique(el$url), type=0)
   v <- rbind(v1,v2)
