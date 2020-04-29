@@ -6,7 +6,8 @@
 #' @param output the output list resulting from the function get_coord_shares
 #'
 #' @return A data frame containing summary data by each coordinated component:
-#' the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore), and a measure (gini) of how much the coordinated shares concern a more or less large number of domains
+#' the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
+#' a measure (gini) of how much the coordinated shares concern a more or less large number of domains, and the top 5 domains (by rank) shared in a coodinated manner
 #'
 #' @details The gini values are computed by using the Gini coefficient on the proportions of unique domains each component shared. The Gini coefficient is a measure of the degree of concentration (inequality) of a variable in a distribution.
 #' It ranges between 0 and 1: the more nearly equal the distribution, the lower its Gini index. When a component shared just one domain, the value of the variable is set to 1. It is calculated separately for full_domains (e.g. www.foxnews.com, video.foxnews.com) and parent domains (foxnews.com)
