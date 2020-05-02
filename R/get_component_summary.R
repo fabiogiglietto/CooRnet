@@ -104,6 +104,7 @@ get_component_summary <- function(output){
   summary_entities <- highly_connected_coordinated_entities %>%
     group_by(component) %>%
     summarise(entities = n(),
+              avg.subscriberCount = mean(avg.account.subscriberCount),
               cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
               cooRscore.avg = mean(strength/degree))
 
