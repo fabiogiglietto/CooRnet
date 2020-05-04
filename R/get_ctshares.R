@@ -138,6 +138,11 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     dplyr::group_by(expanded) %>%
     dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
+  # clean the expanded URLs
+  if(clean_urls==TRUE){
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+  }
+
   ct_shares.df$is_orig <- ct_shares.df$expanded %in% urls$url
 
   # write log
