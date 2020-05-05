@@ -372,7 +372,7 @@ df &lt;- get_story_list(rows = 100,
                            fq = &quot;(text:coronavirus OR text:&#39;covid-19&#39; OR text:&#39;SARS-CoV-2&#39;) AND (tags_id_media:186572515 OR tags_id_media:186572435 OR tags_id_media:186572516 OR tags_id_media:162546808 OR tags_id_media:162546809) AND publish_date:[2020-03-02T00:00:00.000Z TO 2020-04-03T00:00:00.000Z]&quot;)
 
 # Alternative using a file exported from MediaCloud Explorer and uploaded into r
-# df &lt;- read_csv(&quot;rawdata/MediaCloud_output.csv&quot;) # file exported from MediaCloud
+# df &lt;- readr::read_csv(&quot;rawdata/MediaCloud_output.csv&quot;) # file exported from MediaCloud
 
 library(&quot;CooRnet&quot;)
 
@@ -386,8 +386,67 @@ output &lt;- get_coord_shares(ct_shares.df = ct_shares.df)
 # 1. ct_shares_marked.df: a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated.
 # 2. highly_connected_g: igraph graph of coordinated networks of pages/groups/accounts
 # 3. highly_connected_coordinated_entities: a dataframe that lists coordinated entities and corresponding component
-get_outputs(output)</code></pre>
+get_outputs(output)
+
+# save highly_connected_coordinated_entities in .CSV format for further analysis
+write.csv(highly_connected_coordinated_entities, file = &quot;highly_connected_coordinated_entities.csv&quot;)
+
+# save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
+igraph::write.graph(highly_connected_g, file = &quot;highly_connected_g.graphml&quot;)
+</code></pre>
 <p>For a more step-by-step approach, you may want to take a look to our <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet tutorial</A>.</p>
+</div>
+<div id="advanced-usage" class="section level2">
+<h2>Advanced Usage</h2>
+<p>CooRnet also features additional functions that streamlines the analysis of coordinated networks.</p>
+<div id="component-summary" class="section level3">
+<h3>Component Summary</h3>
+<p>get_component_summary creates an handy aggregated views of network properties including:</p>
+<ol style="list-style-type: decimal">
+<li>the proportion of coordinated shares over the total shares (coorshare_ratio)</li>
+<li>the average coordinated score (avg_cooRscore)</li>
+<li>a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1)</li>
+<li>the top 5 coordinatedly shared domains (ranked by n. of shares)</li>
+<li>the total number coordinatedly shared of domains</li>
+<li>the  average  of the domains shared by the components</li>
+</ol>
+<p>Usage is simple:</p>
+<pre class="r"><code>comp_summary &lt;- get_component_summary(output)
+
+# save comp_summary in .CSV format for further analysis
+write.csv(comp_summary, file = &quot;comp_summary.csv&quot;)
+</code></pre>
+</div>
+<div id="top-urls" class="section level3">
+<h3>Top URLs</h3>
+<p>get_top_coord_urls creates a ranked list of best performing URLs shared by coordinated networks. URLs can be sorted by various criteria including “engagement” wich is a sum of comments, shares and reactions (likes and other reactions) gathered by that URL.</p>
+<p>You can customize the behaviour of get_top_coord_urls by specifing that you want a rank of URLs per componenent (top URLs for each network) or not and specify the number of URLs you want the function to return.</p>
+<pre class="r"><code>top_urls_per_components &lt;- get_top_coord_urls(output, order_by = &quot;engagement&quot;, component = TRUE, top = 10)
+
+top_urls_all &lt;- get_top_coord_urls(output, order_by = &quot;engagement&quot;, component = FALSE, top = 10)
+
+# save top_urls_per_components in .CSV format for further analysis
+write.csv(top_urls_per_components, file = &quot;top_urls_per_components.csv&quot;)
+
+# save top_urls_all in .CSV format for further analysis
+write.csv(top_urls_all, file = &quot;top_urls_all.csv&quot;)
+</code></pre>
+</div>
+<div id="top-shares" class="section level3">
+<h3>Top Shares</h3>
+<p>get_top_coord_shares creates a ranked list of best performing posts with link (shares) published by coordinated networks. Shares can be sorted by various criteria including “engagement” wich is of comments, shares and reactions (likes and other reactions) gathered by that post.</p>
+<p>You can customize the behaviour of get_top_coord_shares by specifing that you want a rank of URLs per componenent (top shares for each network) or not and specify the number of URLs you want the function to return.</p>
+<pre class="r"><code>top_shares_per_components &lt;- get_top_coord_shares(output, order_by = &quot;engagement&quot;, component = TRUE, top = 10)
+
+top_shares_all &lt;- get_top_coord_shares(output, order_by = &quot;engagement&quot;, component = FALSE, top = 10)
+
+# save top_shares_per_components in .CSV format for further analysis
+write.csv(top_shares_per_components, file = &quot;top_shares_per_components.csv&quot;)
+
+# save top_shares_all in .CSV format for further analysis
+write.csv(top_shares_all, file = &quot;top_shares_all.csv&quot;)
+</code></pre>
+</div>
 </div>
 <div id="acknowledgements" class="section level2">
 <h2>Acknowledgements</h2>

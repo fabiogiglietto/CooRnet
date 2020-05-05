@@ -66,7 +66,7 @@ df <- get_story_list(rows = 100,
                            fq = "(text:coronavirus OR text:'covid-19' OR text:'SARS-CoV-2') AND (tags_id_media:186572515 OR tags_id_media:186572435 OR tags_id_media:186572516 OR tags_id_media:162546808 OR tags_id_media:162546809) AND publish_date:[2020-03-02T00:00:00.000Z TO 2020-04-03T00:00:00.000Z]")
 
 # Alternative using a file exported from MediaCloud Explorer and uploaded into r
-# df <- read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
+# df <- readr::read_csv("rawdata/MediaCloud_output.csv") # file exported from MediaCloud
 
 library("CooRnet")
 
@@ -81,9 +81,75 @@ output <- get_coord_shares(ct_shares.df = ct_shares.df)
 # 2. highly_connected_g: igraph graph of coordinated networks of pages/groups/accounts
 # 3. highly_connected_coordinated_entities: a dataframe that lists coordinated entities and corresponding component
 get_outputs(output)
+
+# save highly_connected_coordinated_entities in .CSV format for further analysis
+write.csv(highly_connected_coordinated_entities, file = "highly_connected_coordinated_entities.csv")
+
+# save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
+igraph::write.graph(highly_connected_g, file = "highly_connected_g.graphml")
+
 ```
 
 For a more step-by-step approach, you may want to take a look to our <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet tutorial</A>.
+
+## Advanced Usage
+CooRnet also features additional functions that streamlines the analysis of coordinated networks.
+
+### Component Summary
+get_component_summary creates an handy aggregated views of network properties including:
+
+1) the proportion of coordinated shares over the total shares (coorshare_ratio)
+2) the average coordinated score (avg_cooRscore)
+3) a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1)
+4) the top 5 coordinatedly shared domains (ranked by n. of shares)
+5) the total number coordinatedly shared of domains
+6) the \href{https://www.newsguardtech.com/}{News Guard} average \href{https://www.newsguardtech.com/ratings/rating-process-criteria/}{score} of the domains shared by the components
+
+Usage is simple:
+
+``` r
+comp_summary <- get_component_summary(output)
+
+# save comp_summary in .CSV format for further analysis
+write.csv(comp_summary, file = "comp_summary.csv")
+
+```
+
+### Top URLs
+get_top_coord_urls creates a ranked list of best performing URLs shared by coordinated networks. URLs can be sorted by various criteria including "engagement" wich is a sum of comments, shares and reactions (likes and other reactions) gathered by that URL.
+
+You can customize the behaviour of get_top_coord_urls by specifing that you want a rank of URLs per componenent (top URLs for each network) or not and specify the number of URLs you want the function to return.
+
+``` r
+top_urls_per_components <- get_top_coord_urls(output, order_by = "engagement", component = TRUE, top = 10)
+
+top_urls_all <- get_top_coord_urls(output, order_by = "engagement", component = FALSE, top = 10)
+
+# save top_urls_per_components in .CSV format for further analysis
+write.csv(top_urls_per_components, file = "top_urls_per_components.csv")
+
+# save top_urls_all in .CSV format for further analysis
+write.csv(top_urls_all, file = "top_urls_all.csv")
+
+```
+
+### Top Shares
+get_top_coord_shares creates a ranked list of best performing posts with link (shares) published by coordinated networks. Shares can be sorted by various criteria including "engagement" wich is of comments, shares and reactions (likes and other reactions) gathered by that post.
+
+You can customize the behaviour of get_top_coord_shares by specifing that you want a rank of URLs per componenent (top shares for each network) or not and specify the number of URLs you want the function to return.
+
+``` r
+top_shares_per_components <- get_top_coord_shares(output, order_by = "engagement", component = TRUE, top = 10)
+
+top_shares_all <- get_top_coord_shares(output, order_by = "engagement", component = FALSE, top = 10)
+
+# save top_shares_per_components in .CSV format for further analysis
+write.csv(top_shares_per_components, file = "top_shares_per_components.csv")
+
+# save top_shares_all in .CSV format for further analysis
+write.csv(top_shares_all, file = "top_shares_all.csv")
+
+```
 
 ## Acknowledgements
 
