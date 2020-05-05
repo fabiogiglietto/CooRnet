@@ -103,7 +103,7 @@ get_component_summary creates an handy aggregated views of network properties in
 3) a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1)
 4) the top 5 coordinatedly shared domains (ranked by n. of shares)
 5) the total number coordinatedly shared of domains
-6) the \href{https://www.newsguardtech.com/}{News Guard} average \href{https://www.newsguardtech.com/ratings/rating-process-criteria/}{score} of the domains shared by the components
+6) the [News Guard](https://www.newsguardtech.com/) weighted average [score](https://www.newsguardtech.com/ratings/rating-process-criteria/) of the domains shared by the components
 
 Usage is simple:
 
