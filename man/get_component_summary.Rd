@@ -11,6 +11,7 @@ get_component_summary(output)
 }
 \value{
 A data frame containing summary data by each coordinated component:
+the average subscribers number of entities in a component,
 the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
 a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1). Higher values correspond to an higher concentration (less different domains linked),
 the top 5 coordinatedly shared domains (ranked by n. of shares),
