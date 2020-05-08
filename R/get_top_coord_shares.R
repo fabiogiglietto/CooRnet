@@ -60,7 +60,8 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
       arrange(component, !!sym(order_by)) %>%
       group_by(component) %>%
       mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
-      filter(rank <= top)
+      filter(rank <= top) %>%
+      arrange(component, rank)
   }
   else {
     urls <- urls %>%
