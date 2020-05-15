@@ -8,7 +8,11 @@ get_outputs(
   coord_shares_output,
   ct_shares_marked.df = TRUE,
   highly_connected_g = TRUE,
-  highly_connected_coordinated_entities = TRUE
+  highly_connected_coordinated_entities = TRUE,
+  component_summary = FALSE,
+  top_coord_urls = FALSE,
+  top_coord_shares = FALSE,
+  gdrive_folder_id = NULL
 )
 }
 \arguments{
@@ -19,11 +23,21 @@ get_outputs(
 \item{highly_connected_g}{graph of coordinated networks of pages/groups/accounts (default TRUE)}
 
 \item{highly_connected_coordinated_entities}{a dataframe that lists coordinated entities and corresponding component (default TRUE)}
+
+\item{component_summary}{the result of CooRnet::get_component_summary (default FALSE)}
+
+\item{top_coord_urls}{the result of CooRnet::get_top_coord_urls (default FALSE)}
+
+\item{top_coord_shares}{the result of CooRnet::get_top_coord_shares (default FALSE)}
+
+\item{gdrive_folder_id}{a Google Drive folder id where to uploads selected files (output.rds, highly_connected_g.graphml, highly_connected_coordinated_entities.csv, component_summary.csv, top_coord_urls.csv, top_coord_shares) files (default NULL)}
 }
 \description{
 A function to get the outputs of the get_coord_shares function
 }
 \examples{
-get_outputs(get_coord_shares_output)
+get_outputs(coord_shares_output=output)
+
+get_outputs(coord_shares_output=output, gdrive_folder_id="0BwwA4oUTeiV1TGRPeTVjaWRDY1E")
 
 }
