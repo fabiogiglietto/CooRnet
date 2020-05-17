@@ -4,7 +4,7 @@
 \alias{draw_url_timeline_chart}
 \title{draw_url_timeline_chart}
 \usage{
-draw_url_timeline_chart(output, top_coord_urls = NULL, top_url_id = 10)
+draw_url_timeline_chart(output, top_coord_urls = NULL, top_url_id = 1)
 }
 \arguments{
 \item{output}{the output list resulting by the get_coord_shares function}

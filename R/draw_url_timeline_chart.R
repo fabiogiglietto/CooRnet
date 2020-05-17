@@ -15,24 +15,23 @@
 #'   # get the top ten posts containing URLs shared in a coordinated way, by engagement
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
-#' @import stringr
-#' @import tidyr
-#' @import dplyr
-#' @import igraph
-#' @import ggsci
-#' @import ggplot2
-#' @import plotly
-#' @import lubridate
+#' @importFrom tidyr unnest
+#' @importFrom dplyr group_by mutate arrange %>%
+#' @importFrom stringr str_trim
+#' @importFrom igraph components induced.subgraph V
+#' @importFrom lubridate as_datetime
+#' @importFrom ggplot2 ggplot geom_line geom_point scale_size scale_x_datetime theme_minimal labs aes
+#' @importFrom plotly ggplotly layout
+#' @importFrom ggsci scale_colour_startrek
 #'
 #' @export
 
-draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=10) {
+draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   g <- output[[2]]
   ct_shares_marked.df <- output[[1]]
 
-  cl <- components(g)
-  gc <- induced.subgraph(g, which(cl$membership == which.max(cl$csize)))
-  # V(gc)$cluster <- cluster_louvain(gc)$membership
+  cl <- igraph::components(g)
+  gc <- igraph::induced.subgraph(g, which(cl$membership == which.max(cl$csize)))
 
   if (is.null(top_coord_urls)) {
     cat("\n\nBuilding a table of top shared URLs...")
@@ -42,36 +41,36 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=10) 
 
   top_url_tab <- top_url
   top_url$cooR.account.name <- strsplit(top_url$cooR.account.name,",")
-  top_url <- unnest(data = top_url,cols = cooR.account.name)
-  top_url$cooR.account.name <- str_trim(top_url$cooR.account.name)
+  top_url <- tidyr::unnest(data = top_url,cols = cooR.account.name)
+  top_url$cooR.account.name <- stringr::str_trim(top_url$cooR.account.name)
   top_url$cooR.account.name <- gsub(pattern = "\"",replacement = "",x = top_url$cooR.account.name)
-  top_url <- top_url[top_url$cooR.account.name %in% V(g)$account.name,]
+  top_url <- top_url[top_url$cooR.account.name %in% igraph::V(g)$account.name,]
 
-  t <- ct_shares_marked.df[ct_shares_marked.df$expanded == top_url$expanded[top_url_id],]
+  t <- ct_shares_marked.df[ct_shares_marked.df$expanded == top_url_tab$expanded[top_url_id],]
 
-  t2 <- t[c("account.name","expanded","date","subscriberCount","statistics.actual.shareCount","is_coordinated")]
-  t2 <- t2 %>% arrange(date)
+  t2 <- t[c("account.name", "expanded", "date", "subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
+  t2 <- t2 %>% dplyr::arrange(date)
 
-  t2 <- t2 %>% group_by() %>% dplyr::mutate(cumsum=cumsum(statistics.actual.shareCount))
-  t2$date <- as_datetime(t2$date)
+  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(cumsum=cumsum(statistics.actual.shareCount))
+  t2$date <- lubridate::as_datetime(t2$date)
   t2$subscriberCount <- t2$subscriberCount/100
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"))
 
-  p <- ggplot(data = t2, aes(x=date,y = cumsum,label=account.name)) +
-    geom_line(color="gray")+
-    geom_point(mapping = aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
-    scale_colour_startrek()+
-    scale_size(range = c(0, 20))+
-    scale_x_datetime(limits = as_datetime(c(min(t2$date),min(t2$date)+24*60*60)))+
+  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date,y = cumsum, label=account.name)) +
+    ggplot2::geom_line(color="gray")+
+    ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
+    ggsci::scale_colour_startrek()+
+    ggplot2::scale_size(range = c(0, 20))+
+    ggplot2::scale_x_datetime(limits = as_datetime(c(min(t2$date),min(t2$date)+24*60*60)))+
     #geom_text()+
     #geom_text_repel()+
-    theme_minimal()+
-    labs(title = paste("Link Sharing activity"),
+    ggplot2::theme_minimal()+
+    ggplot2::labs(title = paste("Link Sharing activity"),
        subtitle = paste("Entities sharing the link during the first 24 hours"),
        color="Coordination",
        size="Subscribers (x100)",
        x="Time",
        y="Total number of shares")
 
-  ggplotly(p) %>% layout(title = "", legend = list(orientation = "v", y = -0.2, x = 0))
+  plotly::ggplotly(p) %>% layout(title = top_url_tab$expanded[top_url_id], legend = list(orientation = "v", y = -0.2, x = 0))
 }
