@@ -15,9 +15,7 @@ the average subscribers number of entities in a component,
 the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
 a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1). Higher values correspond to an higher concentration (less different domains linked),
 the top 5 coordinatedly shared domains (ranked by n. of shares),
-the total number coordinatedly shared of domains,
-the \href{https://www.newsguardtech.com/}{News Guard} average \href{https://www.newsguardtech.com/ratings/rating-process-criteria/}{score} of the domains shared by the components,
-the proportion of unique domains that have been rated by News Guard
+the total number coordinatedly shared of domains
 }
 \description{
 A function to get summary data by coordinated component
