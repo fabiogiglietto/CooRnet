@@ -53,7 +53,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
 
   t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(cumsum=cumsum(statistics.actual.shareCount))
   t2$date <- lubridate::as_datetime(t2$date)
-  t2$subscriberCount <- t2$subscriberCount/100
+  t2$subscriberCount <- t2$subscriberCount
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"))
 
   p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date,y = cumsum, label=account.name)) +
@@ -68,9 +68,9 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     ggplot2::labs(title = paste("Link Sharing activity"),
        subtitle = paste("Entities sharing the link during the first 24 hours"),
        color="Coordination",
-       size="Subscribers (x100)",
+       size="Subscribers",
        x="Time",
        y="Total number of shares")
 
-  plotly::ggplotly(p) %>% layout(title = top_url_tab$expanded[top_url_id], legend = list(orientation = "v", y = -0.2, x = 0))
+  plotly::ggplotly(p) %>% layout(title = t2$title[top_url_id], legend = list(orientation = "h", y = -0.3, x = 0))
 }
