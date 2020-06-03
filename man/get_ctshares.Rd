@@ -18,9 +18,9 @@ get_ctshares(
 \arguments{
 \item{urls}{a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date}
 
-\item{url_column}{name of the column (placed inside quote marks) where the URLs are stored}
+\item{url_column}{name of the column (placed inside quote marks) where the URLs are stored (defaults to "url")}
 
-\item{date_column}{name of the column (placed inside quote marks) where the date of the URLs are stored}
+\item{date_column}{name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")}
 
 \item{platforms}{default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
 

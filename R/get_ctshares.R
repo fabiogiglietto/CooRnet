@@ -3,8 +3,8 @@
 #' A function to get the URLs shares from CrowdTangle
 #'
 #' @param urls a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date
-#' @param url_column name of the column (placed inside quote marks) where the URLs are stored
-#' @param date_column name of the column (placed inside quote marks) where the date of the URLs are stored
+#' @param url_column name of the column (placed inside quote marks) where the URLs are stored (defaults to "url")
+#' @param date_column name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")
 #' @param platforms default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
 #' @param nmax max number of results for query (default 500 as per API limit)
 #' @param sleep_time pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit
@@ -29,17 +29,23 @@
 
 get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
 
-  require(tidyr)     # 1.0.2
-  require(dplyr)     # 0.8.3
-
   if(missing(url_column)) {
-    stop("Please check that specified column exists")
+    url_column = "url"
   }
 
   if(missing(date_column)) {
-    stop("Please check that specified column exists")
+    date_column = "date"
   }
 
+  if(!url_column %in% colnames(urls))
+  {
+    stop(paste0("Can't find '", url_column, "' in urls dataframe" ))
+  }
+
+  if(!date_column %in% colnames(urls))
+  {
+    stop(paste0("Can't find '", date_column, "' in urls dataframe" ))
+  }
 
   # initialize logfile
   write(paste("#################### CooRnet #####################",
@@ -77,15 +83,15 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     link <- urls$url[i]
 
     query <- httr::GET("https://api.crowdtangle.com/links",
-                 query = list(
-                   link = link,
-                   platforms = platforms,
-                   startDate  = gsub(" ", "T", as.character(startDate)),
-                   endDate  = gsub(" ", "T", as.character(endDate)),
-                   includeSummary = "false",
-                   sortBy = "date",
-                   token = Sys.getenv("CROWDTANGLE_API_KEY"),
-                   count = nmax))
+                       query = list(
+                         link = link,
+                         platforms = platforms,
+                         startDate  = gsub(" ", "T", as.character(startDate)),
+                         endDate  = gsub(" ", "T", as.character(endDate)),
+                         includeSummary = "false",
+                         sortBy = "date",
+                         token = Sys.getenv("CROWDTANGLE_API_KEY"),
+                         count = nmax))
 
 
     tryCatch(
@@ -94,7 +100,18 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         c <- jsonlite::fromJSON(json, flatten = TRUE)
         if (c$status == 200) {
           if (length(c$result$posts) > 0) {
+
             ct_shares.df <- jsonlite::rbind_pages(list(ct_shares.df, c$result$posts))
+
+            while (!is.null(c$result$pagination$nextPage))
+            {
+              query <- httr::GET(c$result$pagination$nextPage)
+
+              json <- httr::content(query, as = "text", encoding = "UTF-8")
+              c <- jsonlite::fromJSON(json, flatten = TRUE)
+              ct_shares.df <- jsonlite::rbind_pages(list(ct_shares.df, c$result$posts))
+              Sys.sleep(sleep_time)
+            }
           }
         }
         else {
