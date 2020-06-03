@@ -98,7 +98,7 @@ get_outputs <- function(coord_shares_output,
             # creates top_coord_urls to the main environment and uploads to Google folder
             top_coord_urls <- CooRnet::get_top_coord_urls(output = coord_shares_output)
 
-            tempFileCon <- tempfile("comp.summary", fileext = ".csv")
+            tempFileCon <- tempfile("top_coord_urls", fileext = ".csv")
             write.csv(top_coord_urls, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
@@ -109,7 +109,7 @@ get_outputs <- function(coord_shares_output,
             # creates top_coord_shares to the main environment and uploads to Google folder
             top_coord_shares <- CooRnet::get_top_coord_shares(output = coord_shares_output)
 
-            tempFileCon <- tempfile("comp.summary", fileext = ".csv")
+            tempFileCon <- tempfile("top_coord_shares", fileext = ".csv")
             write.csv(top_coord_shares, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
