@@ -61,7 +61,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
     ggsci::scale_colour_startrek()+
     ggplot2::scale_size(range = c(0, 20))+
-    ggplot2::scale_x_datetime(limits = as_datetime(c(min(t2$date),min(t2$date)+24*60*60)))+
+    #ggplot2::scale_x_datetime(limits = as_datetime(c(min(t2$date),min(t2$date)+24*60*60)))+
     #geom_text()+
     #geom_text_repel()+
     ggplot2::theme_minimal()+
