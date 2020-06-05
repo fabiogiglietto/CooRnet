@@ -51,27 +51,21 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   t2 <- t[c("account.name", "expanded", "date", "subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
   t2 <- t2 %>% dplyr::arrange(date)
 
-  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(cumsum=cumsum(statistics.actual.shareCount))
+  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(shares=cumsum(statistics.actual.shareCount))
   t2$date <- lubridate::as_datetime(t2$date)
-  t2$subscriberCount <- t2$subscriberCount
-  t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"))
-  levels(t2$is_coordinated) <- c("coordinated","not_coordinated")
+  t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
 
-  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date,y = cumsum, label=account.name)) +
+  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date, y=shares, label=account.name)) +
     ggplot2::geom_line(color="gray")+
     ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
     ggsci::scale_colour_startrek()+
     ggplot2::scale_size(range = c(0, 20))+
-    #ggplot2::scale_x_datetime(limits = as_datetime(c(min(t2$date),min(t2$date)+24*60*60)))+
-    #geom_text()+
-    #geom_text_repel()+
     ggplot2::theme_minimal()+
-    ggplot2::labs(title = paste("Link Sharing activity"),
-       subtitle = paste("Entities sharing the link during the first 24 hours"),
-       color="Coordination",
-       size="Subscribers",
-       x="Time",
+    ggplot2::labs(title = paste0("Link sharing activity for ", t2$expanded[top_url_id], " (", t2$date[top_url_id], ")"),
+       color="COORDINATION",
+       size="SUBSCRIBERS",
+       x="Time (UTC)",
        y="Total number of shares")
 
-  plotly::ggplotly(p) %>% layout(title = t2$title[top_url_id], legend = list(orientation = "h", y = -0.3, x = 0))
+  plotly::ggplotly(p) %>% layout(legend = list(orientation = "h", y = 0.1, x = 0.8))
 }
