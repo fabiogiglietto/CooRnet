@@ -55,6 +55,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   t2$date <- lubridate::as_datetime(t2$date)
   t2$subscriberCount <- t2$subscriberCount
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"))
+  levels(t2$is_coordinated) <- c("coordinated","not_coordinated")
 
   p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date,y = cumsum, label=account.name)) +
     ggplot2::geom_line(color="gray")+
