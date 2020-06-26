@@ -23,6 +23,7 @@
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_size scale_x_datetime theme_minimal labs aes
 #' @importFrom plotly ggplotly layout
 #' @importFrom ggsci scale_colour_startrek
+#' @importFrom imputeTS na.interpolation
 #'
 #' @export
 
@@ -72,7 +73,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   temp <- t2["date"]
   temp <- bind_rows(temp, shares_cumsum)
   temp <- arrange(temp, date)
-  temp <- na.interpolation(temp, option = "spline")
+  temp <- imputeTS::na.interpolation(temp, option = "spline")
 
   t2 <- merge(temp, t2, by = "date")
   rm(temp)
