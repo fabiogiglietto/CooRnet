@@ -13,6 +13,7 @@ Imports:
   imputeTS (>= 3.0),
   plyr (>= 1.8),
   dplyr (>= 0.8),
+  tibble (>= 3.0),
   httr (>= 1.4),
   tidyr (>= 1.0),
   readr (>= 1.3),

@@ -17,6 +17,8 @@
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
 #' @importFrom dplyr filter left_join rowwise mutate select arrange group_by top_n
+#' @importFrom rlang sym
+#' @importFrom tibble as_tibble
 #'
 #' @export
 
@@ -67,7 +69,7 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
     urls <- urls %>%
       dplyr::top_n(top, wt=!!sym(order_by)) %>%
       dplyr::arrange(-!!sym(order_by)) %>%
-      as_tibble()
+      tibble::as_tibble()
   }
 
   return(urls)

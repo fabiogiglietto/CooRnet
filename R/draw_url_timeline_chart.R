@@ -77,7 +77,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   }
 
   t2 <- t2 %>% dplyr::arrange(date)
-  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(shares=cumsum(statistics.actual.shareCount))
+  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(cum_shares=cumsum(statistics.actual.shareCount))
   t2$date <- lubridate::as_datetime(t2$date)
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
 
