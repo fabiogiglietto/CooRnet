@@ -28,7 +28,7 @@
 #'   clusters <- hclust(dist(component_summary[, 2:4]))
 #'   plot(clusters)
 #'
-#' @importFrom dplyr %>% group_by summarise mutate top_n arrange
+#' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
 #'
@@ -54,27 +54,27 @@ get_component_summary <- function(output){
 
   # summarise
   summary_entities <- highly_connected_coordinated_entities %>%
-    group_by(component) %>%
-    summarise(entities = n(),
+    dplyr::group_by(component) %>%
+    dplyr::summarise(entities = n(),
               avg.subscriberCount = mean(avg.account.subscriberCount),
               cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
               cooRscore.avg = mean(strength/degree))
 
   summary_domains <- ct_shares_marked.df %>%
-    group_by(component) %>%
-    summarise(unique.full_domain = length(unique(full_domain)),
+    dplyr::group_by(component) %>%
+    dplyr::summarise(unique.full_domain = length(unique(full_domain)),
               unique.parent_domain = length(unique(parent_domain)))
 
   summary <- merge(summary_entities, summary_domains, by = "component")
   rm(summary_entities, summary_domains)
 
   summary <- summary %>%
-    rowwise() %>%
-    mutate(gini.full_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"]))),
+    dplyr::rowwise() %>%
+    dplyr::mutate(gini.full_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"]))),
            gini.parent_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])))) %>%
-    mutate(gini.full_domain = ifelse(is.nan(gini.full_domain), 1, gini.full_domain),
+    dplyr::mutate(gini.full_domain = ifelse(is.nan(gini.full_domain), 1, gini.full_domain),
            gini.parent_domain = ifelse(is.nan(gini.parent_domain), 1, gini.parent_domain)) %>%
-    mutate(top.full_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"])), desc(Freq)),
+    dplyr::mutate(top.full_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "full_domain"])), desc(Freq)),
                                          n=5, wt="Freq")$Var1, collapse = ", "),
            top.parent_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$component==component, "parent_domain"])), desc(Freq)),
                                            n=5, wt="Freq")$Var1, collapse = ", "))

@@ -16,7 +16,7 @@
 #' # get the top ten URLs shared in a coordinated way, by engagement
 #' df <- get_top_news(output, order_by = "engagement", top=10)
 #'
-#' @import dplyr
+#' @importFrom dplyr filter left_join rowwise mutate select arrange group_by top_n
 #'
 #' @export
 
@@ -27,8 +27,8 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
   rm(output)
 
   urls <- ct_shares_marked.df %>%
-    group_by(expanded) %>%
-    summarise(shares = n(),
+    dplyr::group_by(expanded) %>%
+    dplyr::summarise(shares = n(),
               engagement = sum(statistics.actual.likeCount,
                                statistics.actual.shareCount,
                                statistics.actual.commentCount,
@@ -45,30 +45,30 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
               statistics.actual.likeCount = sum(statistics.actual.likeCount),
               statistics.actual.sadCount = sum(statistics.actual.sadCount),
               statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
-    rowwise %>%
-    mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name)))  %>%
-    filter(cooR.shares > 0) %>%
-    mutate(account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded]), collapse=", "),
+    dplyr::rowwise %>%
+    dplyr::mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name)))  %>%
+    dplyr::filter(cooR.shares > 0) %>%
+    dplyr::mutate(account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded]), collapse=", "),
            cooR.account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name]), collapse=", "),
            cooR.account.url.list = list(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])),
            account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=", "),
            cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=", "),
            components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ", ")) %>%
-    select(-cooR.account.url.list) %>%
+    dplyr::select(-cooR.account.url.list) %>%
     as.data.frame()
 
   if(component==TRUE) {
     urls <- urls %>%
-      arrange(components, !!sym(order_by)) %>%
-      group_by(components) %>%
-      mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
-      filter(rank <= top) %>%
-      arrange(components, rank)
+      dplyr::arrange(components, !!sym(order_by)) %>%
+      dplyr::group_by(components) %>%
+      dplyr::mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
+      dplyr::filter(rank <= top) %>%
+      dplyr::arrange(components, rank)
   }
   else {
     urls <- urls %>%
-      top_n(top, wt=!!sym(order_by)) %>%
-      arrange(-!!sym(order_by)) %>%
+      dplyr::top_n(top, wt=!!sym(order_by)) %>%
+      dplyr::arrange(-!!sym(order_by)) %>%
       as_tibble()
     }
 

@@ -33,7 +33,7 @@
 #' @importFrom tidyr unnest
 #' @importFrom stats quantile
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @import dplyr
+#' @importFrom dplyr mutate mutate select filter bind_rows
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom foreach foreach %dopar%
 #' @importFrom doSNOW registerDoSNOW
@@ -127,14 +127,14 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
         if (length(unique(dat.summary$account.url)) > 1) {
           dat.summary <- dat.summary %>%
-            mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
-            group_by(cut) %>%
-            mutate(count=n(),
+            dplyr::mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
+            dplyr::group_by(cut) %>%
+            dplyr::mutate(count=n(),
                    account.url=list(account.url),
                    share_date=list(date),
                    url = url) %>%
-            select(cut, count, account.url, share_date, url) %>%
-            filter(count > 1) %>%   # subset the URLs shared by more than one entity
+            dplyr::select(cut, count, account.url, share_date, url) %>%
+            dplyr::filter(count > 1) %>%   # subset the URLs shared by more than one entity
             unique()
 
           return(dat.summary)
@@ -199,14 +199,14 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
       if (length(unique(dat.summary$account.url)) > 1) {
         dat.summary <- dat.summary %>%
-          mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
-          group_by(cut) %>%
-          mutate(count=n(),
+          dplyr::mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
+          dplyr::group_by(cut) %>%
+          dplyr::mutate(count=n(),
                  account.url=list(account.url),
                  share_date=list(date),
                  url = url) %>%
-          select(cut, count, account.url, share_date, url) %>%
-          filter(count > 1) %>%
+          dplyr::select(cut, count, account.url, share_date, url) %>%
+          dplyr::filter(count > 1) %>%
           unique()
 
         datalist <- c(list(dat.summary), datalist)
@@ -214,7 +214,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       }
     }
 
-    df <- bind_rows(datalist)
+    df <- dplyr::bind_rows(datalist)
 
     if(nrow(df)==0){
       stop("there are not enough shares!")
