@@ -1,4 +1,4 @@
-#' @importFrom dplyr group_by mutate %>% summarize
+#' @importFrom dplyr group_by mutate %>% summarize first
 #' @importFrom igraph graph.data.frame simplify bipartite.projection induced_subgraph subgraph.edges degree V V<- E E<- components strength as_edgelist get.edge.ids neighbors
 
 build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_weight=0.90, timestamps=FALSE) {
@@ -24,22 +24,22 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   full_g <- suppressWarnings(igraph::bipartite.projection(g2.bp, multiplicity = T)$proj2) # project entity-entity network
 
   all_account_info <- ct_shares.df %>%
-    group_by(account.url) %>%
-    mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
+    dplyr::group_by(account.url) %>%
+    dplyr::mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
            handle.changed = ifelse(length(unique(account.handle))>1, TRUE, FALSE),
            account.name = paste(unique(account.name), collapse = " | "),
            account.handle = paste(unique(account.handle), collapse = " | ")) %>%
-    summarize(shares = n(),
+    dplyr::summarize(shares = n(),
               coord.shares = sum(is_coordinated==TRUE),
               avg.account.subscriberCount=mean(account.subscriberCount),
-              account.id = first(account.id),
-              account.name=first(account.name),
-              name.changed=first(name.changed),
-              handle.changed=first(handle.changed),
-              account.handle=first(account.handle),
-              account.platform=first(account.platform),
-              account.platformId=first(account.platformId),
-              account.verified=first(account.verified))
+              account.id = dplyr::first(account.id),
+              account.name= dplyr::first(account.name),
+              name.changed= dplyr::first(name.changed),
+              handle.changed= dplyr::first(handle.changed),
+              account.handle= dplyr::first(account.handle),
+              account.platform= dplyr::first(account.platform),
+              account.platformId= dplyr::first(account.platformId),
+              account.verified= dplyr::first(account.verified))
 
   rm(ct_shares.df, coordinated_shares)
 
@@ -91,7 +91,6 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(highly_connected_g)$component <- igraph::components(highly_connected_g)$membership
   V(highly_connected_g)$degree <- igraph::degree(highly_connected_g) # re-calculate the degree on the subgraph
   V(highly_connected_g)$strength <- igraph::strength(highly_connected_g) # sum up the edge weights of the adjacent edges for each vertex
-
 
   highly_connected_coordinated_entities <- igraph::as_data_frame(highly_connected_g, "vertices")
   rownames(highly_connected_coordinated_entities) <- 1:nrow(highly_connected_coordinated_entities)
