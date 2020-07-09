@@ -14,6 +14,9 @@
 #' cord_int[[1]]
 #' cord_int[[2]]
 #'
+#' @importFrom tidyr unnest
+#' @importFrom dplyr group_by mutate select arrange filter
+#'
 #' @export
 
 estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE, keep_ourl_only=FALSE) {
@@ -25,9 +28,6 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   if(q < 0 | q > 1){
     stop("The q value must be between 0 and 1")
   }
-
-  require(tidyr)      # 1.0.2
-  require(dplyr)      # 0.8.3
 
   # initialize logfile
   if (!file.exists("log.txt")) {
@@ -64,24 +64,24 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
 
   ranked_shares <- ct_shares.df %>%
-    group_by(expanded) %>%
-    mutate(ct_shares_count=n(),
+    dplyr::group_by(expanded) %>%
+    dplyr::mutate(ct_shares_count=n(),
            first_share_date = min(date),
            rank = rank(date, ties.method = "first"),
            date = date,
            sec_from_first_share = difftime(date, first_share_date, units = "secs"),
            perc_of_shares = rank/ct_shares_count) %>%
-    select(expanded, ct_shares_count, first_share_date, rank, date, sec_from_first_share, perc_of_shares) %>%
-    arrange(expanded)
+    dplyr::select(expanded, ct_shares_count, first_share_date, rank, date, sec_from_first_share, perc_of_shares) %>%
+    dplyr::arrange(expanded)
 
   rm(ct_shares.df)
 
   # find URLs with an unusual fast second share and keep the quickest
   rank_2 <- ranked_shares %>%
-    group_by(expanded) %>%
-    filter(rank==2) %>%
-    mutate(sec_from_first_share = min(sec_from_first_share)) %>%
-    select(expanded, sec_from_first_share) %>%
+    dplyr::group_by(expanded) %>%
+    dplyr::filter(rank==2) %>%
+    dplyr::mutate(sec_from_first_share = min(sec_from_first_share)) %>%
+    dplyr::select(expanded, sec_from_first_share) %>%
     unique()
 
   rank_2 <- subset(rank_2, rank_2$sec_from_first_share <= as.numeric(quantile(rank_2$sec_from_first_share, q)))
@@ -90,9 +90,9 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
   ranked_shares <- subset(ranked_shares, ranked_shares$expanded %in% rank_2$expanded)
 
   ranked_shares_sub <- ranked_shares %>%
-    filter(perc_of_shares > p) %>%
-    mutate(sec_from_first_share = min(sec_from_first_share)) %>%
-    select(expanded, sec_from_first_share) %>%
+    dplyr::filter(perc_of_shares > p) %>%
+    dplyr::mutate(sec_from_first_share = min(sec_from_first_share)) %>%
+    dplyr::select(expanded, sec_from_first_share) %>%
     unique()
 
   summary_secs <- summary(as.numeric(ranked_shares_sub$sec_from_first_share))

@@ -16,7 +16,9 @@
 #'   # get the top ten posts containing URLs shared in a coordinated way, by engagement
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
-#' @import dplyr
+#' @importFrom dplyr filter left_join rowwise mutate select arrange group_by top_n
+#' @importFrom rlang sym
+#' @importFrom tibble as_tibble
 #'
 #' @export
 
@@ -27,10 +29,10 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
   rm(output)
 
   urls <- ct_shares_marked.df %>%
-    filter(is_coordinated==TRUE & account.url %in% highly_connected_coordinated_entities$name) %>%
-    left_join(highly_connected_coordinated_entities[, c("name", "component")], by = c("account.url" = "name")) %>%
-    rowwise() %>%
-    mutate(engagement = sum(statistics.actual.likeCount,
+    dplyr::filter(is_coordinated==TRUE & account.url %in% highly_connected_coordinated_entities$name) %>%
+    dplyr::left_join(highly_connected_coordinated_entities[, c("name", "component")], by = c("account.url" = "name")) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(engagement = sum(statistics.actual.likeCount,
                                statistics.actual.shareCount,
                                statistics.actual.commentCount,
                                statistics.actual.loveCount,
@@ -46,7 +48,7 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
               statistics.actual.likeCount = sum(statistics.actual.likeCount),
               statistics.actual.sadCount = sum(statistics.actual.sadCount),
               statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
-    select(c("account.url","date","title","description","message","link","postUrl",
+    dplyr::select(c("account.url","date","title","description","message","link","postUrl",
              "account.name","account.handle","account.subscriberCount","expanded",
              "statistics.actual.likeCount", "statistics.actual.shareCount",
              "statistics.actual.commentCount", "statistics.actual.loveCount",
@@ -57,17 +59,17 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
 
   if(component==TRUE) {
     urls <- urls %>%
-      arrange(component, !!sym(order_by)) %>%
-      group_by(component) %>%
-      mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
-      filter(rank <= top) %>%
-      arrange(component, rank)
+      dplyr::arrange(component, !!sym(order_by)) %>%
+      dplyr::group_by(component) %>%
+      dplyr::mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
+      dplyr::filter(rank <= top) %>%
+      dplyr::arrange(component, rank)
   }
   else {
     urls <- urls %>%
-      top_n(top, wt=!!sym(order_by)) %>%
-      arrange(-!!sym(order_by)) %>%
-      as_tibble()
+      dplyr::top_n(top, wt=!!sym(order_by)) %>%
+      dplyr::arrange(-!!sym(order_by)) %>%
+      tibble::as_tibble()
   }
 
   return(urls)

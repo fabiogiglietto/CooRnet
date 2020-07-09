@@ -18,6 +18,7 @@
 #'
 #' @importFrom googledrive drive_upload as_id
 #' @importFrom igraph write.graph
+#' @importFrom utils write.csv
 #'
 #' @export
 
@@ -77,7 +78,7 @@ get_outputs <- function(coord_shares_output,
             highly_connected_coordinated_entities <- coord_shares_output[[3]]
 
             tempFileCon <- tempfile("coordinated_entities", fileext = ".csv")
-            write.csv(highly_connected_coordinated_entities, file = tempFileCon)
+            utils::write.csv(highly_connected_coordinated_entities, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
             highly_connected_coordinated_entities <<- highly_connected_coordinated_entities
@@ -88,7 +89,7 @@ get_outputs <- function(coord_shares_output,
             component_summary <- CooRnet::get_component_summary(output = coord_shares_output)
 
             tempFileCon <- tempfile("comp.summary", fileext = ".csv")
-            write.csv(component_summary, file = tempFileCon)
+            utils::write.csv(component_summary, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
             component_summary <<- component_summary
@@ -99,7 +100,7 @@ get_outputs <- function(coord_shares_output,
             top_coord_urls <- CooRnet::get_top_coord_urls(output = coord_shares_output)
 
             tempFileCon <- tempfile("top_coord_urls", fileext = ".csv")
-            write.csv(top_coord_urls, file = tempFileCon)
+            utils::write.csv(top_coord_urls, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
             top_coord_urls <<- top_coord_urls
@@ -110,7 +111,7 @@ get_outputs <- function(coord_shares_output,
             top_coord_shares <- CooRnet::get_top_coord_shares(output = coord_shares_output)
 
             tempFileCon <- tempfile("top_coord_shares", fileext = ".csv")
-            write.csv(top_coord_shares, file = tempFileCon)
+            utils::write.csv(top_coord_shares, file = tempFileCon)
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
             top_coord_shares <<- top_coord_shares
