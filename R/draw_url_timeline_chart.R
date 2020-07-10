@@ -23,7 +23,7 @@
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_size scale_x_datetime theme_minimal labs aes
 #' @importFrom plotly ggplotly layout
 #' @importFrom ggsci scale_colour_startrek
-#' @importFrom imputeTS na.interpolation
+#' @importFrom imputeTS na_interpolation
 #' @importFrom stats lag
 #'
 #' @export
@@ -88,7 +88,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     temp <- dplyr::arrange(temp, date)
 
     # estimates shares at post time
-    temp <- imputeTS::na.interpolation(temp, option = "spline")
+    temp <- imputeTS::na_interpolation(temp, option = "spline")
 
     t2 <- merge(temp, t2, by = "date")
     rm(temp)
