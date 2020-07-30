@@ -60,7 +60,6 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
   V(full_g)$name.changed <- sapply(V(full_g)$name, function(x) vertex.info$name.changed[vertex.info$account.url == x])
   V(full_g)$handle.changed <- sapply(V(full_g)$name, function(x) vertex.info$handle.changed[vertex.info$account.url == x])
-
   V(full_g)$pageAdminTopCountry.changed <- sapply(V(full_g)$name, function(x) vertex.info$pageAdminTopCountry.changed[vertex.info$account.url == x])
   V(full_g)$account.pageAdminTopCountry <- sapply(V(full_g)$name, function(x) vertex.info$account.pageAdminTopCountry[vertex.info$account.url == x])
   V(full_g)$account.accountType <- sapply(V(full_g)$name, function(x) vertex.info$account.accountType[vertex.info$account.url == x])
