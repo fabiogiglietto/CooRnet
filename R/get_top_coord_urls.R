@@ -19,6 +19,7 @@
 #' @importFrom dplyr filter n left_join rowwise mutate select arrange group_by top_n
 #' @importFrom rlang sym
 #' @importFrom tibble as_tibble
+#' @importFrom plyr desc
 #'
 #' @export
 
@@ -63,7 +64,7 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     urls <- urls %>%
       dplyr::arrange(components, !!sym(order_by)) %>%
       dplyr::group_by(components) %>%
-      dplyr::mutate(rank = rank(desc(!!sym(order_by)), ties.method = "first")) %>%
+      dplyr::mutate(rank = rank(plyr::desc(!!sym(order_by)), ties.method = "first")) %>%
       dplyr::filter(rank <= top) %>%
       dplyr::arrange(components, rank)
   }
