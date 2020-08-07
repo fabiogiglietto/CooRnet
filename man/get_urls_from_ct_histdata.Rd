@@ -4,10 +4,12 @@
 \alias{get_urls_from_ct_histdata}
 \title{get_urls_from_ct_histdata}
 \usage{
-get_urls_from_ct_histdata(ct_histdata_csv = NULL)
+get_urls_from_ct_histdata(ct_histdata_csv = NULL, newformat = FALSE)
 }
 \arguments{
 \item{ct_histdata_csv}{a local or remote link to a CSV created by the CrowdTangle Historical Data}
+
+\item{newformat}{set to TRUE in order to use new CrowdTangle CSV format}
 }
 \value{
 A data.frame with a unique list of URLs with respective first seen date
