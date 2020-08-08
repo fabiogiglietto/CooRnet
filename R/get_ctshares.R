@@ -92,8 +92,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                          includeHistory = "true",
                          sortBy = "date",
                          token = Sys.getenv("CROWDTANGLE_API_KEY"),
-                         count = nmax,
-                         searchField = "Include_query_strings"))
+                         count = nmax))
 
 
     tryCatch(
