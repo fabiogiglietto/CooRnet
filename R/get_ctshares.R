@@ -128,6 +128,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   }
 
   ct_shares.df <- rbind_pages(datalist)
+  rm(datalist)
 
   # save original API output
   if(save_ctapi_output==TRUE){
