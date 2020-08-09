@@ -127,7 +127,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       })
   }
 
-  ct_shares.df <- rbind_pages(datalist)
+  ct_shares.df <- jsonlite::rbind_pages(datalist)
   rm(datalist)
 
   # save original API output
