@@ -66,6 +66,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   }
 
   ct_shares.df <- NULL
+  datalist <- list()
 
   # progress bar
   total <- nrow(urls)
@@ -93,25 +94,22 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                          sortBy = "date",
                          token = Sys.getenv("CROWDTANGLE_API_KEY"),
                          count = nmax))
-
-
     tryCatch(
       {
-        json <- httr::content(query, as = "text", encoding = "UTF-8")
+        json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
         c <- jsonlite::fromJSON(json, flatten = TRUE)
         if (c$status == 200) {
           if (length(c$result$posts) > 0) {
 
-            ct_shares.df <- jsonlite::rbind_pages(list(ct_shares.df, c$result$posts))
+            datalist <- c(list(c$result$posts), datalist)
 
             while (!is.null(c$result$pagination$nextPage))
             {
               query <- httr::GET(c$result$pagination$nextPage)
-
-              json <- httr::content(query, as = "text", encoding = "UTF-8")
+              json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
               c <- jsonlite::fromJSON(json, flatten = TRUE)
-              ct_shares.df <- jsonlite::rbind_pages(list(ct_shares.df, c$result$posts))
-              Sys.sleep(sleep_time)
+              datalist <- c(list(c$result$posts), datalist)
+              Sys.sleep(sleep_time/2)
             }
           }
         }
@@ -128,6 +126,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         Sys.sleep(sleep_time)
       })
   }
+
+  ct_shares.df <- rbind_pages(datalist)
 
   # save original API output
   if(save_ctapi_output==TRUE){
