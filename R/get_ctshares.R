@@ -20,9 +20,9 @@
 #'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE)
 #'
 #' @importFrom httr GET content
-#' @importFrom jsonlite fromJSON rbind_pages
+#' @importFrom jsonlite fromJSON
 #' @importFrom tidyr unnest
-#' @importFrom dplyr group_by filter %>%
+#' @importFrom dplyr bind_rows group_by filter %>%
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 #' @export
@@ -109,7 +109,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
               json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
               c <- jsonlite::fromJSON(json, flatten = TRUE)
               datalist <- c(list(c$result$posts), datalist)
-              Sys.sleep(sleep_time/2)
+              Sys.sleep(sleep_time)
             }
           }
         }
@@ -127,7 +127,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       })
   }
 
-  ct_shares.df <- jsonlite::rbind_pages(datalist)
+  ct_shares.df <- dplyr::bind_rows(datalist)
   rm(datalist)
 
   # save original API output
