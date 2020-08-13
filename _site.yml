@@ -1,7 +1,7 @@
 name: "coornet-website"
 output_dir: "."
 navbar:
-  title: "<img id=\'coornet-logo\' src=\'logo_small.png\'/>"
+  title: "<img id='coornet-logo' src='logo_small.png'/>"
   left:
     - text: "Intro"
       href: index.html

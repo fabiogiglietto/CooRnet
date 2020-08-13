@@ -86,7 +86,7 @@ get_outputs(output)
 write.csv(highly_connected_coordinated_entities, file = "highly_connected_coordinated_entities.csv")
 
 # save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
-igraph::write.graph(highly_connected_g, file = "highly_connected_g.graphml")
+igraph::write.graph(highly_connected_g, file = "highly_connected_g.graphml", format = "graphml")
 
 ```
 
@@ -158,9 +158,8 @@ The project is supported, in part, by a grant by a grant from Social Science Res
 
 ## References
 
- - Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding
-   Coordinated and Inauthentic Link Sharing Behavior on Facebook in the
-   Run-up to 2018 General Election and 2019 European Election in Italy.
-   https://doi.org/10.31235/osf.io/3jteh
- - Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes
-   a village to manipulate the media: coordinated link sharing behavior   during 2018 and 2019 Italian elections. Information, Communication   and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732
+- Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). Coordinated Link Sharing Behavior as a Signal to Surface Sources of Problematic Information on Facebook. International Conference on Social Media and Society, 85–91. https://doi.org/10.1145/3400806.3400817
+
+- Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior   during 2018 and 2019 Italian elections. Information, Communication   and Society, 1–25. https://doi.org/10.1080/1369118X.2020.1739732
+
+- Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding Coordinated and Inauthentic Link Sharing Behavior on Facebook in the Run-up to 2018 General Election and 2019 European Election in Italy. https://doi.org/10.31235/osf.io/3jteh
