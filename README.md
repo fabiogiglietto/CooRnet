@@ -68,7 +68,7 @@ get_outputs(output)
 write.csv(highly_connected_coordinated_entities, file = "highly_connected_coordinated_entities.csv")
 
 # save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
-igraph::write.graph(highly_connected_g, file = "highly_connected_g.graphml")
+igraph::write.graph(highly_connected_g, file = "highly_connected_g.graphml", format = "graphml")
 
 ```
 
