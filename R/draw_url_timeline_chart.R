@@ -24,7 +24,6 @@
 #' @importFrom plotly ggplotly layout
 #' @importFrom ggsci scale_colour_startrek
 #' @importFrom imputeTS na_interpolation
-#' @importFrom stats lag
 #'
 #' @export
 
@@ -66,8 +65,8 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     shares_cumsum <- url.history %>%
       # calculate shares difference between consecutive timesteps
       group_by(post_label) %>%
-      arrange(timestep) %>%
-      mutate(diff_shares = actual.shareCount - stats::lag(actual.shareCount, default = 0)) %>%
+      arrange(post_label, timestep) %>%
+      mutate(diff_shares = c(0, diff(actual.shareCount, lag = 1))) %>%
       ungroup() %>%
       mutate(date = as.POSIXct(date)) %>%
       arrange(date) %>%
@@ -77,7 +76,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   }
 
   t2 <- t2 %>% dplyr::arrange(date)
-  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(cum_shares=cumsum(statistics.actual.shareCount))
+  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(statistics.actual.cum_shares=cumsum(statistics.actual.shareCount))
   t2$date <- lubridate::as_datetime(t2$date)
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
 
