@@ -59,7 +59,7 @@ get_component_summary <- function(output){
               avg.subscriberCount = mean(avg.account.subscriberCount),
               cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
               cooRscore.avg = mean(strength/degree),
-              pageAdminTopCountry = unique(account.pageAdminTopCountry)[which.max(tabulate(match(account.pageAdminTopCountry, unique(account.pageAdminTopCountry))))],
+              pageAdminTopCountry = unique(account.pageAdminTopCountry, na.rm = TRUE)[which.max(tabulate(match(account.pageAdminTopCountry, unique(account.pageAdminTopCountry))))],
               facebook_page = length(account.accountType[account.accountType=="facebook_page"]),
               facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
               facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
