@@ -65,7 +65,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     shares_cumsum <- url.history %>%
       # calculate shares difference between consecutive timesteps
       group_by(post_label) %>%
-      arrange(post_label, timestep) %>%
+      arrange(timestep) %>%
       mutate(diff_shares = c(0, diff(actual.shareCount, lag = 1))) %>%
       ungroup() %>%
       mutate(date = as.POSIXct(date)) %>%
@@ -76,7 +76,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   }
 
   t2 <- t2 %>% dplyr::arrange(date)
-  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(statistics.actual.cum_shares=cumsum(statistics.actual.shareCount))
+  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(shares_cumsum=cumsum(statistics.actual.shareCount))
   t2$date <- lubridate::as_datetime(t2$date)
   t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
 
@@ -87,9 +87,9 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     temp <- dplyr::arrange(temp, date)
 
     # estimates shares at post time
-    temp <- imputeTS::na_interpolation(temp, option = "spline")
+    temp <- imputeTS::na_interpolation(temp)
 
-    t2 <- merge(temp, t2, by = "date")
+    t2 <- merge(temp, t2[1:7], by = "date")
     rm(temp)
   }
 
