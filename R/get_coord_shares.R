@@ -107,7 +107,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # setup parallel backend
     cores <- parallel::detectCores()-1
-    cl <- parallel::makeCluster(cores)
+    cl <- parallel::makeCluster(cores, type = "PSOCK")
     doSNOW::registerDoSNOW(cl)
 
     # progress bar
@@ -117,7 +117,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
     dat.summary <-
-      foreach::foreach(i=seq(1:nrow(URLs)), .combine = rbind, .packages="dplyr", .options.snow=progress_bar) %dopar% {
+      foreach::foreach(i=seq(1:nrow(URLs)), .combine = dplyr::bind_rows, .packages="dplyr", .options.snow=progress_bar) %dopar% {
 
         # show progress...
         utils::setTxtProgressBar(pb, pb$getVal()+1)
