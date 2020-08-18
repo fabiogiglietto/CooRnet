@@ -38,10 +38,13 @@ if (newformat == TRUE) {
 
   df$url <- ifelse(is.na(df$expandedLinks.expanded), df$expandedLinks.original, df$expandedLinks.expanded) # keep expanded links only
 
+  df <- clean_urls(df, "url") # clean up the url to avoid duplicates
+
   urls <- df %>%
     group_by(url) %>%
     summarise(date = min(date)) %>%
     select(url, date)
+
 
 } else {
   df <- read_csv(col_types = cols(
@@ -52,6 +55,8 @@ if (newformat == TRUE) {
   file =  ct_histdata_csv)
 
   df$url <- ifelse(is.na(df$`Final Link`), df$Link, df$`Final Link`) # keep expanded links only
+
+  df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
   urls <- df %>%
     group_by(url) %>%
