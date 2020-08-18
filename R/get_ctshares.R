@@ -52,16 +52,26 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
               "\nget_ctshares script executed on:", format(Sys.time(), format = "%F %R %Z")),
         file="log.txt")
 
-  # remove duplicated rows
-  urls <- urls[!duplicated(urls),]
-
   # set column names
   colnames(urls)[colnames(urls)==url_column] <- "url"
   colnames(urls)[colnames(urls)==date_column] <- "date"
 
+  # in case of duplicated urls, keeps only the one with the oldest date
+  urls <- urls %>%
+    group_by(url) %>%
+    summarise(date = min(date)) %>%
+    select(url, date)
+
   # clean the URLs
   if(clean_urls==TRUE){
     urls <- clean_urls(urls, "url")
+
+    # in case of duplicated urls, keeps only the one with the oldest date
+    urls <- urls %>%
+      group_by(url) %>%
+      summarise(date = min(date)) %>%
+      select(url, date)
+
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
