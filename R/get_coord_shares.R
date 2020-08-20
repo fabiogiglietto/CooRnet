@@ -30,14 +30,13 @@
 #' # Save the data frame with the information about the highly connected coordinated entities
 #' write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 #'
-#' @importFrom tidyr unnest
 #' @importFrom stats quantile
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @importFrom dplyr mutate mutate select filter bind_rows
+#' @importFrom dplyr mutate mutate select filter
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom foreach foreach %dopar%
 #' @importFrom doSNOW registerDoSNOW
-#'
+#' @importFrom tidytable unnest. bind_rows.
 #'
 #' @export
 
@@ -117,7 +116,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
     dat.summary <-
-      foreach::foreach(i=seq(1:nrow(URLs)), .combine = dplyr::bind_rows, .packages="dplyr", .options.snow=progress_bar) %dopar% {
+      foreach::foreach(i=seq(1:nrow(URLs)), .packages="dplyr", .options.snow=progress_bar) %dopar% {
 
         # show progress...
         utils::setTxtProgressBar(pb, pb$getVal()+1)
@@ -143,11 +142,13 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     parallel::stopCluster(cl)
 
+    dat.summary <- tidytable::bind_rows.(dat.summary)
+
     if(nrow(dat.summary)==0){
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- tidyr::unnest(dat.summary, cols = c(account.url, share_date))
+    coordinated_shares <- tidytable::unnest.(dat.summary)
 
     rm(dat.summary, cores, cl, pb, progress, progress_bar)
 
@@ -214,14 +215,14 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       }
     }
 
-    df <- dplyr::bind_rows(datalist)
+    datalist <- tidytable::bind_rows.(datalist)
 
     if(nrow(df)==0){
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- tidyr::unnest(df, cols = c(account.url, share_date))
-    rm(datalist, df)
+    coordinated_shares <- tidytable::unnest.(datalist)
+    rm(datalist)
 
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &

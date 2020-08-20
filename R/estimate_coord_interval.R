@@ -14,7 +14,6 @@
 #' cord_int[[1]]
 #' cord_int[[2]]
 #'
-#' @importFrom tidyr unnest
 #' @importFrom dplyr group_by mutate select arrange filter
 #'
 #' @export

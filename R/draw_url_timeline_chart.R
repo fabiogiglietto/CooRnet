@@ -15,7 +15,7 @@
 #'   # get the top ten posts containing URLs shared in a coordinated way, by engagement
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
-#' @importFrom tidyr unnest
+#' @importFrom tidytable unnest.
 #' @importFrom dplyr group_by mutate arrange %>% bind_rows filter ungroup select
 #' @importFrom stringr str_trim
 #' @importFrom igraph components induced.subgraph V
@@ -47,7 +47,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
 
   top_url_tab <- top_url
   top_url$cooR.account.name <- strsplit(top_url$cooR.account.name,",")
-  top_url <- tidyr::unnest(data = top_url,cols = cooR.account.name)
+  top_url <- tidytable::unnest.(top_url, cooR.account.name)
   top_url$cooR.account.name <- stringr::str_trim(top_url$cooR.account.name)
   top_url$cooR.account.name <- gsub(pattern = "\"",replacement = "",x = top_url$cooR.account.name)
   top_url <- top_url[top_url$cooR.account.name %in% igraph::V(g)$account.name,]

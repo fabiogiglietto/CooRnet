@@ -21,9 +21,9 @@
 #'
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
-#' @importFrom tidyr unnest
-#' @importFrom dplyr bind_rows group_by filter %>%
+#' @importFrom dplyr group_by filter %>%
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom tidytable unnest. bind_rows.
 #'
 #' @export
 
@@ -137,7 +137,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       })
   }
 
-  ct_shares.df <- dplyr::bind_rows(datalist)
+  ct_shares.df <- tidytable::bind_rows.(datalist)
   rm(datalist)
 
   # save original API output
@@ -156,7 +156,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
-  ct_shares.df <- tidyr::unnest(ct_shares.df, cols = expandedLinks)
+  ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks)
   ct_shares.df$original <- NULL
 
   # remove duplicates created by the unnesting
