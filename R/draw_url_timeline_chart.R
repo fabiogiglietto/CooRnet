@@ -93,7 +93,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     rm(temp)
   }
 
-  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date, y=cum_shares, label=account.name)) +
+  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date, y=shares_cumsum, label=account.name)) +
     ggplot2::geom_line(color="gray")+
     ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
     ggsci::scale_colour_startrek()+
