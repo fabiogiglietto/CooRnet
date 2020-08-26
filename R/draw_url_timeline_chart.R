@@ -70,9 +70,9 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
       ungroup() %>%
       mutate(date = as.POSIXct(date)) %>%
       arrange(date) %>%
-      mutate(cum_shares = cumsum(diff_shares)) %>%
+      mutate(shares_cumsum = cumsum(diff_shares)) %>%
       filter(difftime(date, min(date), units = "secs") <= 604800) %>% # keep only one week hist
-      select(date, cum_shares)
+      select(date, shares_cumsum)
   }
 
   t2 <- t2 %>% dplyr::arrange(date)
