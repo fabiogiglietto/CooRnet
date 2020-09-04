@@ -217,7 +217,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     datalist <- tidytable::bind_rows.(datalist)
 
-    if(nrow(df)==0){
+    if(nrow(datalist)==0){
       stop("there are not enough shares!")
     }
 
