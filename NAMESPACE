@@ -2,6 +2,7 @@
 
 export(draw_url_timeline_chart)
 export(estimate_coord_interval)
+export(get_cluster_summary)
 export(get_component_summary)
 export(get_coord_shares)
 export(get_ctshares)
