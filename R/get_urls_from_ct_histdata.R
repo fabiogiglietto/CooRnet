@@ -42,7 +42,7 @@ if (newformat == TRUE) {
 
   urls <- df %>%
     group_by(url) %>%
-    summarise(date = min(date)) %>%
+    summarise(date = as.Date(min(date))) %>%
     select(url, date)
 
 
@@ -60,7 +60,7 @@ if (newformat == TRUE) {
 
   urls <- df %>%
     group_by(url) %>%
-    summarise(Created = min(Created)) %>%
+    summarise(Created = as.Date(min(Created))) %>%
     select(url, date=Created)
 }
 
