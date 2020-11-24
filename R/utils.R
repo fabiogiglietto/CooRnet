@@ -1,3 +1,5 @@
+#' @importFrom stringr str_replace
+
 clean_urls <- function(df, url){
 
   df <- df[!grepl("\\.\\.\\.$", df[[url]]),]
@@ -39,7 +41,9 @@ clean_urls <- function(df, url){
   df <- df[!grepl("^http://127.0.0.1", df[[url]]), ]
   df <- df[grepl("http://|https://", df[[url]]),] # remove all the entries with the url that does not start with "http"
 
-
+  df[[url]] <- stringr::str_replace(df[[url]], 'm.youtube.com', 'www.youtube.com')
+  df[[url]] <- stringr::str_replace(df[[url]], 'youtu.be/', 'www.youtube.com/watch?v=')
+  df[[url]] <- stringr::str_replace(df[[url]], '^(.*youtube\\.com/watch\\?).*(v=[^\\&]*).*', '\\1\\2') # cleanup YouTube URLs
 
   return(df)
 }
