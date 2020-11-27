@@ -156,7 +156,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
-  ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .keep_all = TRUE)
+  ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
   ct_shares.df$original <- NULL
 
   # remove duplicates created by the unnesting

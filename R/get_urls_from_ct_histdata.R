@@ -17,6 +17,7 @@
 #'
 #' @importFrom readr read_csv cols col_character col_skip
 #' @importFrom dplyr group_by summarise %>% select
+#' @importFrom stringr str_extract
 #'
 #' @export
 
@@ -31,12 +32,15 @@ cat("\nLoading CSV...")
 if (newformat == TRUE) {
   df <- read_csv(col_types = cols(
     .default = col_skip(),
+    type = col_character(),
+    message = col_character(),
     date = col_character(),
     expandedLinks.original = col_character(),
     expandedLinks.expanded = col_character()),
     file =  ct_histdata_csv)
 
-  df$url <- ifelse(is.na(df$expandedLinks.expanded), df$expandedLinks.original, df$expandedLinks.expanded) # keep expanded links only
+  df$url <- ifelse(is.na(df$expandedLinks.expanded), df$expandedLinks.original, df$expandedLinks.expanded) # extract link from message
+  df$url <- ifelse(df$type!="Link", stringr::str_extract(df$message, "(?<=:=:)(.*)"), df$url) # keep expanded links only
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
@@ -49,12 +53,15 @@ if (newformat == TRUE) {
 } else {
   df <- read_csv(col_types = cols(
   .default = col_skip(),
+  type = col_character(),
+  message = col_character(),
   Created = col_character(),
   Link = col_character(),
   `Final Link` = col_character()),
   file =  ct_histdata_csv)
 
   df$url <- ifelse(is.na(df$`Final Link`), df$Link, df$`Final Link`) # keep expanded links only
+  df$url <- ifelse(df$type!="Link", stringr::str_extract(df$message, "(?<=:=:)(.*)"), df$url) # keep expanded links only
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
