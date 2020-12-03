@@ -45,6 +45,7 @@ if (newformat == TRUE) {
   df$url <- ifelse(df$title == "This is a re-share of a post", df$expandedLinks.original, df$url) # extract link from posts re-share
   df$url <- ifelse(df$type!="Link", stringr::str_extract(df$message, "(?<=:=:)(.*)"), df$url) # extract expanded link from message
   df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "(?<=:=:)(.*)"), df$url) # extract expanded link from description
+  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract link from description
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
@@ -67,7 +68,7 @@ if (newformat == TRUE) {
   df$url <- ifelse(is.na(df$`Final Link`), df$Link, df$`Final Link`) # keep expanded links only
   df$url <- ifelse(df$title == "This is a re-share of a post", df$Link, df$url) # extract link from posts re-share
   df$url <- ifelse(df$type!="Link", stringr::str_extract(df$message, "(?<=:=:)(.*)"), df$url) # extract expanded link from message
-  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "(?<=:=:)(.*)"), df$url) # extract expanded link from description
+  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract expanded link from description
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
