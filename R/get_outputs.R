@@ -7,6 +7,7 @@
 #' @param highly_connected_g graph of coordinated networks of pages/groups/accounts (default TRUE)
 #' @param highly_connected_coordinated_entities a dataframe that lists coordinated entities and corresponding component (default TRUE)
 #' @param component_summary the result of CooRnet::get_component_summary (default FALSE)
+#' @param cluster_summary the result of CooRnet::get_component_summary (default FALSE)
 #' @param top_coord_urls the result of CooRnet::get_top_coord_urls (default FALSE)
 #' @param top_coord_shares the result of CooRnet::get_top_coord_shares (default FALSE)
 #' @param gdrive_folder_id a Google Drive folder id where to uploads selected files (output.rds, highly_connected_g.graphml, highly_connected_coordinated_entities.csv, component_summary.csv, top_coord_urls.csv, top_coord_shares) files (default NULL)
@@ -27,6 +28,7 @@ get_outputs <- function(coord_shares_output,
                         highly_connected_g = TRUE,
                         highly_connected_coordinated_entities = TRUE,
                         component_summary = FALSE,
+                        cluster_summary = FALSE,
                         top_coord_urls = FALSE,
                         top_coord_shares = FALSE,
                         gdrive_folder_id = NULL) {
@@ -44,6 +46,9 @@ get_outputs <- function(coord_shares_output,
         if (component_summary)
             # creates component_summary to the main environment
             component_summary <<- CooRnet::get_component_summary(output = coord_shares_output)
+        if (cluster_summary)
+            # creates cluster_summary to the main environment
+            cluster_summary <<- CooRnet::get_cluster_summary(output = coord_shares_output)
         if (top_coord_urls)
             # creates top_coord_url to the main environment
             top_coord_urls <<- CooRnet::get_top_coord_urls(output = coord_shares_output)
@@ -93,6 +98,17 @@ get_outputs <- function(coord_shares_output,
             googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
 
             component_summary <<- component_summary
+        }
+
+        if (cluster_summary) {
+            # creates component_summary to the main environment and uploads to Google folder
+            cluster_summary <- CooRnet::get_cluster_summary(output = coord_shares_output)
+
+            tempFileCon <- tempfile("cluster.summary", fileext = ".csv")
+            utils::write.csv(cluster_summary, file = tempFileCon)
+            googledrive::drive_upload(tempFileCon, googledrive::as_id(gdrive_folder_id))
+
+            cluster_summary <<- cluster_summary
         }
 
         if (top_coord_urls) {

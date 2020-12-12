@@ -10,6 +10,7 @@ get_outputs(
   highly_connected_g = TRUE,
   highly_connected_coordinated_entities = TRUE,
   component_summary = FALSE,
+  cluster_summary = FALSE,
   top_coord_urls = FALSE,
   top_coord_shares = FALSE,
   gdrive_folder_id = NULL
@@ -25,6 +26,8 @@ get_outputs(
 \item{highly_connected_coordinated_entities}{a dataframe that lists coordinated entities and corresponding component (default TRUE)}
 
 \item{component_summary}{the result of CooRnet::get_component_summary (default FALSE)}
+
+\item{cluster_summary}{the result of CooRnet::get_component_summary (default FALSE)}
 
 \item{top_coord_urls}{the result of CooRnet::get_top_coord_urls (default FALSE)}
 
