@@ -17,8 +17,6 @@
 #'
 #' @importFrom tidytable unnest.
 #' @importFrom dplyr group_by mutate arrange %>% bind_rows filter ungroup select
-#' @importFrom stringr str_trim
-#' @importFrom igraph components induced.subgraph V
 #' @importFrom lubridate as_datetime
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_size scale_x_datetime theme_minimal labs aes
 #' @importFrom plotly ggplotly layout
