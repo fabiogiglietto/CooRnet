@@ -51,12 +51,12 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
     dplyr::rowwise() %>%
     dplyr::mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name)))  %>%
     dplyr::filter(cooR.shares > 0) %>%
-    dplyr::mutate(account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded]), collapse=", "),
-           cooR.account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name]), collapse=", "),
+    dplyr::mutate(account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded]), collapse=","),
+           cooR.account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name]), collapse=","),
            cooR.account.url.list = list(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])),
-           account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=", "),
-           cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=", "),
-           components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ", ")) %>%
+           account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=","),
+           cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=","),
+           components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ",")) %>%
     dplyr::select(-cooR.account.url.list) %>%
     as.data.frame()
 
