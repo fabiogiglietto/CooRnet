@@ -28,39 +28,27 @@
 #' @export
 
 draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
-  g <- output[[2]]
   ct_shares_marked.df <- output[[1]]
-
-  cl <- igraph::components(g)
-  gc <- igraph::induced.subgraph(g, which(cl$membership == which.max(cl$csize)))
+  coordinated_entities <- output[[3]]
 
   # check if top_coord_urls had been provided
   if (is.null(top_coord_urls)) {
     # nope
     cat("\n\nBuilding a table of top shared URLs...")
-    top_url <- CooRnet::get_top_coord_urls(output = output, order_by = "statistics.actual.shareCount", component = FALSE, top = 10)
+    top_coord_urls <- CooRnet::get_top_coord_urls(output = output, order_by = "statistics.actual.shareCount", component = FALSE, top = 10)
   }
-  else {
-    # yep
-    top_url <- top_coord_urls
-    }
 
-  top_url_tab <- top_url
-  top_url$cooR.account.name <- strsplit(top_url$cooR.account.name,",")
-  top_url <- tidytable::unnest.(top_url, cooR.account.name)
-  top_url$cooR.account.name <- stringr::str_trim(top_url$cooR.account.name)
-  top_url$cooR.account.name <- gsub(pattern = "\"",replacement = "",x = top_url$cooR.account.name)
-  top_url <- top_url[top_url$cooR.account.name %in% igraph::V(g)$account.name,]
-
-  t <- ct_shares_marked.df[ct_shares_marked.df$expanded == top_url_tab$expanded[top_url_id],]
-
-  t2 <- t[c("account.name", "expanded", "date", "subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
+  # keep only shares of choosen top urls
+  t <- ct_shares_marked.df[ct_shares_marked.df$expanded == top_coord_urls$expanded[top_url_id],]
 
   if("history" %in% colnames(t)) {
     cat("Analyzing historical engagement data...\n");
-    t2 <- t[c("account.name", "expanded", "date", "subscriberCount", "history", "statistics.actual.shareCount", "is_coordinated")]
 
-    url.history <- dplyr::bind_rows(t2$history, .id = "post_label")
+    # keep only useful fields
+    t <- t[c("account.name", "expanded", "date", "subscriberCount", "history", "statistics.actual.shareCount", "is_coordinated")]
+
+    # extract url history
+    url.history <- dplyr::bind_rows(t$history, .id = "post_label")
 
     shares_cumsum <- url.history %>%
       # calculate shares difference between consecutive timesteps
@@ -70,40 +58,46 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
       ungroup() %>%
       mutate(date = as.POSIXct(date)) %>%
       arrange(date) %>%
-      mutate(shares_cumsum = cumsum(diff_shares)) %>%
+      mutate(actual.Sharecount_cumsum = cumsum(diff_shares)) %>%
       filter(difftime(date, min(date), units = "secs") <= 604800) %>% # keep only one week hist
-      select(date, shares_cumsum)
+      select(date, actual.Sharecount_cumsum)
+  }
+  else {
+    # keep only useful fields
+    t <- t[c("account.name", "expanded", "date", "subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
   }
 
-  t2 <- t2 %>% dplyr::arrange(date)
-  t2 <- t2 %>% dplyr::group_by() %>% dplyr::mutate(shares_cumsum=cumsum(statistics.actual.shareCount))
-  t2$date <- lubridate::as_datetime(t2$date)
-  t2$is_coordinated <- factor(t2$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
+  t <- t %>% dplyr::arrange(date)
+  t <- t %>% dplyr::group_by() %>%
+    dplyr::mutate(actual.Sharecount_cumsum=cumsum(statistics.actual.shareCount))
+  t$date <- lubridate::as_datetime(t$date)
+  t$is_coordinated <- factor(t$is_coordinated, ordered =T, levels = c("TRUE","FALSE"), labels = c("coordinated", "not coordinated"))
 
   if("history" %in% colnames(t)) {
     # add historicaly data
-    temp <- t2["date"]
+    temp <- t["date"]
     temp <- dplyr::bind_rows(temp, shares_cumsum)
     temp <- dplyr::arrange(temp, date)
 
     # estimates shares at post time
     temp <- imputeTS::na_interpolation(temp)
+    temp$actual.Sharecount_cumsum <- round(temp$actual.Sharecount_cumsum, 0)
 
-    t2 <- merge(temp, t2[1:7], by = "date")
+    t <- merge(temp, t[1:7], by = "date")
     rm(temp)
   }
 
-  p <- ggplot2::ggplot(data = t2, ggplot2::aes(x=date, y=shares_cumsum, label=account.name)) +
+  p <- ggplot2::ggplot(data = t, ggplot2::aes(x=date, y=actual.Sharecount_cumsum, label=account.name)) +
     ggplot2::geom_line(color="gray")+
     ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
     ggsci::scale_colour_startrek()+
     ggplot2::scale_size(range = c(0, 20))+
     ggplot2::theme_minimal()+
-    ggplot2::labs(title = paste0("Link sharing activity for ", t2$expanded[top_url_id], " (", t2$date[top_url_id], ")"),
+    ggplot2::labs(title = paste0("Link sharing activity for ", t$expanded[top_url_id], " (", t$date[top_url_id], ")"),
                   color="COORDINATION",
                   size="SUBSCRIBERS",
                   x="Time (UTC)",
                   y="Total number of shares")
 
-  plotly::ggplotly(p) %>% layout(legend = list(orientation = "h", y = 0.1, x = 0.8))
+  plotly::ggplotly(p) %>% plotly::layout(legend = list(orientation = "h", y = 0.1, x = 0.8))
 }
