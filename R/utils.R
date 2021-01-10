@@ -1,4 +1,5 @@
 #' @importFrom stringr str_replace
+#' @importFrom urltools url_decode
 
 clean_urls <- function(df, url){
 
@@ -39,6 +40,8 @@ clean_urls <- function(df, url){
   df[[url]] <- gsub("\\&$", "", df[[url]]) # delete remaining trailing &
 
   df <- df[!grepl("^http://127.0.0.1", df[[url]]), ]
+
+  df[[url]] <- urltools::url_decode(stringr::str_replace(df[[url]], 'https://www.facebook.com/login/?next=', ''))
   df <- df[grepl("http://|https://", df[[url]]),] # remove all the entries with the url that does not start with "http"
 
   df[[url]] <- stringr::str_replace(df[[url]], 'm.youtube.com', 'www.youtube.com')
