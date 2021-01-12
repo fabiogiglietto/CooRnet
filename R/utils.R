@@ -28,6 +28,7 @@ clean_urls <- function(df, url){
                               "/#\\..*",
                               "\\?mobile.*",
                               "&fbclid.*",
+                              ")",
                               "/$",
                               sep = "|")
 
