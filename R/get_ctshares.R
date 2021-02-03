@@ -27,7 +27,7 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=500, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
 
   if(missing(url_column)) {
     url_column = "url"
