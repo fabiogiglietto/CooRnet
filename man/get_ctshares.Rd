@@ -9,7 +9,7 @@ get_ctshares(
   url_column,
   date_column,
   platforms = "facebook,instagram",
-  nmax = 500,
+  nmax = 1000,
   sleep_time = 20,
   clean_urls = FALSE,
   save_ctapi_output = FALSE
@@ -24,7 +24,7 @@ get_ctshares(
 
 \item{platforms}{default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
 
-\item{nmax}{max number of results for query (default 500 as per API limit)}
+\item{nmax}{max number of results for query (default 1000 as per \href{https://github.com/CrowdTangle/API/wiki/Links}{API limit})}
 
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit}
 
