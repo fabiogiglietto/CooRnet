@@ -30,7 +30,7 @@ get_urls_from_ct_histdata <- function(ct_histdata_csv=NULL, newformat=FALSE) {
 cat("\nLoading CSV...")
 
 if (newformat == TRUE) {
-  df <- read_csv(col_types = cols(
+  df <- readr::read_csv(col_types = cols(
     .default = col_skip(),
     type = col_character(),
     title = col_character(),
@@ -57,7 +57,7 @@ if (newformat == TRUE) {
 
 
 } else {
-  df <- read_csv(col_types = cols(
+  df <- readr::read_csv(col_types = cols(
   .default = col_skip(),
   Type = col_character(),
   `Link Text` = col_character(),
@@ -70,10 +70,10 @@ if (newformat == TRUE) {
 
   df$url <- ifelse(is.na(df$`Final Link`), df$Link, df$`Final Link`) # keep expanded links only
   df$url <- ifelse(df$`Link Text` == "This is a re-share of a post", df$Link, df$url) # extract link from posts re-share
-  df$url <- ifelse(df$type!="Link", stringr::str_extract(df$Message, "(?<=:=:)(.*)"), df$url) # extract expanded links from message
-  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "(?<=:=:)(.*)"), df$url) # extract expanded links from description
-  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from description
-  df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$Message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
+  df$url <- ifelse(df$Type!="Link", stringr::str_extract(df$Message, "(?<=:=:)(.*)"), df$url) # extract expanded links from message
+  df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "(?<=:=:)(.*)"), df$url) # extract expanded links from description
+  df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from description
+  df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
