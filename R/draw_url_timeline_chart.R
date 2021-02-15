@@ -78,6 +78,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     temp <- dplyr::arrange(temp, date)
 
     # estimates shares at post time
+    temp$actual.Sharecount_cumsum[1] <- 0
     temp <- imputeTS::na_interpolation(temp)
     temp$actual.Sharecount_cumsum <- round(temp$actual.Sharecount_cumsum, 0)
 
