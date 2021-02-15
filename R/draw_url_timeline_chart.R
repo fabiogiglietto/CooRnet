@@ -43,7 +43,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
     cat("Analyzing historical engagement data...\n");
 
     # keep only useful fields
-    t <- t[c("account.name", "expanded", "date", "subscriberCount", "history", "statistics.actual.shareCount", "is_coordinated")]
+    t <- t[c("account.name", "expanded", "date", "account.subscriberCount", "history", "statistics.actual.shareCount", "is_coordinated")]
 
     # extract url history
     url.history <- dplyr::bind_rows(t$history, .id = "post_label")
@@ -52,7 +52,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
       # calculate shares difference between consecutive timesteps
       group_by(post_label) %>%
       arrange(timestep) %>%
-      mutate(diff_shares = c(0, diff(actual.shareCount, lag = 1))) %>%
+      mutate(diff_shares = ifelse(timestep == "0", actual.shareCount, c(0, diff(actual.shareCount, lag = 1)))) %>%
       ungroup() %>%
       mutate(date = as.POSIXct(date)) %>%
       arrange(date) %>%
@@ -62,7 +62,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   }
   else {
     # keep only useful fields
-    t <- t[c("account.name", "expanded", "date", "subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
+    t <- t[c("account.name", "expanded", "date", "account.subscriberCount", "statistics.actual.shareCount", "is_coordinated")]
   }
 
   t <- t %>% dplyr::arrange(date)
@@ -87,7 +87,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
 
   p <- ggplot2::ggplot(data = t, ggplot2::aes(x=date, y=actual.Sharecount_cumsum, label=account.name)) +
     ggplot2::geom_line(color="gray")+
-    ggplot2::geom_point(mapping = ggplot2::aes(size=subscriberCount, color=is_coordinated),alpha = .5)+
+    ggplot2::geom_point(mapping = ggplot2::aes(size=account.subscriberCount, color=is_coordinated),alpha = .5)+
     ggsci::scale_colour_startrek()+
     ggplot2::scale_size(range = c(0, 20))+
     ggplot2::theme_minimal()+
