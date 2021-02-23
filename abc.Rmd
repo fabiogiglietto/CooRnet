@@ -39,7 +39,7 @@ To study problematic information around COVID-19 in Italy we started from a list
 IFCN CoronaVirus Alliance Database provided a list of 212 false and misleading Italian stories identified by three fact-checking organizations PagellaPolitica, Facta, and Open, and published between January 22, 2020 and August 26, 2020. Starting from this list, we used the CrowdTangle (CrowdTangle Team, 2019) ‘Search’ feature to identify a dataset of related news stories, finding a total of 1,258 corresponding URLs.
 Using {{CooRnet}}::get_ctshares() function we then collected all the CrowdTangle-tracked Facebook posts that shared these URLs up to one week from the story publication date (N=13,271).
 
-![alt text here]("./images/img1.png")
+![alt text here](images/img1.png)
 Fig. 1 {{CooRnet}} A-B-C cycle flowchart
 
 Once we have collected all the available shares of a set of links, we need to define which shares were performed in a coordinated way and which were not. This is done with {{CooRnet}}::get_coord_shares()function. Following an established practice in the field, coordination is here understood as two actors performing the same action, in this case sharing the same link, within an unusually short period of time. The exact quantification of this period of time can be an arbitrary decision of the research team (Graham et al., 2020; Keller et al., 2019) or can be algorithmically estimated  (Giglietto et al., 2020; Nizzoli et al., 2020). A shorter or larger interval of coordination will clearly affect how many shares will be identified as coordinated. {{CooRnet}} allows for both options. 
