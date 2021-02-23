@@ -5,6 +5,8 @@ navbar:
   left:
     - text: "Intro"
       href: index.html
+    - text: "CooRnet and the A-B-C Framework"
+      href: abc.html
     - text: "Tutorials"
       menu:
         - text: "MediCloud"

@@ -1,0 +1,91 @@
+---
+output: html_document
+pagetitle: "CooRnet and the A-B-C Framework"
+html: "R/CooRnet"
+author: "Fabio Giglietto, Nicola Righetti, Luca Rossi, Giada Marino"
+---
+<head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-106971-17"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-106971-17');
+</script>
+</head>
+<div style="margin-top:15px;">
+![](https://docs.google.com/drawings/d/e/2PACX-1vQ8V_WGl9RZ7rYzWA6sfXhbODgsZv4UwJGgS3sgoE3b_wXLh-3zJYRWtHwLyXveLZkmSW7C1iZAqC6w/pub?w=414&h=113)
+
+## {{CooRnet}} and the A-B-C Framework 
+
+This short paper introduces {{CooRnet}}, an open source R package to detect Coordinated Link Sharing on Facebook. To show {{CooRnet}}’s functionalities we present a short case study on how it has been used to detect Coordinated Link Sharing Behaviour (CLSB) and problematic content (Jack, 2017) during the first and second wave of the COVID-19 pandemic in Italy.
+
+## Background: Online Coordinated Behaviour
+
+Social media has been used to attempt influencing political behavior through coordinated disinformation campaigns in which participants pretend to be ordinary citizens (online astroturfing) (Keller et al., 2019; Zhang et al., 2013). With a specific reference to Facebook, a recent study (Giglietto, Righetti, et al., 2019) has spotlighted patterns of coordinated activity aimed at fueling online circulation of specific news stories before the 2018 and 2019 Italian elections, an activity called by the authors “Coordinated Link Sharing Behavior” (CLSB). More precisely, CLSB refers to the coordinated shares of the same news articles in a very short time by networks of entities composed of Facebook pages, groups, and verified public profiles. This strategy represents a clear attempt to boost the reach of content and game the algorithm that presides over the distribution of the most popular posts (Giglietto, Righetti, et al., 2019). 
+Noticeably, CBLS has been proven to be consistently associated with the spread of problematic information: overall, URLs belonging to problematic domains blacklisted by Italian fact-checkers organizations were, before 2018 and 2019 Italian elections respectively, 1.79 and 2.22 times more likely to be shared in coordinated than in non-coordinated way. Moreover, the coordinated entities are far more likely to be included in the blacklist of Facebook entities compiled by Avaaz (Giglietto et al., 2020; Giglietto, Righetti, et al., 2019).
+
+## {{CooRnet}} and the A-B-C framework
+
+As much as the field of mis/disinformation studies flourished during the last few years (Freelon & Wells, 2020), we still know too little about the prevalence and effect of misleading content circulating in the contemporary media ecosystem (Benkler, 2019). The efforts at measuring the prevalence and, in turn, effect are often hindered or significantly limited by the fuzziness of the phenomenon under study (Jack, 2017). Both fabricated and legitimate news content are circulated by malicious actors with the aim of influencing public opinion (Phillips, 2018). Judging what is true or false is time consuming, not always possible, and sometimes inevitably arbitrary (Giglietto, Iannelli, et al., 2019). In other terms, the approaches focusing on content itself tend to fall short in terms of providing a foundation to adequately measure the exposure and effects of mis/disinformation.
+Content is not however the sole vector of viral deception. Actors and their online behaviour turned out to be important as well. Compiled and pre-existing lists of problematic domains have been employed to estimate the prevalence of “fake news” (Guess et al., 2019). Furthermore, an integrated approach that takes into account all the three vectors has been shown to be promising and is increasingly adopted by practitioners at the forefront of challenging information operations that rely on misleading content to influence public opinion. The A-B-C framework (François, 2019) is an example of such an integrated approach. The A-B-C framework highlights how to fully recognize these activities we need to understand the interplay between manipulative Actors, deceptive Behaviour, and harmful Content.
+In this paper, we bring this framework a step forward in the direction of what we call the A-B-C cycle. An A-B-C cycle starts from harmful content and detects deceptive behaviour to identify manipulative actors. Once a list of such actors has been identified, the next cycle uses the content produced by these actors to initiate a new iteration of deceptive behaviour detection that, in turn, leads to identifying an updated set of manipulative actors. The A-B-C cycle thus takes into account the dynamic of information operations that relies on new outlets, domains, social media actors. {{CooRnet}} implements this vision by allowing investigators to identify, given a set of links to online resources (content) the actors that have shared it in a coordinated way. 
+
+## COVID-19 case study
+
+To study problematic information around COVID-19 in Italy we started from a list of news that has been flagged as false or misleading by the Italian fact-checkers affiliated with the International Network of Fact-Checkers (IFCN).
+IFCN CoronaVirus Alliance Database provided a list of 212 false and misleading Italian stories identified by three fact-checking organizations PagellaPolitica, Facta, and Open, and published between January 22, 2020 and August 26, 2020. Starting from this list, we used the CrowdTangle (CrowdTangle Team, 2019) ‘Search’ feature to identify a dataset of related news stories, finding a total of 1,258 corresponding URLs.
+Using {{CooRnet}}::get_ctshares() function we then collected all the CrowdTangle-tracked Facebook posts that shared these URLs up to one week from the story publication date (N=13,271).
+
+![alt text here]("./images/img1.png")
+Fig. 1 {{CooRnet}} A-B-C cycle flowchart
+
+Once we have collected all the available shares of a set of links, we need to define which shares were performed in a coordinated way and which were not. This is done with {{CooRnet}}::get_coord_shares()function. Following an established practice in the field, coordination is here understood as two actors performing the same action, in this case sharing the same link, within an unusually short period of time. The exact quantification of this period of time can be an arbitrary decision of the research team (Graham et al., 2020; Keller et al., 2019) or can be algorithmically estimated  (Giglietto et al., 2020; Nizzoli et al., 2020). A shorter or larger interval of coordination will clearly affect how many shares will be identified as coordinated. {{CooRnet}} allows for both options. 
+
+For the case at hand, we used the {{CooRnet}} algorithm which estimated a coordination interval of 22 seconds. Moreover, in order to avoid false positives created by shares performed at approximately the same time by chance, {{CooRnet}} allows setting a threshold on how many time coordination between two entities needs to happen in order to be counted (in this case, given the relatively low number of URLs in the starting dataset, this threshold was set to 2).
+
+Once the coordinated shares have been identified, {{CooRnet}}::get_outputs() function returns several R objects that can guide further analysis: 
+A list of coordinated entities detected with various summary statistics (highly_connected_coordinated_entities).
+A data frame of all the URLs shared containing a variable that identifies if the share was performed in a coordinated way (ct_shares_marked.df).
+A graph object representing the projected graph of the Facebook entities (Pages, groups, or public profiles) who have shared the URLs in a coordinated way. The edge will be weighted according to the number of times a coordinated sharing took place (highly_connected_g).
+A data frame containing summary data by each coordinated component detected in the network. The data frame contains various summary metrics, such as the average subscribers of the total entities in a component, the proportion of coordinated shares over the total shares, a measure of dispersion (Gini) in the distribution of domains coordinately shared by the component, the top 5 coordinately shared domains, and the total number of coordinately shared domains (component_summary).
+Two additional data frames: one including a list of the most engaging posts that contain the URLs shared in a coordinated way (top_shares) and another including the top URLs shared in a coordinated way (top_urls).
+
+This first iteration of the A-B-C cycle led to the identification of 152 actors (7 pages and 145 groups) organized in five distinct components. The list of actors has then been uploaded to two distinct CrowdTangle lists (one for groups and one for pages). For these two lists, we then gathered all the posts with links shared by these accounts over a period of one month (we used the month of October 2020 due to the resurgence of the coronavirus outbreak in Italy). The resulting dataset of 59,346 URLs has been used as the input of the second iteration of the A-B-C cycle. {{CooRnet}}::get_ctshares() resulted in 364,400 Facebook shares and {{CooRnet}}::get_coord_shares() identified 344 entities organized in 33 components (coordination interval: 15 seconds; coordination threshold: 9).
+Various types of COVID-19 skepticism, anti-vaxx, and anti-mask are prominently featured in the list of best performing news stories (top_urls) shared by these networks (see Appendix 1 for examples).
+Finally, {{CooRnet}}::draw_url_timeline_chart() creates an interactive visualization that displays the cumulative shares over time received by a single URL along with the entities that shared it in both a coordinated and non-coordinated manner.
+
+INSERT INTERACTIVE CHART HERE
+
+## Conclusion
+
+This paper describes the logic and introduces the main functions of {{CooRnet}}, an open source R package to detect Coordinated Link Sharing on Facebook.
+
+{{CooRnet}} embraces an integrated approach aimed at detecting and analysing online mis/disinformation focusing on malicious actors, deceptive behaviour, and harmful content. Thanks to the way it was conceived and its integration in the CrowdTangle platform, {{CooRnet}} also supports iterative cycles of analysis where the list of actors detected (entities) can be used to identify additional malicious actors and content. Iterations address a shortcoming that comes with existing lists of malicious actors that tend to quickly become outdated.
+
+While {{CooRnet}} was designed with link sharing on Facebook in mind, the approach can be generalized to detect different kinds of time based online coordination (e.g. repeated use of the same hashtags, non-link type posts, etc) on different social media platforms.
+Depending on the typologies of entities in a network, the package may lead to multiple different paths of investigations. 
+Page and hybrid networks detected as performing CSBL may belong to a single media group and therefore display an explicit brand affiliation on the cover, profile image, link, or description. Most often, however, entities belonging to these networks lack any visible sign of a common affiliation and tend to deceive on their real purpose to share partisan political news stories under a non political identity. Signs of such inauthentic behaviour can be further found by consulting the transparency section of each page (e.g. name changes, foreigners as admins, etc).
+
+Group networks tend to be much wider. CLSB for groups is often originated by users repeatedly sharing the same link on multiple different groups in a very short period of time. This spammy behaviour can be driven by various motivations (activism, need to inform, etc) and the poster himself may or may not be aware of the veracity of the content shared. Investigating groups thus lead to different research questions.
+
+An analysis performed with {{CooRnet}} can thus be used to inform further qualitative studies.
+
+## References
+
+- Benkler, Y. (2019). Cautionary Notes on Disinformation and the Origins of Distrust. Social Science Research Counci. https://doi.org/10.35650/MD.2004.d.2019
+- CrowdTangle Team. (2019). CrowdTangle [Data set].
+- François, C. (2019). Actors, Behaviors, Content: A Disinformation ABC Highlighting Three Vectors of Viral Deception to Guide Industry & Regulatory Responses (One). Transatlantic High Level Working Group on Content Moderation Online and Freedom of Expression.
+- Freelon, D., & Wells, C. (2020). Disinformation as Political Communication. Political Communication, 37(2), 145–156.
+- Giglietto, F., Iannelli, L., Valeriani, A., & Rossi, L. (2019). “Fake news” is the invention of a liar: How false information circulates within the hybrid news system. Current Sociology. La Sociologie Contemporaine, 67(4), 625–642.
+- Giglietto, F., Righetti, N., & Marino, G. (2019). Understanding Coordinated and Inauthentic Link Sharing Behavior on Facebook in the Run-up to 2018 General Election and 2019 European Election in Italy. https://doi.org/10.31235/osf.io/3jteh
+- Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication and Society, 23(6), 867–891.
+- Graham, T., Bruns, A., Zhu, G., & Campbell, R. (2020). Like a virus: The coordinated spread of Coronavirus disinformation. https://eprints.qut.edu.au/202960/
+- Guess, A., Nagler, J., & Tucker, J. (2019). Less than you think: Prevalence and predictors of fake news dissemination on Facebook. Science Advances, 5(1), eaau4586.
+- Jack, C. (2017). Lexicon of Lies: Terms for Problematic Information. Data & Society. https://datasociety.net/output/lexicon-of-lies/
+- Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2019). Political Astroturfing on Twitter: How to Coordinate a Disinformation Campaign. Political Communication, 1–25.
+- Nizzoli, L., Tardelli, S., Avvenuti, M., Cresci, S., & Tesconi, M. (2020). Coordinated Behavior on Social Media in 2019 UK General Election. In arXiv [cs.SI]. arXiv. http://arxiv.org/abs/2008.08370
+- Phillips, W. (2018). The Oxygen of Amplification. Better Practices for Reporting on Far Right Extremists, Antagonists, and Manipulators. Data & Society Research Institute.
+- Zhang, J., Carpenter, D., & Ko, M. (2013). Online Astroturfing: A Theoretical Perspective. AMCIS 2013 Proceedings. https://aisel.aisnet.org/amcis2013/HumanComputerInteraction/GeneralPresentations/5/
