@@ -9,7 +9,7 @@ navbar:
       href: abc.html
     - text: "Tutorials"
       menu:
-        - text: "MediCloud"
+        - text: "MediaCloud"
           href: tutorial00.html
         - text: "CT Historical tutorial"
           href: tutorial01.html
