@@ -63,6 +63,10 @@ Once a list of such actors has been identified, the next cycle uses the content 
 The A-B-C cycle thus takes into account the dynamic of information operations that relies on new outlets, domains, social media actors.
 {{CooRnet}} implements this vision by allowing investigators to identify, given a set of links to online resources (content) the actors that have shared it in a coordinated way.
 
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQvNBuY58IxL1Layv3GGzfPYdsTG55b9NBXzJGIvfyC1cXfEnzAGz2og8-STcuGzKR0ByYtchRM8YRE/embed?start=false&amp;loop=false&amp;delayms=5000" frameborder="0" width="480" height="299" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+
+</iframe>
+
 ## COVID-19 case study
 
 To study problematic information around COVID-19 in Italy we started from a list of news that has been flagged as false or misleading by the Italian fact-checkers affiliated with the International Network of Fact-Checkers (IFCN).
@@ -111,7 +115,7 @@ The output of iteration 2, provides a range of different insights depending on t
     In other terms, this set of new and more recent problematic content have been automatically identified starting from the list of false/misleading news provided by IFCN.
     Finally, {{CooRnet}}::draw_url_timeline_chart() creates an interactive visualization that displays the cumulative shares over time received by a single URL along with the entities that shared it in both a coordinated and non-coordinated manner.
 
-![](https://lh3.googleusercontent.com/KEU47j5JeupXKXe6myu3K7_GMHHW8P_DXVrcO5eIRIx2he8S-4r936KAFABq2nr0_rtNzWX5jMF4Uf_Qf243LQhuThvQ18UePH_1WqA97noTw3If48Xvf-lj7B_lVn0V8UkPBCej)
+[![](https://lh3.googleusercontent.com/KEU47j5JeupXKXe6myu3K7_GMHHW8P_DXVrcO5eIRIx2he8S-4r936KAFABq2nr0_rtNzWX5jMF4Uf_Qf243LQhuThvQ18UePH_1WqA97noTw3If48Xvf-lj7B_lVn0V8UkPBCej "Click for the interactive chart")](https://rpubs.com/fabiogiglietto/abc)
 
 Fig.
 2 Output of the draw_url_timeline_chart() for the news story with most shares emerged in iteration 2 (example 1 in Appendix 1)
