@@ -51,12 +51,14 @@ The efforts at measuring the prevalence and, in turn, effect are often hindered 
 Both fabricated and legitimate news content are circulated by malicious actors with the aim of influencing public opinion (Phillips, 2018).
 Judging what is true or false is time consuming, not always possible, and sometimes inevitably arbitrary (Giglietto, Iannelli, et al., 2019).
 In other terms, the approaches focusing on content itself tend to fall short in terms of providing a foundation to adequately measure the exposure and effects of mis/disinformation.
+
 Content is not however the sole vector of viral deception.
 Actors and their online behaviour turned out to be important as well.
 Compiled and pre-existing lists of problematic domains have been employed to estimate the prevalence of "fake news" (Guess et al., 2019).
 Furthermore, an integrated approach that takes into account all the three vectors has been shown to be promising and is increasingly adopted by practitioners at the forefront of challenging information operations that rely on misleading content to influence public opinion.
 The A-B-C framework (François, 2019) is an example of such an integrated approach.
 The A-B-C framework highlights how to fully recognize these activities we need to understand the interplay between manipulative Actors, deceptive Behaviour, and harmful Content.
+
 In this paper, we bring this framework a step forward in the direction of what we call the A-B-C cycle.
 An A-B-C cycle starts from harmful content and detects deceptive behaviour to identify manipulative actors.
 Once a list of such actors has been identified, the next cycle uses the content produced by these actors to initiate a new iteration of deceptive behaviour detection that, in turn, leads to identifying an updated set of manipulative actors.
@@ -70,8 +72,10 @@ The A-B-C cycle thus takes into account the dynamic of information operations th
 ## COVID-19 case study
 
 To study problematic information around COVID-19 in Italy we started from a list of news that has been flagged as false or misleading by the Italian fact-checkers affiliated with the International Network of Fact-Checkers (IFCN).
+
 IFCN CoronaVirus Alliance Database provided a list of 212 false and misleading Italian stories identified by three fact-checking organizations PagellaPolitica, Facta, and Open, and published between January 22, 2020 and August 26, 2020.
 Starting from this list, we used the CrowdTangle (CrowdTangle Team, 2019) 'Search' feature to identify a dataset of related news stories, finding a total of 1,258 corresponding URLs.
+
 Using {{CooRnet}}::get_ctshares() function we then collected all the CrowdTangle-tracked Facebook posts that shared these URLs up to one week from the story publication date (N=13,271).
 
 ![alt text here](images/img1.png){width="800"}Fig.
