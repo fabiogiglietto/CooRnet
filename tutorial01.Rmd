@@ -1,5 +1,6 @@
 ---
 output: html_document
+css: style.css
 pagetitle: "Tutorial CrowdTangle Historical Data"
 author: "Nicola Righetti"
 ---

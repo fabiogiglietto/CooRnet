@@ -1,5 +1,6 @@
 ---
 output: html_document
+css: style.css
 pagetitle: "MediaCloud tutorial"
 author: "Fabio Giglietto"
 ---
