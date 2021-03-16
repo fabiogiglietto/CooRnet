@@ -74,7 +74,7 @@ IFCN CoronaVirus Alliance Database provided a list of 212 false and misleading I
 Starting from this list, we used the CrowdTangle (CrowdTangle Team, 2019) 'Search' feature to identify a dataset of related news stories, finding a total of 1,258 corresponding URLs.
 Using {{CooRnet}}::get_ctshares() function we then collected all the CrowdTangle-tracked Facebook posts that shared these URLs up to one week from the story publication date (N=13,271).
 
-![alt text here](images/img1.png)Fig.
+![alt text here](images/img1.png){width="800"}Fig.
 1 {{CooRnet}} A-B-C cycle flowchart
 
 Once we have collected all the available shares of a set of links, we need to define which shares were performed in a coordinated way and which were not.
@@ -115,7 +115,7 @@ The output of iteration 2, provides a range of different insights depending on t
     In other terms, this set of new and more recent problematic content have been automatically identified starting from the list of false/misleading news provided by IFCN.
     Finally, {{CooRnet}}::draw_url_timeline_chart() creates an interactive visualization that displays the cumulative shares over time received by a single URL along with the entities that shared it in both a coordinated and non-coordinated manner.
 
-[![](https://lh3.googleusercontent.com/KEU47j5JeupXKXe6myu3K7_GMHHW8P_DXVrcO5eIRIx2he8S-4r936KAFABq2nr0_rtNzWX5jMF4Uf_Qf243LQhuThvQ18UePH_1WqA97noTw3If48Xvf-lj7B_lVn0V8UkPBCej "Click for the interactive chart")](https://rpubs.com/fabiogiglietto/abc)
+[![](https://lh3.googleusercontent.com/KEU47j5JeupXKXe6myu3K7_GMHHW8P_DXVrcO5eIRIx2he8S-4r936KAFABq2nr0_rtNzWX5jMF4Uf_Qf243LQhuThvQ18UePH_1WqA97noTw3If48Xvf-lj7B_lVn0V8UkPBCej "Click for the interactive chart"){width="800"}](https://rpubs.com/fabiogiglietto/abc)
 
 Fig.
 2 Output of the draw_url_timeline_chart() for the news story with most shares emerged in iteration 2 (example 1 in Appendix 1)
