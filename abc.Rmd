@@ -41,7 +41,7 @@ Social media has been used to attempt influencing political behavior through coo
 With a specific reference to Facebook, a recent study (Giglietto, Righetti, et al., 2019) has spotlighted patterns of coordinated activity aimed at fueling online circulation of specific news stories before the 2018 and 2019 Italian elections, an activity called by the authors "Coordinated Link Sharing Behavior" (CLSB).
 More precisely, CLSB refers to the coordinated shares of the same news articles in a very short time by networks of entities composed of Facebook pages, groups, and verified public profiles.
 This strategy represents a clear attempt to boost the reach of content and game the algorithm that presides over the distribution of the most popular posts (Giglietto, Righetti, et al., 2019).
-Noticeably, CBLS has been proven to be consistently associated with the spread of problematic information: overall, URLs belonging to problematic domains blacklisted by Italian fact-checkers organizations were, before 2018 and 2019 Italian elections respectively, 1.79 and 2.22 times more likely to be shared in coordinated than in non-coordinated way.
+Noticeably, CLSB has been proven to be consistently associated with the spread of problematic information: overall, URLs belonging to problematic domains blacklisted by Italian fact-checkers organizations were, before 2018 and 2019 Italian elections respectively, 1.79 and 2.22 times more likely to be shared in coordinated than in non-coordinated way.
 Moreover, the coordinated entities are far more likely to be included in the blacklist of Facebook entities compiled by Avaaz (Giglietto et al., 2020; Giglietto, Righetti, et al., 2019).
 
 ## {{CooRnet}} and the A-B-C Framework
