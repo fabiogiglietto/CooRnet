@@ -63,7 +63,7 @@ if (newformat == TRUE) {
   `Link Text` = col_character(),
   Message = col_character(),
   Description = col_character(),
-  Created = col_character(),
+  `Post Created` = col_character(),
   Link = col_character(),
   `Final Link` = col_character()),
   file =  ct_histdata_csv)
@@ -79,8 +79,8 @@ if (newformat == TRUE) {
 
   urls <- df %>%
     group_by(url) %>%
-    summarise(Created = as.Date(min(Created))) %>%
-    select(url, date=Created)
+    summarise(`Post Created` = as.Date(min(`Post Created`))) %>%
+    select(url, date=`Post Created`)
 }
 
 attr(urls, 'spec') <- NULL
