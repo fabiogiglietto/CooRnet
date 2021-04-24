@@ -9,7 +9,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   cat("\nBuilding the graph...")
 
-  el <- coordinated_shares[,c("account.url", "url", "share_date")] # drop unnecesary columns
+  el <- coordinated_shares[,c("account.url", "url", "share_date")] # drop unnecessary columns
 
   if (any(el$url %in% el$account.url)) {
     el$url[el$url %in% el$account.url] <- sapply(el$url[el$url %in% el$account.url], function(x) paste(as.character(x),"?coornet_type=URL",sep = "")) # remove white space from account.url and add a custom parameter to avoid issue with duplicated vertex when the URL of an entity is also in the list of shared URLs
@@ -19,28 +19,37 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   v2 <- data.frame(node=unique(el$url), type=0)
   v <- rbind(v1,v2)
 
-  g2.bp <- igraph::graph.data.frame(el, directed = T, vertices = v) # makes the biap
-  g2.bp <- igraph::simplify(g2.bp, remove.multiple = T, remove.loops = T, edge.attr.comb = "min") # simply the bipartite network to avoid problems with resulting edge weight in projected network
+  g2.bp <- igraph::graph.data.frame(el, directed = T, vertices = v) # makes the bipartite graph
+  g2.bp <- igraph::simplify(g2.bp, remove.multiple = T, remove.loops = T, edge.attr.comb = "min") # simplify the bipartite network to avoid problems with resulting edge weight in projected network
   full_g <- suppressWarnings(igraph::bipartite.projection(g2.bp, multiplicity = T)$proj2) # project entity-entity network
 
   all_account_info <- ct_shares.df %>%
     dplyr::group_by(account.url) %>%
-    dplyr::mutate(name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE),
-                  handle.changed = ifelse(length(unique(account.handle))>1, TRUE, FALSE),
-                  pageAdminTopCountry.changed = ifelse(length(unique(account.pageAdminTopCountry))>1, TRUE, FALSE),
+    dplyr::mutate(account.name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE), # deal with account.data that may have changed (name, handle, pageAdminTopCountry, pageDescription, pageCategory)
                   account.name = paste(unique(account.name), collapse = " | "),
+                  account.handle.changed = ifelse(length(unique(account.handle))>1, TRUE, FALSE),
                   account.handle = paste(unique(account.handle), collapse = " | "),
-                  account.pageAdminTopCountry = paste(unique(account.pageAdminTopCountry), collapse = " | ")) %>%
+                  account.pageAdminTopCountry.changed = ifelse(length(unique(account.pageAdminTopCountry))>1, TRUE, FALSE),
+                  account.pageAdminTopCountry = paste(unique(account.pageAdminTopCountry), collapse = " | "),
+                  account.pageDescription.changed = ifelse(length(unique(account.pageDescription))>1, TRUE, FALSE),
+                  account.pageDescription = paste(unique(account.pageDescription), collapse = " | "),
+                  account.pageCategory.changed = ifelse(length(unique(account.pageCategory))>1, TRUE, FALSE),
+                  account.pageCategory = paste(unique(account.pageCategory), collapse = " | ")) %>%
     dplyr::summarize(shares = n(),
                      coord.shares = sum(is_coordinated==TRUE),
-                     avg.account.subscriberCount=mean(account.subscriberCount),
+                     account.avg.subscriberCount=mean(account.subscriberCount),
                      account.id = dplyr::first(account.id),
-                     account.name = dplyr::first(account.name),
-                     name.changed = dplyr::first(name.changed),
-                     handle.changed = dplyr::first(handle.changed),
-                     pageAdminTopCountry.changed= dplyr::first(pageAdminTopCountry.changed),
-                     account.pageAdminTopCountry= dplyr::first(account.pageAdminTopCountry),
+                     account.name = dplyr::first(account.name), # name
+                     account.name.changed = dplyr::first(account.name.changed),
+                     account.handle.changed = dplyr::first(account.handle.changed), # handle
                      account.handle = dplyr::first(account.handle),
+                     account.pageAdminTopCountry.changed= dplyr::first(account.pageAdminTopCountry.changed), # AdminTopCountry
+                     account.pageAdminTopCountry= dplyr::first(account.pageAdminTopCountry),
+                     account.pageDescription.changed = dplyr::first(account.pageDescription.changed), # PageDescription
+                     account.pageDescription = dplyr::first(account.pageDescription),
+                     account.pageCategory.changed = dplyr::first(account.pageCategory.changed), # PageCategory
+                     account.pageCategory = dplyr::first(account.pageCategory),
+                     account.pageCreatedDate = dplyr::first(account.pageCreatedDate), # DateCreated
                      account.platform = dplyr::first(account.platform),
                      account.platformId = dplyr::first(account.platformId),
                      account.verified = dplyr::first(account.verified),
@@ -53,16 +62,21 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
 
   V(full_g)$shares <- sapply(V(full_g)$name, function(x) vertex.info$shares[vertex.info$account.url == x])
   V(full_g)$coord.shares <- sapply(V(full_g)$name, function(x) vertex.info$coord.shares[vertex.info$account.url == x])
-  V(full_g)$avg.account.subscriberCount <- sapply(V(full_g)$name, function(x) vertex.info$avg.account.subscriberCount[vertex.info$account.url == x])
+  V(full_g)$account.avg.subscriberCount <- sapply(V(full_g)$name, function(x) vertex.info$account.avg.subscriberCount[vertex.info$account.url == x])
   V(full_g)$account.platform <- sapply(V(full_g)$name, function(x) vertex.info$account.platform[vertex.info$account.url == x])
   V(full_g)$account.name <- sapply(V(full_g)$name, function(x) vertex.info$account.name[vertex.info$account.url == x])
-  V(full_g)$account.verified <- sapply(V(full_g)$name, function(x) vertex.info$account.verified[vertex.info$account.url == x])
+  V(full_g)$name.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.name.changed[vertex.info$account.url == x])
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
-  V(full_g)$name.changed <- sapply(V(full_g)$name, function(x) vertex.info$name.changed[vertex.info$account.url == x])
-  V(full_g)$handle.changed <- sapply(V(full_g)$name, function(x) vertex.info$handle.changed[vertex.info$account.url == x])
-  V(full_g)$pageAdminTopCountry.changed <- sapply(V(full_g)$name, function(x) vertex.info$pageAdminTopCountry.changed[vertex.info$account.url == x])
+  V(full_g)$handle.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.handle.changed[vertex.info$account.url == x])
+  V(full_g)$account.verified <- sapply(V(full_g)$name, function(x) vertex.info$account.verified[vertex.info$account.url == x])
+  V(full_g)$pageAdminTopCountry.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.pageAdminTopCountry.changed[vertex.info$account.url == x])
   V(full_g)$account.pageAdminTopCountry <- sapply(V(full_g)$name, function(x) vertex.info$account.pageAdminTopCountry[vertex.info$account.url == x])
   V(full_g)$account.accountType <- sapply(V(full_g)$name, function(x) vertex.info$account.accountType[vertex.info$account.url == x])
+  V(full_g)$account.pageCreatedDate <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCreatedDate[vertex.info$account.url == x])
+  V(full_g)$account.pageDescription <- sapply(V(full_g)$name, function(x) vertex.info$account.pageDescription[vertex.info$account.url == x])
+  V(full_g)$account.pageDescription.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.pageDescription.changed[vertex.info$account.url == x])
+  V(full_g)$account.pageCategory <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCategory[vertex.info$account.url == x])
+  V(full_g)$account.pageCategory <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCategory[vertex.info$account.url == x])
 
   # keep only highly coordinated entities
   V(full_g)$degree <- igraph::degree(full_g)
@@ -73,7 +87,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   if (timestamps==TRUE) {
     cat("\n\nAdding timestamps. Please be patient... :)")
 
-    # timestamp of coordinated sharing as edge atribute
+    # timestamp of coordinated sharing as edge attribute
 
     EL <- as.data.frame(igraph::as_edgelist(highly_connected_g))
     EL$weight <- E(highly_connected_g)$weight
