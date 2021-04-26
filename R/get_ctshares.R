@@ -7,7 +7,7 @@
 #' @param date_column name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")
 #' @param platforms default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
 #' @param nmax max number of results for query (default 1000 as per \href{https://github.com/CrowdTangle/API/wiki/Links}{API limit})
-#' @param sleep_time pause between queries to respect API rate limits. Default to 20 secs, it can be lowered or increased depending on the assigned API rate limit
+#' @param sleep_time pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href(https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet){API rate limit}.
 #' @param clean_urls clean the URLs from tracking parameters (default FALSE)
 #' @param save_ctapi_output saves the original CT API output in ./rawdata/ct_shares.df.0.rds
 #'
@@ -17,7 +17,7 @@
 #'   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 #'
 #' @examples
-#'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE)
+#'   df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE)
 #'
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
@@ -27,7 +27,7 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, sleep_time=20, clean_urls=FALSE, save_ctapi_output=FALSE) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE) {
 
   if(missing(url_column)) {
     url_column = "url"
