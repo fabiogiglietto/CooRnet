@@ -56,7 +56,7 @@ get_cluster_summary <- function(output){
   summary_entities <- highly_connected_coordinated_entities %>%
     dplyr::group_by(component, cluster) %>%
     dplyr::summarise(entities = n(),
-              avg.subscriberCount = mean(avg.account.subscriberCount),
+              avg.subscriberCount = mean(account.avg.subscriberCount),
               cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
               cooRscore.avg = mean(strength/degree),
               pageAdminTopCountry = unique(account.pageAdminTopCountry, na.rm = TRUE)[which.max(tabulate(match(account.pageAdminTopCountry, unique(account.pageAdminTopCountry))))],
@@ -83,7 +83,7 @@ get_cluster_summary <- function(output){
            top.parent_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "parent_domain"])), desc(Freq)),
                                            n=5, wt="Freq")$Var1, collapse = ", "))
 
-  cat("Done!")
+  cat("Cluster summary done!\n")
 
   return(summary)
 }
