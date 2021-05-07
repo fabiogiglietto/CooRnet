@@ -76,7 +76,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.pageDescription <- sapply(V(full_g)$name, function(x) vertex.info$account.pageDescription[vertex.info$account.url == x])
   V(full_g)$account.pageDescription.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.pageDescription.changed[vertex.info$account.url == x])
   V(full_g)$account.pageCategory <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCategory[vertex.info$account.url == x])
-  V(full_g)$account.pageCategory <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCategory[vertex.info$account.url == x])
+  V(full_g)$account.pageCategory.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.pageCategory.changed[vertex.info$account.url == x])
 
   # keep only highly coordinated entities
   V(full_g)$degree <- igraph::degree(full_g)
