@@ -15,7 +15,7 @@
 
 query_link_enpoint <- function(query.string) {
 
-  resp <- httr::GET(query.string)
+  resp <- httr::GET(URLencode(query.string))
 
   if (httr::http_type(resp) != "application/json") {
     stop("API did not return json", call. = FALSE)
@@ -27,7 +27,8 @@ query_link_enpoint <- function(query.string) {
    {
      if (status == 200) {
        response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
-       return(jsonlite::fromJSON(response.json, flatten = TRUE))
+       response <- jsonlite::fromJSON(response.json, flatten = TRUE)
+       return(response)
       }
      else if (status == 429)
        {
@@ -38,14 +39,21 @@ query_link_enpoint <- function(query.string) {
       {
        stop("Unauthorized, please check your token...")
       }
+     else if (status == 400)
+     {
+       response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
+       response <- jsonlite::fromJSON(response.json, flatten = TRUE)
+       print(paste(status, ":", response$message))
+       write(paste(status, ":", response$message), file = "log.txt", append = TRUE)
+     }
       else
         {
-          print(paste(c$status, url))
-          write(paste("Unexpected http response code", c$status, "on ", url), file = "log.txt", append = TRUE)
+          print(paste(response$status, resp$url))
+          write(paste("Unexpected http response code", response$status, "on call ", resp$url), file = "log.txt", append = TRUE)
         }
    },
           error=function(cond) {
-            print(paste("Error:", message(cond), "on URL:", url))
-            write(paste("Error:", message(cond), "on URL:", url), file = "log.txt", append = TRUE)
+            print(paste("Error:", message(cond), "on call:", resp$url))
+            write(paste("Error:", message(cond), "on call:", resp$url), file = "log.txt", append = TRUE)
           })
  }
