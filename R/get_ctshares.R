@@ -75,15 +75,17 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
-  ct_shares.df <- NULL
-  datalist <- list()
-
   # progress bar
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
+  suppressWarnings(dir.create("./rawdata"))
+
   # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
+
+    ct_shares.df <- NULL
+    datalist <- list()
 
     utils::setTxtProgressBar(pb, pb$getVal()+1)
 
@@ -93,49 +95,34 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     link <- urls$url[i]
 
-    query <- httr::GET("https://api.crowdtangle.com/links",
-                       query = list(
-                         link = link,
-                         platforms = platforms,
-                         startDate  = gsub(" ", "T", as.character(startDate)),
-                         endDate  = gsub(" ", "T", as.character(endDate)),
-                         includeSummary = "false",
-                         includeHistory = "true",
-                         sortBy = "date",
-                         token = Sys.getenv("CROWDTANGLE_API_KEY"),
-                         count = nmax))
-    tryCatch(
+    # build the querystring
+    query.string <- paste0("https://api.crowdtangle.com/links",
+                           "?link=", link,
+                           "&platforms=", platforms,
+                           "&count=", nmax,
+                           "&startDate=", startDate,
+                           "&endDate=", endDate,
+                           "&token=", Sys.getenv("CROWDTANGLE_API_KEY"))
+
+    c <- query_link_enpoint(query.string)
+
+    datalist <- c(list(c$result$posts), datalist)
+
+    # paginate
+    while (!is.null(c$result$pagination$nextPage))
       {
-        json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
-        c <- jsonlite::fromJSON(json, flatten = TRUE)
-        if (c$status == 200) {
-          if (length(c$result$posts) > 0) {
+      c <- query_link_enpoint(c$result$pagination$nextPage)
+      datalist <- c(list(c$result$posts), datalist)
+    }
 
-            datalist <- c(list(c$result$posts), datalist)
+    ct_shares.df <- tidytable::bind_rows.(datalist)
 
-            while (!is.null(c$result$pagination$nextPage))
-            {
-              query <- httr::GET(c$result$pagination$nextPage)
-              json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
-              c <- jsonlite::fromJSON(json, flatten = TRUE)
-              datalist <- c(list(c$result$posts), datalist)
-              Sys.sleep(sleep_time)
-            }
-          }
-        }
-        else {
-          print(paste(c$status, i))
-          write(paste("Unexpected http response code", c$status, "on url with id", i), file = "log.txt", append = TRUE)
-        }
-      },
-      error=function(cond) {
-        print(paste("Error:", message(cond), "on URL:", i))
-        write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
-      },
-      finally={
-        Sys.sleep(sleep_time)
-      })
+    saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
+    rm(ct_shares.df, datalist)
   }
+
+  filenames <- list.files("./rawdata", pattern="*.rds", full.names=TRUE)
+  datalist <- lapply(filenames, readRDS)
 
   ct_shares.df <- tidytable::bind_rows.(datalist)
   rm(datalist)
