@@ -3,6 +3,7 @@
 #' A wrapper for CrowdTangle API Links Endpoint. Returns a dataframe of posts matching the given URL
 #'
 #' @param query.string a well formed query string for the link endpoint
+#' @param sleep_time
 #'
 #' @return a data.frame of posts matching the given URL
 #'
@@ -13,7 +14,7 @@
 #' @importFrom jsonlite fromJSON
 #'
 
-query_link_enpoint <- function(query.string) {
+query_link_enpoint <- function(query.string, sleep_time=30) {
 
   resp <- httr::GET(URLencode(query.string))
 
@@ -43,8 +44,8 @@ query_link_enpoint <- function(query.string) {
      {
        response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
        response <- jsonlite::fromJSON(response.json, flatten = TRUE)
-       print(paste(status, ":", response$message))
-       write(paste(status, ":", response$message), file = "log.txt", append = TRUE)
+       print(paste(status, ":", response$message, "on call:", resp$url))
+       write(paste(status, ":", response$message, "on call:", resp$url,) file = "log.txt", append = TRUE)
      }
       else
         {

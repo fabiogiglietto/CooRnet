@@ -108,14 +108,14 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                              token = Sys.getenv("CROWDTANGLE_API_KEY"),
                                              count = nmax))$url
 
-    c <- query_link_enpoint(query.string)
+    c <- query_link_enpoint(query.string, sleep_time)
 
     datalist <- c(list(c$result$posts), datalist)
 
     # paginate
     while (!is.null(c$result$pagination$nextPage))
       {
-      c <- query_link_enpoint(c$result$pagination$nextPage)
+      c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
       datalist <- c(list(c$result$posts), datalist)
     }
 
