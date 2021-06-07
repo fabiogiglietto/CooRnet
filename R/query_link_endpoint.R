@@ -45,7 +45,7 @@ query_link_enpoint <- function(query.string, sleep_time=30) {
        response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
        response <- jsonlite::fromJSON(response.json, flatten = TRUE)
        print(paste(status, ":", response$message, "on call:", resp$url))
-       write(paste(status, ":", response$message, "on call:", resp$url,) file = "log.txt", append = TRUE)
+       write(paste(status, ":", response$message, "on call:", resp$url), file = "log.txt", append = TRUE)
      }
       else
         {
