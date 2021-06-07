@@ -21,7 +21,7 @@
 #'
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
-#' @importFrom dplyr group_by filter %>%
+#' @importFrom dplyr select group_by filter %>%
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom tidytable unnest. bind_rows.
 #'
@@ -117,9 +117,46 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       {
       c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
       datalist <- c(list(c$result$posts), datalist)
-    }
+      }
 
     ct_shares.df <- tidytable::bind_rows.(datalist)
+
+    # keep only fields actually used by CooRnet
+    ct_shares.df <- select(ct_shares.df, platformId,
+                           platform,
+                           date,
+                           type,
+                           description,
+                           expandedLinks,
+                           postUrl,
+                           imageText,
+                           history,
+                           id,
+                           message,
+                           title,
+                           statistics.actual.likeCount,
+                           statistics.actual.shareCount,
+                           statistics.actual.commentCount,
+                           statistics.actual.loveCount,
+                           statistics.actual.wowCount,
+                           statistics.actual.hahaCount,
+                           statistics.actual.sadCount,
+                           statistics.actual.angryCount,
+                           statistics.actual.thankfulCount,
+                           statistics.actual.careCount,
+                           account.id,
+                           account.name,
+                           account.handle,
+                           account.subscriberCount,
+                           account.url,
+                           account.platform,
+                           account.platformId,
+                           account.accountType,
+                           account.pageCategory,
+                           account.pageAdminTopCountry,
+                           account.pageDescription,
+                           account.pageCreatedDate,
+                           account.verified)
 
     if (nrow(ct_shares.df) > 0) {
       saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
@@ -136,6 +173,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # save original API output
   if(save_ctapi_output==TRUE){
+    unlink("rawdata", recursive = TRUE)
     suppressWarnings(dir.create("./rawdata"))
     saveRDS(ct_shares.df, "./rawdata/ct_shares.df.0.rds")
   }
@@ -151,7 +189,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
   ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
-  ct_shares.df$original <- NULL
+  ct_shares.df <- dplyr::select(ct_shares.df, -original)
 
   # remove duplicates created by the unnesting
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
