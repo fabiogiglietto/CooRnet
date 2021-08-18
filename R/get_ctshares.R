@@ -110,55 +110,57 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     c <- query_link_enpoint(query.string, sleep_time)
 
-    datalist <- c(list(c$result$posts), datalist)
-
-    # paginate
-    while (!is.null(c$result$pagination$nextPage))
-      {
-      c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
+    if (length(c$result$posts) != 0) {
       datalist <- c(list(c$result$posts), datalist)
+
+      # paginate
+      while (!is.null(c$result$pagination$nextPage))
+      {
+        c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
+        datalist <- c(list(c$result$posts), datalist)
       }
 
-    ct_shares.df <- tidytable::bind_rows.(datalist)
+      ct_shares.df <- tidytable::bind_rows.(datalist)
 
-    if (nrow(ct_shares.df) > 0) {
-      # keep only fields actually used by CooRnet
-      ct_shares.df <- ct_shares.df %>%
-        dplyr::select_if(names(.) %in% c("platformId",
-                             "platform",
-                             "date",
-                             "type",
-                             "expandedLinks",
-                             "description",
-                             "postUrl",
-                             "history",
-                             "id",
-                             "message",
-                             "title",
-                             "statistics.actual.likeCount",
-                             "statistics.actual.shareCount",
-                             "statistics.actual.commentCount",
-                             "statistics.actual.loveCount",
-                             "statistics.actual.wowCount",
-                             "statistics.actual.hahaCount",
-                             "statistics.actual.sadCount",
-                             "statistics.actual.angryCount",
-                             "statistics.actual.thankfulCount",
-                             "statistics.actual.careCount",
-                             "account.id",
-                             "account.name",
-                             "account.handle",
-                             "account.subscriberCount",
-                             "account.url",
-                             "account.platform",
-                             "account.platformId",
-                             "account.accountType",
-                             "account.pageCategory",
-                             "account.pageAdminTopCountry",
-                             "account.pageDescription",
-                             "account.pageCreatedDate",
-                             "account.verified"))
-      saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
+      if (nrow(ct_shares.df) > 0) {
+        # keep only fields actually used by CooRnet
+        ct_shares.df <- ct_shares.df %>%
+          dplyr::select_if(names(.) %in% c("platformId",
+                                           "platform",
+                                           "date",
+                                           "type",
+                                           "expandedLinks",
+                                           "description",
+                                           "postUrl",
+                                           "history",
+                                           "id",
+                                           "message",
+                                           "title",
+                                           "statistics.actual.likeCount",
+                                           "statistics.actual.shareCount",
+                                           "statistics.actual.commentCount",
+                                           "statistics.actual.loveCount",
+                                           "statistics.actual.wowCount",
+                                           "statistics.actual.hahaCount",
+                                           "statistics.actual.sadCount",
+                                           "statistics.actual.angryCount",
+                                           "statistics.actual.thankfulCount",
+                                           "statistics.actual.careCount",
+                                           "account.id",
+                                           "account.name",
+                                           "account.handle",
+                                           "account.subscriberCount",
+                                           "account.url",
+                                           "account.platform",
+                                           "account.platformId",
+                                           "account.accountType",
+                                           "account.pageCategory",
+                                           "account.pageAdminTopCountry",
+                                           "account.pageDescription",
+                                           "account.pageCreatedDate",
+                                           "account.verified"))
+        saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
+      }
     }
 
     rm(ct_shares.df, datalist)
