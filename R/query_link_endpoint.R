@@ -10,13 +10,13 @@
 #' @details to start using the library you need to set the CrowdTangle API key.
 #'   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 #'
-#' @importFrom httr GET content http_type status_code
+#' @importFrom httr GET RETRY content http_type status_code
 #' @importFrom jsonlite fromJSON
 #'
 
 query_link_enpoint <- function(query.string, sleep_time=30) {
 
-  resp <- httr::GET(URLencode(query.string))
+  resp <- httr::RETRY(verb = "GET", url = URLencode(query.string))
 
   if (httr::http_type(resp) != "application/json") {
     stop("API did not return json", call. = FALSE)
