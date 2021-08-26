@@ -96,17 +96,17 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     link <- urls$url[i]
 
     # build the querystring
-    query.string <- httr::GET("https://api.crowdtangle.com/links",
-                                           query = list(
-                                             link = link,
-                                             platforms = platforms,
-                                             startDate  = gsub(" ", "T", as.character(startDate)),
-                                             endDate  = gsub(" ", "T", as.character(endDate)),
-                                             includeSummary = "false",
-                                             includeHistory = "true",
-                                             sortBy = "date",
-                                             token = Sys.getenv("CROWDTANGLE_API_KEY"),
-                                             count = nmax))$url
+    query.string <- paste0("https://api.crowdtangle.com/links?",
+                           "link=", URLencode(link, reserved = TRUE),
+                           "&platforms=", platforms,
+                           "&startDate=", gsub(" ", "T", as.character(startDate)),
+                           "&endDate=", gsub(" ", "T", as.character(endDate)),
+                           "&includeSummary=FALSE",
+                           "&includeHistory=TRUE",
+                           "&sortBy=date",
+                           "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
+                           "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
+                           "&count=", nmax)
 
     c <- query_link_enpoint(query.string, sleep_time)
 
@@ -162,7 +162,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
       }
     }
-
     rm(ct_shares.df, datalist)
   }
 
