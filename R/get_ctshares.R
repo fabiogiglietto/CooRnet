@@ -22,9 +22,8 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr select group_by filter %>% select_if
-#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar URLencode
 #' @importFrom tidytable unnest. bind_rows.
-#' @importFrom urltools puny_encode
 #'
 #' @export
 
@@ -98,7 +97,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
-                           "link=", urltools::puny_encode(link),
+                           "link=", utils::URLencode(link, reserved = TRUE),
                            "&platforms=", platforms,
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
