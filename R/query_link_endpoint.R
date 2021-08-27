@@ -17,54 +17,33 @@
 query_link_enpoint <- function(query.string, sleep_time=10) {
   resp <- tryCatch(
     {
-      httr::RETRY(verb = "GET", url = query.string, times=2)
+      httr::RETRY(verb = "GET", url = query.string, times=3, terminate_on=c(401), pause_base=sleep_time, pause_cap=60)
     },
     error=function(cond) {
+      print(paste(cond, "on call:", query.string))
       write(paste(cond, "on call:", query.string), file = "log.txt", append = TRUE)
       return(NA)
     }
   )
 
-  if (exists("resp")) {
-
-    if (httr::http_type(resp) != "application/json") {
-      stop("API did not return json", call. = FALSE)
-    }
-
-    status <- httr::status_code(resp)
-
-    tryCatch(
-      {
-        if (status == 200) {
-          response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
-          response <- jsonlite::fromJSON(response.json, flatten = TRUE)
-          return(response)
-        }
-        else if (status == 429)
-        {
-          print("API rate limit hit, sleeping...")
-          Sys.sleep(sleep_time)
-        }
-        else if (status == 401)
-        {
-          stop("Unauthorized, please check your token...")
-        }
-        else if (status == 400)
-        {
-          response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
-          response <- jsonlite::fromJSON(response.json, flatten = TRUE)
-          print(paste(status, ":", response$message, "on call:", resp$url))
-          write(paste(status, ":", response$message, "on call:", resp$url), file = "log.txt", append = TRUE)
-        }
-        else
-        {
-          print(paste(response$status, resp$url))
-          write(paste("Unexpected http response code", response$status, "on call ", resp$url), file = "log.txt", append = TRUE)
-        }
-      },
-      error=function(cond) {
-        print(paste("Error:", message(cond), "on call:", resp$url))
-        write(paste("Error:", message(cond), "on call:", resp$url), file = "log.txt", append = TRUE)
-      })
+  if (httr::status_code(resp) == 401) {
+    stop(
+      print("Unauthorized, please check your API token..."), call. = FALSE
+    )
   }
+
+  if (httr::status_code(resp) == 429) {
+      print("API rate limit hit, sleeping...")
+      write(paste("API rate limit hit on call:", resp$url), file = "log.txt", append = TRUE)
+      Sys.sleep(sleep_time)
+      return(NA)
+  }
+
+  if (httr::http_type(resp) != "application/json") {
+    stop("API did not return json", call. = FALSE)
+  }
+
+  response.json <- httr::content(resp, as = "text", type="application/json", encoding = "UTF-8")
+  parsed <- jsonlite::fromJSON(response.json, flatten = TRUE)
+  return(parsed)
 }
