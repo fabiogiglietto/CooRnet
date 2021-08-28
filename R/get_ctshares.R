@@ -126,11 +126,16 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
             datalist <- c(list(c$result$posts), datalist)
             }
           else break}
-        }
+      }
 
-        ct_shares.df <- tidytable::bind_rows.(datalist) # bind all results for an URL
+      if (length(datalist) != 0) {
+        ct_shares.df <- tidytable::bind_rows.(datalist)
+      }
+      else {
+        ct_shares.df <- NULL
+      }
 
-        if (nrow(ct_shares.df) > 0) {
+        if (!is.null(ct_shares.df)) {
           # keep only fields actually used by CooRnet
           ct_shares.df <- ct_shares.df %>%
             dplyr::select_if(names(.) %in% c("platformId",
@@ -169,7 +174,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                              "account.verified"))
           saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
         }
-      rm(ct_shares.df, datalist)
+      rm(ct_shares.df, datalist, c)
       }
   }
 
