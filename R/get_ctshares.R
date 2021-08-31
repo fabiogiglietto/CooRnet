@@ -118,9 +118,11 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         datalist <- c(list(c$result$posts), datalist)
 
         # paginate
-        while (!is.null(c$result$pagination$nextPage))
+        counter <- 0 # stop after 10,000 shares
+        while (counter <= 10 & !is.null(c$result$pagination$nextPage))
           {
             c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
+            counter <- sum(counter, 1)
 
             if (any(!is.na(c))) {
             datalist <- c(list(c$result$posts), datalist)
@@ -174,7 +176,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                              "account.verified"))
           saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
         }
-      rm(ct_shares.df, datalist, c)
+      rm(ct_shares.df, datalist, c, counter)
       }
   }
 

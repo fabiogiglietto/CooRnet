@@ -17,7 +17,7 @@
 query_link_enpoint <- function(query.string, sleep_time=10) {
   resp <- tryCatch(
     {
-      httr::RETRY(verb = "GET", url = query.string, times=3, terminate_on=c(401), pause_base=sleep_time, pause_cap=60)
+      httr::RETRY(verb = "GET", url = query.string, times=3, terminate_on=c(401), pause_base=sleep_time, pause_cap=sleep_time, pause_min=sleep_time)
     },
     error=function(cond) {
       print(paste(cond, "on call:", query.string))
