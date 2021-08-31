@@ -40,16 +40,14 @@ clean_urls <- function(df, url){
   df[[url]] <- gsub("\\/$", "", df[[url]]) # delete remaining trailing slash
   df[[url]] <- gsub("\\&$", "", df[[url]]) # delete remaining trailing &
 
-  df <- df[!grepl("^http://127.0.0.1", df[[url]]), ]
-
-  filter_urls <- c("https://www.youtube.com/watch", "https://www.youtube.com/", "http://www.youtube.com/",
+  filter_urls <- c("^http://127.0.0.1", "https://www.youtube.com/watch", "https://www.youtube.com/", "http://www.youtube.com/",
                    "https://youtu.be", "https://m.youtube.com",
                    "https://m.facebook.com/story", "https://m.facebook.com/", "https://www.facebook.com/",
                    "https://chat.whatsapp.com", "http://chat.whatsapp.com", "http://wa.me", "https://wa.me",
                    "https://api.whatsapp.com/send", "https://api.whatsapp.com/", "https://play.google.com/store/apps/details",
                    "https://www.twitter.com/")
 
-  df <- subset(df, !(df$url %in% filter_urls))
+  df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[url]]), ]
 
   df[[url]] <- urltools::url_decode(stringr::str_replace(df[[url]], 'https://www.facebook.com/login/?next=', ''))
   df <- df[grepl("http://|https://", df[[url]]),] # remove all the entries with the url that does not start with "http"
