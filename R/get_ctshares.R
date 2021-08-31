@@ -191,7 +191,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     saveRDS(ct_shares.df, "./rawdata/ct_shares.df.0.rds")
   }
 
-  if (is.null(ct_shares.df)){
+  if (length(ct_shares.df)==0){
     stop("\nNo ct_shares were found!")
   }
 
