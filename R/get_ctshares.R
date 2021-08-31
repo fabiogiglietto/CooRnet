@@ -181,7 +181,10 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   filenames <- list.files("./rawdata", pattern="*.rds", full.names=TRUE)
   datalist <- lapply(filenames, readRDS)
 
-  ct_shares.df <- tidytable::bind_rows.(datalist)
+  if (length(datalist) != 0) {
+    ct_shares.df <- tidytable::bind_rows.(datalist)
+  }
+
   rm(datalist)
 
   # save original API output
