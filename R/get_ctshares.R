@@ -56,6 +56,9 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   colnames(urls)[colnames(urls)==url_column] <- "url"
   colnames(urls)[colnames(urls)==date_column] <- "date"
 
+  # lowercase all the URLs
+  urls$url <- tolower(urls$url)
+
   # in case of duplicated urls, keeps only the one with the oldest date
   urls <- urls %>%
     group_by(url) %>%

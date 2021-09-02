@@ -48,6 +48,8 @@ if (newformat == TRUE) {
   df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from description
   df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
 
+  df$url <- tolower(df$url)
+
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
   urls <- df %>%
@@ -76,6 +78,8 @@ if (newformat == TRUE) {
   df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
+
+  df$url <- tolower(df$url)
 
   urls <- df %>%
     group_by(url) %>%
