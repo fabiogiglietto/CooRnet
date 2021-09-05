@@ -22,9 +22,8 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr select group_by filter %>% select_if
-#' @importFrom utils setTxtProgressBar txtProgressBar menu
+#' @importFrom utils setTxtProgressBar txtProgressBar menu URLencode
 #' @importFrom tidytable unnest. bind_rows.
-#' @importFrom urltools url_encode
 #'
 #' @export
 
