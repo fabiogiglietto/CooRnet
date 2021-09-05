@@ -22,7 +22,7 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr select group_by filter %>% select_if
-#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar menu
 #' @importFrom tidytable unnest. bind_rows.
 #' @importFrom urltools url_encode
 #'
@@ -122,7 +122,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         datalist <- c(list(c$result$posts), datalist)
 
         # paginate
-        counter <- 0 # stop after 10,000 shares
+        counter <- 0L
         while (counter <= 10 & !is.null(c$result$pagination$nextPage))
           {
             c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
@@ -180,8 +180,17 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                              "account.verified"))
           saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
         }
-      rm(ct_shares.df, datalist, c, counter)
+      rm(ct_shares.df, datalist, c)
       }
+  }
+
+
+  combine_shares <- utils::menu(c("Yes", "No"), title="\n\nDo you want to proceed by combining all the shares (depending on the number of shares and available ram it may crash r potentially involving lost (in part of all) of the already downloaded shares?")
+
+  if (combine_shares == 2) {
+    writeLines("\nProcess stopped on user request.")
+    gc(verbose = FALSE, reset = FALSE, full = TRUE)
+    return <- NA
   }
 
   filenames <- list.files("./rawdata", pattern="*.rds", full.names=TRUE)
@@ -201,6 +210,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   }
 
   if (length(ct_shares.df)==0){
+    writeLines("\n")
     stop("\nNo ct_shares were found!")
   }
 
