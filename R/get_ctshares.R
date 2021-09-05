@@ -178,7 +178,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   write(paste("Original URLs:", nrow(urls),
               "\nCT shares:", nrow(ct_shares.df),
               "\nUnique URLs in CT shares:", length(unique(ct_shares.df$expanded)),
-              "\nLinks in CT shares matching original URLs:", as.numeric(table(ct_shares.df$account.verified)["TRUE"])),
+              "\nLinks in CT shares matching original URLs:", as.numeric(table(ct_shares.df$is_orig)["TRUE"])),
         file = "log.txt",
         append = TRUE)
 
