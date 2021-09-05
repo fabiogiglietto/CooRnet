@@ -22,8 +22,9 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr select group_by filter %>% select_if
-#' @importFrom utils setTxtProgressBar txtProgressBar URLencode
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom tidytable unnest. bind_rows.
+#' @importFrom urltools url_encode
 #'
 #' @export
 
@@ -231,7 +232,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   write(paste("Original URLs:", nrow(urls),
               "\nCT shares:", nrow(ct_shares.df),
               "\nUnique URLs in CT shares:", length(unique(ct_shares.df$expanded)),
-              "\nLinks in CT shares matching original URLs:", as.numeric(table(ct_shares.df$account.verified)["TRUE"])),
+              "\nLinks in CT shares matching original URLs:", as.numeric(table(ct_shares.df$is_orig)["TRUE"])),
         file = "log.txt",
         append = TRUE)
 
