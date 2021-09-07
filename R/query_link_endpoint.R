@@ -17,7 +17,7 @@
 query_link_enpoint <- function(query.string, sleep_time=10) {
   resp <- tryCatch(
     {
-      httr::RETRY(verb = "GET", url = query.string, times=3, terminate_on=c(401), pause_base=sleep_time, pause_cap=sleep_time, pause_min=sleep_time)
+      httr::RETRY(verb = "GET", url = query.string, times=3, terminate_on=c(401), pause_base=sleep_time, pause_cap=10, pause_min=sleep_time)
     },
     error=function(cond) {
       print(paste(cond, "on call:", query.string))
@@ -30,7 +30,7 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
 
   tryCatch(
     {
-      if (status == 200) {
+      if (status == 200L) {
 
         if (httr::http_type(resp) != "application/json") {
           stop("API did not return json", call. = FALSE)
@@ -40,14 +40,14 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
         parsed <- jsonlite::fromJSON(response.json, flatten = TRUE)
         return(parsed)
       }
-      else if (status == 429)
+      else if (status == 429L)
       {
         message("API rate limit hit, sleeping...")
         write(paste("API rate limit hit on call:", resp$url), file = "log.txt", append = TRUE)
         Sys.sleep(sleep_time)
         return(NA)
       }
-      else if (status == 401)
+      else if (status == 401L)
       {
         stop("Unauthorized, please check your API token...", call. = FALSE)
       }
