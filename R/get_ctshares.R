@@ -192,7 +192,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   if (combine_shares == 2) {
     writeLines("\nProcess stopped on user request.")
     gc(verbose = FALSE, reset = FALSE, full = TRUE)
-    return <- NA
+    return(NA)
   }
 
   filenames <- list.files("./rawdata", pattern="*.rds", full.names=TRUE)
