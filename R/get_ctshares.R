@@ -22,7 +22,7 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr group_by filter %>%
-#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar menu URLencode
 #' @importFrom tidytable unnest. bind_rows.
 #'
 #' @export
@@ -82,8 +82,13 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
+  suppressWarnings(dir.create("./rawdata"))
+
   # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
+
+    url_ct_shares.df <- NULL
+    url_datalist <- list()
 
     utils::setTxtProgressBar(pb, pb$getVal()+1)
 
@@ -93,48 +98,90 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     link <- urls$url[i]
 
-    query <- httr::GET("https://api.crowdtangle.com/links",
-                       query = list(
-                         link = link,
-                         platforms = platforms,
-                         startDate  = gsub(" ", "T", as.character(startDate)),
-                         endDate  = gsub(" ", "T", as.character(endDate)),
-                         includeSummary = "false",
-                         includeHistory = "true",
-                         sortBy = "date",
-                         token = Sys.getenv("CROWDTANGLE_API_KEY"),
-                         count = nmax))
-    tryCatch(
-      {
-        json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
-        c <- jsonlite::fromJSON(json, flatten = TRUE)
-        if (c$status == 200) {
-          if (length(c$result$posts) > 0) {
+    # build the querystring
+    query.string <- paste0("https://api.crowdtangle.com/links?",
+                           "link=", utils::URLencode(link, reserved = TRUE),
+                           "&platforms=", platforms,
+                           "&startDate=", gsub(" ", "T", as.character(startDate)),
+                           "&endDate=", gsub(" ", "T", as.character(endDate)),
+                           "&includeSummary=FALSE",
+                           "&includeHistory=TRUE",
+                           "&sortBy=date",
+                           "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
+                           "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
+                           "&count=", nmax)
 
-            datalist <- c(list(c$result$posts), datalist)
+    c <- query_link_enpoint(query.string, sleep_time)
 
-            while (!is.null(c$result$pagination$nextPage))
-            {
-              query <- httr::GET(c$result$pagination$nextPage)
-              json <- httr::content(query, as = "text", type="application/json", encoding = "UTF-8")
-              c <- jsonlite::fromJSON(json, flatten = TRUE)
-              datalist <- c(list(c$result$posts), datalist)
-              Sys.sleep(sleep_time)
-            }
+    if (any(!is.na(c))) { # check if the call failed returning NA
+
+      if (length(c$result$posts) != 0) {
+
+        url_datalist <- c(list(c$result$posts), url_datalist)
+
+        # paginate
+        counter <- 1L
+        while (counter <= 10 & !is.null(c$result$pagination$nextPage)) # stop after 10 iterations
+        {
+          c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
+          counter <- sum(counter, 1)
+
+          if (any(!is.na(c))) {
+            url_datalist <- c(list(c$result$posts), url_datalist)
           }
-        }
-        else {
-          print(paste(c$status, i))
-          write(paste("Unexpected http response code", c$status, "on url with id", i), file = "log.txt", append = TRUE)
-        }
-      },
-      error=function(cond) {
-        print(paste("Error:", message(cond), "on URL:", i))
-        write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
-      },
-      finally={
-        Sys.sleep(sleep_time)
-      })
+          else break}
+      }
+
+      if (length(url_datalist) != 0) {
+        url_ct_shares.df <- tidytable::bind_rows.(url_datalist)
+      }
+      else {
+        url_ct_shares.df <- NULL
+      }
+
+      if (!is.null(url_ct_shares.df)) {
+        # keep only fields actually used by CooRnet
+        url_ct_shares.df <- url_ct_shares.df %>%
+          dplyr::select_if(names(.) %in% c("platformId",
+                                           "platform",
+                                           "date",
+                                           "type",
+                                           "expandedLinks",
+                                           "description",
+                                           "postUrl",
+                                           "history",
+                                           "id",
+                                           "message",
+                                           "title",
+                                           "statistics.actual.likeCount",
+                                           "statistics.actual.shareCount",
+                                           "statistics.actual.commentCount",
+                                           "statistics.actual.loveCount",
+                                           "statistics.actual.wowCount",
+                                           "statistics.actual.hahaCount",
+                                           "statistics.actual.sadCount",
+                                           "statistics.actual.angryCount",
+                                           "statistics.actual.thankfulCount",
+                                           "statistics.actual.careCount",
+                                           "account.id",
+                                           "account.name",
+                                           "account.handle",
+                                           "account.subscriberCount",
+                                           "account.url",
+                                           "account.platform",
+                                           "account.platformId",
+                                           "account.accountType",
+                                           "account.pageCategory",
+                                           "account.pageAdminTopCountry",
+                                           "account.pageDescription",
+                                           "account.pageCreatedDate",
+                                           "account.verified"))
+
+        datalist <- c(list(url_ct_shares.df), datalist)
+
+      }
+      rm(url_ct_shares.df, url_datalist, c)
+    }
   }
 
   ct_shares.df <- tidytable::bind_rows.(datalist)
