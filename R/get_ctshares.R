@@ -22,8 +22,9 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr group_by filter %>%
-#' @importFrom utils setTxtProgressBar txtProgressBar menu URLencode
+#' @importFrom utils setTxtProgressBar txtProgressBar menu
 #' @importFrom tidytable unnest. bind_rows.
+#' @importFrom urltools url_encode
 #'
 #' @export
 
@@ -82,8 +83,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
-  suppressWarnings(dir.create("./rawdata"))
-
   # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
 
@@ -100,7 +99,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
-                           "link=", utils::URLencode(link, reserved = TRUE),
+                           "link=", urltools::url_encode(url=link),
                            "&platforms=", platforms,
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
