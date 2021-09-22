@@ -9,7 +9,7 @@
 #' @param nmax integer: max number of results for query (default 1000 as per
 #' @param sleep_time pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.
 #' @param clean_urls logical: clean the URLs from tracking parameters (default FALSE)
-#' @param save_ctapi_logical: output saves the original CT API output in ./rawdata/ct_shares.df.0.rds
+#' @param mongo_url string: address of the MongoDB server in standard URI Format (default empty string)
 #' @param verbose logical: show progress messages?
 #'
 #' @return a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
@@ -25,10 +25,15 @@
 #' @importFrom dplyr select group_by filter %>% select_if
 #' @importFrom utils setTxtProgressBar txtProgressBar menu URLencode
 #' @importFrom tidytable unnest. bind_rows.
+#' @importFrom mongolite mongo
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE, verbose=FALSE) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", sleep_time=30, clean_urls=FALSE, verbose=FALSE) {
+
+  if(missing(mongo_url) | mongo_url=="") {
+    stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+  }
 
   if(missing(url_column)) {
     url_column = "url"
@@ -79,11 +84,24 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
+  # connect to the database
+  rnd <- floor(runif(1, min=10000000, max=100000000))
+  collection <- as.character(rnd)
+  conn <- mongolite::mongo(collection = collection,
+                           db = "ct_shares",
+                           url = paste0("mongodb+srv://",
+                                        Sys.getenv("MONGO_USER"),
+                                        ":",
+                                        Sys.getenv("MONGO_PWD"),
+                                        "@",
+                                        mongo_url,
+                                        "/"))
+
   # progress bar
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
-  suppressWarnings(dir.create("./rawdata"))
+  # suppressWarnings(dir.create("./rawdata"))
 
   # query the CrowdTangle API
   for (i in 1:nrow(urls)) {
@@ -180,50 +198,28 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                              "account.pageDescription",
                                              "account.pageCreatedDate",
                                              "account.verified"))
-          saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
+
+          ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
+          ct_shares.df <- dplyr::select(ct_shares.df, -original)
+
+          conn$insert(ct_shares.df) # save the shares in the database
+          # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
         }
       rm(ct_shares.df, datalist, c)
       }
   }
 
-
-  combine_shares <- utils::menu(c("Yes", "No"), title="\n\nDo you want to proceed by combining all the shares (depending on the number of shares and available ram it may crash r potentially involving lost (in part of all) of the already downloaded shares?")
-
-  if (combine_shares == 2) {
-    writeLines("\nProcess stopped on user request.")
-    gc(verbose = FALSE, reset = FALSE, full = TRUE)
-    return <- NA
-  }
-
-  filenames <- list.files("./rawdata", pattern="*.rds", full.names=TRUE)
-  datalist <- lapply(filenames, readRDS)
-
-  if (length(datalist) != 0) {
-    ct_shares.df <- tidytable::bind_rows.(datalist)
-  }
-
-  rm(datalist)
-
-  # save original API output
-  if(save_ctapi_output==TRUE){
-    unlink("rawdata", recursive = TRUE)
-    suppressWarnings(dir.create("./rawdata"))
-    saveRDS(ct_shares.df, "./rawdata/ct_shares.df.0.rds")
-  }
-
-  if (length(ct_shares.df)==0){
-    writeLines("\n")
-    stop("\nNo ct_shares were found!")
-  }
-
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
-  ct_shares.df <- ct_shares.df[ct_shares.df$account.url!="https://facebook.com/null",]
+  conn$remove('{"account_url" : "https://facebook.com/null"}')
 
-  # get rid of duplicates
+  # the idea is that most of the data processing can directly happen on the database to allow analysis of large quantity of share
+  # for now I just get the shares from the database here to make the rest of the code work
+
+  ct_shares.df <- conn$find('{}')
+
+  names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
+
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
-
-  ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
-  ct_shares.df <- dplyr::select(ct_shares.df, -original)
 
   # remove duplicates created by the unnesting
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
