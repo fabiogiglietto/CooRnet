@@ -212,8 +212,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   conn$remove('{"account_url" : "https://facebook.com/null"}')
 
-  # the idea is that most of the data processing can directly happen on the database to allow analysis of large quantity of share
-  # for now I just get the shares from the database here to make the rest of the code work
+  # the idea is that most of the data processing can happen directly on the database to allow analysis of large quantity of urls/shares
+  # for now I just get the shares from the database in to a data frame here to make the rest of the code work
 
   ct_shares.df <- conn$find('{}')
 
