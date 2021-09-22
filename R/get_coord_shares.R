@@ -191,7 +191,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     total <- nrow(URLs)
     pb <- txtProgressBar(max=total, style=3)
 
-    for (i in 1:nrow(URLs)) {
+    for (i in 1:total) {
 
       utils::setTxtProgressBar(pb, pb$getVal()+1)
 
@@ -215,11 +215,11 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       }
     }
 
-    datalist <- tidytable::bind_rows.(datalist)
-
-    if(nrow(datalist)==0){
-      stop("there are not enough shares!")
+    if(length(datalist)==0){
+      stop("there are not enough coordinated shares!", call. = FALSE)
     }
+
+    datalist <- tidytable::bind_rows.(datalist)
 
     coordinated_shares <- tidytable::unnest.(datalist)
     rm(datalist)
