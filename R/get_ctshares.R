@@ -29,10 +29,14 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", sleep_time=30, clean_urls=FALSE, verbose=FALSE) {
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", mongo_database = "", sleep_time=30, clean_urls=FALSE, verbose=FALSE) {
 
   if(missing(mongo_url) | mongo_url=="") {
     stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+  }
+
+  if(mongo_database=="") {
+    stop("Please provide the name of the mongoDB database")
   }
 
   if(missing(url_column)) {
@@ -87,15 +91,18 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # connect to the database
   rnd <- floor(runif(1, min=10000000, max=100000000))
   collection <- as.character(rnd)
-  conn <- mongolite::mongo(collection = collection,
-                           db = "ct_shares",
+  conn <- mongolite::mongo(collection = "urls",
+                           db = mongo_database,
                            url = paste0("mongodb+srv://",
                                         Sys.getenv("MONGO_USER"),
                                         ":",
                                         Sys.getenv("MONGO_PWD"),
                                         "@",
-                                        mongo_url,
-                                        "/"))
+                                        mongo_url))
+
+  # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
+  if(conn$count() > 0) conn$drop()
+  conn$insert(urls)
 
   # progress bar
   total <- nrow(urls)
@@ -103,8 +110,26 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # suppressWarnings(dir.create("./rawdata"))
 
-  # query the CrowdTangle API
-  for (i in 1:nrow(urls)) {
+  # Define an interation parameter to use for running over all the collection
+  it <- conn$iterate('{}')
+
+  # Define another database in mongoDB database
+  ct_shares_mdb <- mongolite::mongo(collection = "shares_info",
+                                    db = mongo_database,
+                                    url = paste0("mongodb+srv://",
+                                                 Sys.getenv("MONGO_USER"),
+                                                 ":",
+                                                 Sys.getenv("MONGO_PWD"),
+                                                 "@",
+                                                 mongo_url))
+
+  if(ct_shares_mdb$count() > 0) ct_shares_mdb$drop()
+
+  # Iterate until the 'is' variable is NULL
+  while(!is.null(x <- it$one())){
+
+    # query the CrowdTangle API
+    # for (i in 1:nrow(urls)) {
 
     ct_shares.df <- NULL
     datalist <- list()
@@ -112,10 +137,10 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     utils::setTxtProgressBar(pb, pb$getVal()+1)
 
     # set date limits: one week after date_published
-    startDate <- as.POSIXct(urls$date[i], origin="1970-01-01", tz = "UTC")
+    startDate <- as.POSIXct(x$date, origin="1970-01-01", tz = "UTC")
     endDate <- startDate+604800
 
-    link <- urls$url[i]
+    link <- x$url
 
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
@@ -124,14 +149,14 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
                            "&includeSummary=FALSE",
-                           "&includeHistory=TRUE",
+                           "&includeHistory=FALSE",
                            "&sortBy=date",
                            "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
                            "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
                            "&count=", nmax)
 
     # call the API, returns NA if call fails
-    if (verbose) message("Calling: ", query.string, " (url_id: ", i, ")")
+    if (verbose) message("Calling: ", query.string, " (link: ", link, ")")
     c <- query_link_enpoint(query.string, sleep_time)
 
     if (any(!is.na(c))) { # check if the call failed returning NA
@@ -143,14 +168,14 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         # paginate
         counter <- 1L
         while (counter <= 10 & !is.null(c$result$pagination$nextPage)) # stop after 10 iterations
-          {
-            if (verbose) message("Calling: ", c$result$pagination$nextPage, " (url_id: ", i, "(", counter, "))")
-            c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
-            counter <- sum(counter, 1)
+        {
+          if (verbose) message("Calling: ", c$result$pagination$nextPage, " (link: ", link, "(", counter, "))")
+          c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
+          counter <- sum(counter, 1)
 
-            if (any(!is.na(c))) {
+          if (any(!is.na(c))) {
             datalist <- c(list(c$result$posts), datalist)
-            }
+          }
           else break}
       }
 
@@ -161,68 +186,84 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         ct_shares.df <- NULL
       }
 
-        if (!is.null(ct_shares.df)) {
-          # keep only fields actually used by CooRnet
-          ct_shares.df <- ct_shares.df %>%
-            dplyr::select_if(names(.) %in% c("platformId",
-                                             "platform",
-                                             "date",
-                                             "type",
-                                             "expandedLinks",
-                                             "description",
-                                             "postUrl",
-                                             "history",
-                                             "id",
-                                             "message",
-                                             "title",
-                                             "statistics.actual.likeCount",
-                                             "statistics.actual.shareCount",
-                                             "statistics.actual.commentCount",
-                                             "statistics.actual.loveCount",
-                                             "statistics.actual.wowCount",
-                                             "statistics.actual.hahaCount",
-                                             "statistics.actual.sadCount",
-                                             "statistics.actual.angryCount",
-                                             "statistics.actual.thankfulCount",
-                                             "statistics.actual.careCount",
-                                             "account.id",
-                                             "account.name",
-                                             "account.handle",
-                                             "account.subscriberCount",
-                                             "account.url",
-                                             "account.platform",
-                                             "account.platformId",
-                                             "account.accountType",
-                                             "account.pageCategory",
-                                             "account.pageAdminTopCountry",
-                                             "account.pageDescription",
-                                             "account.pageCreatedDate",
-                                             "account.verified"))
+      if (!is.null(ct_shares.df)) {
+        # keep only fields actually used by CooRnet
+        ct_shares.df <- ct_shares.df %>%
+          dplyr::select_if(names(.) %in% c("platformId",
+                                           "platform",
+                                           "date",
+                                           "type",
+                                           "expandedLinks",
+                                           "description",
+                                           "postUrl",
+                                           # "history",
+                                           "id",
+                                           "message",
+                                           "title",
+                                           "statistics.actual.likeCount",
+                                           "statistics.actual.shareCount",
+                                           "statistics.actual.commentCount",
+                                           "statistics.actual.loveCount",
+                                           "statistics.actual.wowCount",
+                                           "statistics.actual.hahaCount",
+                                           "statistics.actual.sadCount",
+                                           "statistics.actual.angryCount",
+                                           "statistics.actual.thankfulCount",
+                                           "statistics.actual.careCount",
+                                           "account.id",
+                                           "account.name",
+                                           "account.handle",
+                                           "account.subscriberCount",
+                                           "account.url",
+                                           "account.platform",
+                                           "account.platformId",
+                                           "account.accountType",
+                                           "account.pageCategory",
+                                           "account.pageAdminTopCountry",
+                                           "account.pageDescription",
+                                           "account.pageCreatedDate",
+                                           "account.verified"))
 
-          ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
-          ct_shares.df <- dplyr::select(ct_shares.df, -original)
+        ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
+        ct_shares.df <- dplyr::select(ct_shares.df, -original)
+        ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
 
-          conn$insert(ct_shares.df) # save the shares in the database
-          # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
-        }
-      rm(ct_shares.df, datalist, c)
+        ct_shares_mdb$insert(ct_shares.df) # save the shares in the database
+        # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
       }
+      rm(ct_shares.df, datalist, c)
+    }
   }
 
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
-  conn$remove('{"account_url" : "https://facebook.com/null"}')
+  ct_shares_mdb$remove('{"account_url" : "https://facebook.com/null"}')
+
+  # ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
+
+  # Iterate on aggregation
+  it <- ct_shares_mdb$aggregate(
+    '[{"$group":{"_id":"$id", "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}},{"$match": {"count": {"$gt": 1}}}]',
+    options = '{"allowDiskUse":true}',
+    iterate = TRUE
+  )
+
+  final_dups_list <- list()
+
+  while(!is.null(x <- it$one())){
+    final_dups_list <- c(final_dups_list,x$dups[-1])
+  }
+
+  for (post_id in final_dups_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}',post_id))
 
   # the idea is that most of the data processing can happen directly on the database to allow analysis of large quantity of urls/shares
   # for now I just get the shares from the database in to a data frame here to make the rest of the code work
 
-  ct_shares.df <- conn$find('{}')
+  ct_shares.df <- ct_shares_mdb$find('{}')
 
   names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
 
-  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
-
   # remove duplicates created by the unnesting
-  ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+  # ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
 
   # remove shares performed more than one week from first share
   ct_shares.df <- ct_shares.df %>%
