@@ -10,9 +10,10 @@ get_ctshares(
   date_column,
   platforms = "facebook,instagram",
   nmax = 1000,
+  mongo_url = "",
+  mongo_database = "",
   sleep_time = 30,
   clean_urls = FALSE,
-  save_ctapi_output = FALSE,
   verbose = FALSE
 )
 }
@@ -27,13 +28,15 @@ get_ctshares(
 
 \item{nmax}{integer: max number of results for query (default 1000 as per}
 
+\item{mongo_url}{string: address of the MongoDB server in standard URI Format (required, default empty string will raise an error)}
+
+\item{mongo_database}{string: the name of the MongoDB used to host the collections. Name can be choosen by the user (required, default empty string  will raise an error)}
+
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.}
 
 \item{clean_urls}{logical: clean the URLs from tracking parameters (default FALSE)}
 
 \item{verbose}{logical: show progress messages?}
-
-\item{save_ctapi_logical:}{output saves the original CT API output in ./rawdata/ct_shares.df.0.rds}
 }
 \value{
 a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news

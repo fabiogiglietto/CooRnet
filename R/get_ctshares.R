@@ -9,7 +9,8 @@
 #' @param nmax integer: max number of results for query (default 1000 as per
 #' @param sleep_time pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.
 #' @param clean_urls logical: clean the URLs from tracking parameters (default FALSE)
-#' @param mongo_url string: address of the MongoDB server in standard URI Format (default empty string)
+#' @param mongo_url string: address of the MongoDB server in standard URI Format (required, default empty string will raise an error)
+#' @param mongo_database string: the name of the MongoDB used to host the collections. Name can be choosen by the user (required, default empty string  will raise an error)
 #' @param verbose logical: show progress messages?
 #'
 #' @return a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
@@ -88,49 +89,87 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
-  # connect to the database
-  rnd <- floor(runif(1, min=10000000, max=100000000))
-  collection <- as.character(rnd)
-  conn <- mongolite::mongo(collection = "urls",
-                           db = mongo_database,
-                           url = paste0("mongodb+srv://",
+  # open a connection to the database to store original URLs
+  conn <- tryCatch(
+    {
+      mongolite::mongo(collection = "urls",
+                       db = mongo_database,
+                       url = paste0("mongodb+srv://",
                                         Sys.getenv("MONGO_USER"),
                                         ":",
                                         Sys.getenv("MONGO_PWD"),
                                         "@",
                                         mongo_url))
+    },
+    error=function(cond) {
+      message("Error while trying to esablish a connection with MongoDB :")
+      message(cond)
+      # Choose a return value in case of error
+      return(NA)
+      },
+    warning=function(cond) {
+      message("Here's the original warning message:")
+      message(cond)
+      # Choose a return value in case of warning
+      return(NULL)},
+    finally={
+      message("Connection with MongoDb esablished...")
+    }
+  )
 
   # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
-  if(conn$count() > 0) conn$drop()
+  if(conn$count() > 0) {
+    conn$drop()
+    message("A previously existing collection has been erased!")
+    }
   conn$insert(urls)
 
   # progress bar
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
-  # suppressWarnings(dir.create("./rawdata"))
-
   # Define an interation parameter to use for running over all the collection
   it <- conn$iterate('{}')
 
-  # Define another database in mongoDB database
-  ct_shares_mdb <- mongolite::mongo(collection = "shares_info",
-                                    db = mongo_database,
-                                    url = paste0("mongodb+srv://",
-                                                 Sys.getenv("MONGO_USER"),
-                                                 ":",
-                                                 Sys.getenv("MONGO_PWD"),
-                                                 "@",
-                                                 mongo_url))
+  # Define another mongoDB connection for a new collection to store CrowdTangle shares
+  ct_shares_mdb <- tryCatch(
+    {
+      mongolite::mongo(collection = "shares_info",
+                       db = mongo_database,
+                       url = paste0("mongodb+srv://",
+                                    Sys.getenv("MONGO_USER"),
+                                    ":",
+                                    Sys.getenv("MONGO_PWD"),
+                                    "@",
+                                    mongo_url))
+      },
+    error=function(cond) {
+      message("Error while trying to esablish a connection with MongoDB :")
+      message(cond)
+      # Choose a return value in case of error
+      return(NA)
+    },
+    warning=function(cond) {
+      message("Here's the original warning message:")
+      message(cond)
+      # Choose a return value in case of warning
+      return(NULL)
+      },
+    finally={
+      message("Connection with MongoDb esablished")
+    }
+  )
 
-  if(ct_shares_mdb$count() > 0) ct_shares_mdb$drop()
+  # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
+  if(ct_shares_mdb$count() > 0) {
+    ct_shares_mdb$drop()
+    message("a previously existing collection has been erased.")
+  }
 
-  # Iterate until the 'is' variable is NULL
+  # Iterate until the 'it' variable is NULL
   while(!is.null(x <- it$one())){
 
     # query the CrowdTangle API
-    # for (i in 1:nrow(urls)) {
-
     ct_shares.df <- NULL
     datalist <- list()
 
@@ -149,7 +188,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
                            "&includeSummary=FALSE",
-                           "&includeHistory=FALSE",
+                           "&includeHistory=FALSE", # history takes a lot of space on the db
                            "&sortBy=date",
                            "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
                            "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
@@ -227,6 +266,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
         ct_shares.df <- dplyr::select(ct_shares.df, -original)
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+        ct_shares.df$is_orig <- ifelse(ct_shares.df$expanded %in% urls, TRUE, FALSE)
 
         ct_shares_mdb$insert(ct_shares.df) # save the shares in the database
         # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
@@ -238,11 +278,9 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   ct_shares_mdb$remove('{"account_url" : "https://facebook.com/null"}')
 
-  # ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
-
   # Iterate on aggregation
   it <- ct_shares_mdb$aggregate(
-    '[{"$group":{"_id":"$id", "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}},{"$match": {"count": {"$gt": 1}}}]',
+    '[{"$group":{"_id":"$id", "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
     options = '{"allowDiskUse":true}',
     iterate = TRUE
   )
@@ -262,9 +300,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
 
-  # remove duplicates created by the unnesting
-  # ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
-
   # remove shares performed more than one week from first share
   ct_shares.df <- ct_shares.df %>%
     dplyr::group_by(expanded) %>%
@@ -274,8 +309,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   if(clean_urls==TRUE){
     ct_shares.df <- clean_urls(ct_shares.df, "expanded")
   }
-
-  ct_shares.df$is_orig <- ct_shares.df$expanded %in% urls$url
 
   # write log
   write(paste("Original URLs:", nrow(urls),
