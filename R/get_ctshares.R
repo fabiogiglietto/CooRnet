@@ -156,7 +156,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       return(NULL)
       },
     finally={
-      message("Connection with MongoDb esablished")
+      message("\nConnection with MongoDb esablished")
     }
   )
 
