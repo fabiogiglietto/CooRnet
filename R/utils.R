@@ -59,6 +59,75 @@ clean_urls <- function(df, url){
   return(df)
 }
 
+clean_urls_mongo <- function(df, url){
+
+  df <- df %>%
+        dplyr::mutate(cleaned_url = url)
+
+  cleaned_url_name <- 'cleaned_url'
+
+  df$cleaned_url[which(grepl("\\.\\.\\.$", df[[cleaned_url_name]]))] <- ""
+  df$cleaned_url[which(grepl("/url?sa=t&source=web", df[[cleaned_url_name]], fixed=TRUE))] <- ""
+
+  # df <- df[!grepl("\\.\\.\\.$", df[[cleaned_url]]),]
+  # df <- df[!grepl("/url?sa=t&source=web", df[[cleaned_url]], fixed=TRUE),]
+
+  paramters_to_clean <- paste("\\?utm_.*",
+                              "feed_id.*",
+                              "&_unique_id.*",
+                              "\\?#.*",
+                              "\\?ref.*",
+                              "\\?fbclid.*",
+                              "\\?rss.*",
+                              "\\?ico.*",
+                              "\\?recruiter.*",
+                              "\\?sr_share_.*",
+                              "\\?fb_rel.*",
+                              "\\?social.*",
+                              "\\?intcmp_.*",
+                              "\\?xrs.*",
+                              "\\?CMP.*",
+                              "\\?tid.*",
+                              "\\?ncid.*",
+                              "&utm_.*",
+                              "\\?rbs&utm_hp_ref.*",
+                              "/#\\..*",
+                              "\\?mobile.*",
+                              "&fbclid.*",
+                              ")",
+                              "/$",
+                              sep = "|")
+
+  df[[cleaned_url_name]] <- gsub(paramters_to_clean, "", df[[cleaned_url_name]])
+  df[[cleaned_url_name]] <- gsub(paramters_to_clean, "", df[[cleaned_url_name]])
+  df[[cleaned_url_name]] <- gsub(paramters_to_clean, "", df[[cleaned_url_name]])
+
+  df[[cleaned_url_name]] <- gsub(".*(http)", "\\1", df[[cleaned_url_name]]) # delete all before "http"
+  df[[cleaned_url_name]] <- gsub("\\/$", "", df[[cleaned_url_name]]) # delete remaining trailing slash
+  df[[cleaned_url_name]] <- gsub("\\&$", "", df[[cleaned_url_name]]) # delete remaining trailing &
+
+  filter_urls <- c("^http://127.0.0.1", "https://www.youtube.com/watch", "https://www.youtube.com/", "http://www.youtube.com/",
+                   "https://youtu.be", "https://m.youtube.com", "https://m.facebook.com/story",
+                   "https://m.facebook.com/", "https://www.facebook.com/", "https://chat.whatsapp.com",
+                   "http://chat.whatsapp.com", "http://wa.me", "https://wa.me", "https://api.whatsapp.com/send",
+                   "https://api.whatsapp.com/", "https://play.google.com/store/apps/details", "https://www.twitter.com/",
+                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login")
+
+  # df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url]]), ]
+  df$cleaned_url[which(grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url_name]]))] <- ""
+
+  df[[cleaned_url_name]] <- urltools::url_decode(stringr::str_replace(df[[cleaned_url_name]], 'https://www.facebook.com/login/?next=', ''))
+
+  # df <- df[grepl("http://|https://", df[[cleaned_url]]),] # remove all the entries with the url that does not start with "http"
+  df$cleaned_url[which(!grepl("http://|https://", df[[cleaned_url_name]]))] <- ""
+
+  df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], 'm.youtube.com', 'www.youtube.com')
+  df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], 'youtu.be/', 'www.youtube.com/watch?v=')
+  df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], '^(.*youtube\\.com/watch\\?).*(v=[^\\&]*).*', '\\1\\2') # cleanup YouTube URLs
+
+  return(df)
+}
+
 #' query_link_enpoint
 #'
 #' A wrapper for CrowdTangle API Links Endpoint. Returns a dataframe of posts matching the given URL

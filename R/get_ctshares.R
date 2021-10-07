@@ -102,7 +102,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                         mongo_url))
     },
     error=function(cond) {
-      message("Error while trying to esablish a connection with MongoDB :")
+      message("Error while trying to establish a connection with MongoDB :")
       message(cond)
       # Choose a return value in case of error
       return(NA)
@@ -113,7 +113,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
       # Choose a return value in case of warning
       return(NULL)},
     finally={
-      message("Connection with MongoDb esablished...")
+      message("Connection with MongoDb established...")
     }
   )
 
@@ -266,7 +266,15 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
         ct_shares.df <- dplyr::select(ct_shares.df, -original)
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
-        ct_shares.df$is_orig <- ifelse(ct_shares.df$expanded %in% urls, TRUE, FALSE)
+
+        ct_shares.df <- as.data.frame(ct_shares.df)
+        ct_shares.df <- ct_shares.df %>%
+                        dplyr::rowwise() %>%
+                        dplyr::mutate(is_orig = if_else(expanded %in% urls$url, TRUE, FALSE))
+                        # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
+
+        # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
+        # ct_shares.df$is_orig <- ifelse(n_original_url > 0, TRUE, FALSE)
 
         ct_shares_mdb$insert(ct_shares.df) # save the shares in the database
         # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
@@ -278,7 +286,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   ct_shares_mdb$remove('{"account_url" : "https://facebook.com/null"}')
 
-  # Iterate on aggregation
+  # Iterate on aggregation for getting all duplicates of the same post_id
   it <- ct_shares_mdb$aggregate(
     '[{"$group":{"_id":"$id", "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
     options = '{"allowDiskUse":true}',
@@ -287,8 +295,9 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   final_dups_list <- list()
 
+  # remove duplicated post_ids given that the mongoDB id is unique
   while(!is.null(x <- it$one())){
-    final_dups_list <- c(final_dups_list,x$dups[-1])
+    final_dups_list <- append(final_dups_list,x$dups[-1])
   }
 
   for (post_id in final_dups_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}',post_id))
@@ -296,8 +305,50 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   # the idea is that most of the data processing can happen directly on the database to allow analysis of large quantity of urls/shares
   # for now I just get the shares from the database in to a data frame here to make the rest of the code work
 
-  ct_shares.df <- ct_shares_mdb$find('{}')
+  if(clean_urls==TRUE){
 
+    # Create a dataframe with all expanded URLs and a dummy variable to use the clean_urls function in utils.R
+    # old_expanded_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$old_expanded"}}]',options = '{"allowDiskUse":true}'))
+    # old_expanded_df$n_row <- seq.int(1, length(example$`_id`))
+
+    # Get the list of all cleaned expanded URLs
+    # new_expanded_df <- clean_urls(old_expanded_df, "_id")
+
+    # ct_shares_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded"}}]',options = '{"allowDiskUse":true}'))
+
+    # Find urls in the mongoDB database and aggregate in a dataframe
+    urls_df <- ct_shares_mdb$aggregate(
+              '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
+              options = '{"allowDiskUse":true}')
+    names(urls_df) <- c("url","id_number_list")
+
+    # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
+    cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
+
+    # Erase URLs in the database if they are removed troughtout the cleaning procedure
+    erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
+    final_erased_ids_list <- list()
+    for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
+    for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
+
+    # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
+    # Occurences of " need to be substituted with \" within the update query
+    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url == "")])
+    original_urls_list <- gsub('//"','\"',original_urls_list)
+    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url == "")])
+
+    for (i in 1:length(original_urls_list)){
+
+      original_url <- original_urls_list[i]
+      cleaned_url <- cleaned_urls_list[i]
+
+      ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+    }
+
+    write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
+  }
+
+  ct_shares.df <- ct_shares_mdb$find('{}')
   names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
 
   # remove shares performed more than one week from first share
@@ -305,10 +356,10 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     dplyr::group_by(expanded) %>%
     dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
-  # clean the expanded URLs
-  if(clean_urls==TRUE){
-    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
-  }
+  # Aggregate list of dates for each expanded url with more than a share
+  # it <- ct_shares_mdb$aggregate(
+  # '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
+  # options = '{"allowDiskUse":true}')
 
   # write log
   write(paste("Original URLs:", nrow(urls),
