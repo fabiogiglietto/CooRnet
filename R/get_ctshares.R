@@ -270,7 +270,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         ct_shares.df <- as.data.frame(ct_shares.df)
         ct_shares.df <- ct_shares.df %>%
                         dplyr::rowwise() %>%
-                        dplyr::mutate(is_orig = if_else(expanded %in% urls$url, TRUE, FALSE))
+                        dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
                         # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
 
         # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
