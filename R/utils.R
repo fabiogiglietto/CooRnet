@@ -194,3 +194,46 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
     })
 }
 
+connect_mongodb_cluster <- function(mongo_database = "", mongo_url = "") {
+
+  if(missing(mongo_url) | mongo_url=="") {
+    stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+  }
+
+  if(mongo_database=="") {
+    stop("Please provide the name of the mongoDB database")
+  }
+
+  # open a connection to the database to store original URLs
+  conn <- tryCatch(
+    {
+      mongolite::mongo(collection = "urls",
+                       db = mongo_database,
+                       url = paste0("mongodb+srv://",
+                                    Sys.getenv("MONGO_USER"),
+                                    ":",
+                                    Sys.getenv("MONGO_PWD"),
+                                    "@",
+                                    mongo_url))
+    },
+    error=function(cond) {
+      message("Error while trying to establish a connection with MongoDB:")
+      message(cond)
+      # Choose a return value in case of error
+      return(NA)
+    },
+    warning=function(cond) {
+      message("Here's the original warning message:")
+      message(cond)
+      # Choose a return value in case of warning
+      return(NULL)},
+    finally={
+      message("Connection with MongoDB established...")
+    }
+  )
+
+  return(conn)
+
+}
+
+

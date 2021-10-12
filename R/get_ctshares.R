@@ -30,15 +30,7 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", mongo_database = "", sleep_time=30, clean_urls=FALSE, verbose=FALSE) {
-
-  if(missing(mongo_url) | mongo_url=="") {
-    stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
-  }
-
-  if(mongo_database=="") {
-    stop("Please provide the name of the mongoDB database")
-  }
+get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", mongo_database = "", sleep_time=30, is_df_saved = FALSE, clean_urls=FALSE, verbose=FALSE) {
 
   if(missing(url_column)) {
     url_column = "url"
@@ -89,39 +81,19 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
-  # open a connection to the database to store original URLs
-  conn <- tryCatch(
-    {
-      mongolite::mongo(collection = "urls",
-                       db = mongo_database,
-                       url = paste0("mongodb+srv://",
-                                        Sys.getenv("MONGO_USER"),
-                                        ":",
-                                        Sys.getenv("MONGO_PWD"),
-                                        "@",
-                                        mongo_url))
-    },
-    error=function(cond) {
-      message("Error while trying to establish a connection with MongoDB :")
-      message(cond)
-      # Choose a return value in case of error
-      return(NA)
-      },
-    warning=function(cond) {
-      message("Here's the original warning message:")
-      message(cond)
-      # Choose a return value in case of warning
-      return(NULL)},
-    finally={
-      message("Connection with MongoDb established...")
-    }
-  )
+  conn <- connect_mongodb_cluster(mongo_database, mongo_url)
 
   # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
   if(conn$count() > 0) {
+    message("Database already exists. Existing files may be erased, choose a new path if this is not intended.")
+    invisible(readline(prompt="Press [Enter] to continue or [Esc] to exit"))
     conn$drop()
-    message("A previously existing collection has been erased!")
-    }
+    # invisible(readline("Press q to exit or c to continue"))
+    # b <- scan("stdin", character(), n=1)
+    # if (b=="q") break
+    # if (b=="c")
+  }
+
   conn$insert(urls)
 
   # progress bar
@@ -333,9 +305,9 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
     # Occurences of " need to be substituted with \" within the update query
-    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url == "")])
-    original_urls_list <- gsub('//"','\"',original_urls_list)
-    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url == "")])
+    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url != "")])
+    original_urls_list <- gsub('"','\"',original_urls_list)
+    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
 
     for (i in 1:length(original_urls_list)){
 
@@ -348,18 +320,40 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
   }
 
-  ct_shares.df <- ct_shares_mdb$find('{}')
-  names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
-
   # remove shares performed more than one week from first share
-  ct_shares.df <- ct_shares.df %>%
-    dplyr::group_by(expanded) %>%
-    dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
+  # ct_shares.df <- ct_shares.df %>%
+  #  dplyr::group_by(expanded) %>%
+  #  dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
   # Aggregate list of dates for each expanded url with more than a share
-  # it <- ct_shares_mdb$aggregate(
-  # '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
-  # options = '{"allowDiskUse":true}')
+  it <- ct_shares_mdb$aggregate(
+  '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
+  options = '{"allowDiskUse":true}',
+  iterate = TRUE)
+
+  erased_ids_list <- list()
+
+  while(!is.null(x <- it$one())){
+
+    date_list <- strptime(x$date_list, "%Y-%m-%d %H:%M:%S")
+
+    # id_list <- x$ids_list[order(date_list, decreasing=FALSE)]
+    # date_list <- sort(date_list, decreasing=FALSE)
+
+    is_week <- difftime(max(date_list), min(date_list), units="secs") <= 604800
+
+    if (is_week) {
+      ids_list<- x$ids_list
+      erased_ids_list <- append(erased_ids_list, ids_list)
+    }
+  }
+
+  for (url_id in erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
+
+  if (is_df_saved==TRUE) {
+    ct_shares.df <- ct_shares_mdb$find('{}')
+    names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
+  }
 
   # write log
   write(paste("Original URLs:", nrow(urls),
