@@ -81,17 +81,28 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
-  conn <- connect_mongodb_cluster(mongo_database, mongo_url)
+  conn <- connect_mongodb_cluster("urls", mongo_database, mongo_url)
 
   # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
   if(conn$count() > 0) {
-    message("Database already exists. Existing files may be erased, choose a new path if this is not intended.")
+    message("URLs database already exists. Existing files may be erased, choose a new path if this is not intended.")
     invisible(readline(prompt="Press [Enter] to continue or [Esc] to exit"))
     conn$drop()
     # invisible(readline("Press q to exit or c to continue"))
     # b <- scan("stdin", character(), n=1)
     # if (b=="q") break
     # if (b=="c")
+  }
+
+  # Define another mongoDB connection for a new collection to store CrowdTangle shares
+
+  ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url)
+
+  # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
+  if(ct_shares_mdb$count() > 0) {
+    message("Crowdtangle shares database already exists. Existing files may be erased, choose a new path if this is not intended.")
+    invisible(readline(prompt="Press [Enter] to continue or [Esc] to exit"))
+    ct_shares_mdb$drop()
   }
 
   conn$insert(urls)
@@ -102,41 +113,6 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # Define an interation parameter to use for running over all the collection
   it <- conn$iterate('{}')
-
-  # Define another mongoDB connection for a new collection to store CrowdTangle shares
-  ct_shares_mdb <- tryCatch(
-    {
-      mongolite::mongo(collection = "shares_info",
-                       db = mongo_database,
-                       url = paste0("mongodb+srv://",
-                                    Sys.getenv("MONGO_USER"),
-                                    ":",
-                                    Sys.getenv("MONGO_PWD"),
-                                    "@",
-                                    mongo_url))
-      },
-    error=function(cond) {
-      message("Error while trying to esablish a connection with MongoDB :")
-      message(cond)
-      # Choose a return value in case of error
-      return(NA)
-    },
-    warning=function(cond) {
-      message("Here's the original warning message:")
-      message(cond)
-      # Choose a return value in case of warning
-      return(NULL)
-      },
-    finally={
-      message("\nConnection with MongoDb esablished")
-    }
-  )
-
-  # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
-  if(ct_shares_mdb$count() > 0) {
-    ct_shares_mdb$drop()
-    message("a previously existing collection has been erased.")
-  }
 
   # Iterate until the 'it' variable is NULL
   while(!is.null(x <- it$one())){

@@ -194,7 +194,7 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
     })
 }
 
-connect_mongodb_cluster <- function(mongo_database = "", mongo_url = "") {
+  connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url) {
 
   if(missing(mongo_url) | mongo_url=="") {
     stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
@@ -207,7 +207,7 @@ connect_mongodb_cluster <- function(mongo_database = "", mongo_url = "") {
   # open a connection to the database to store original URLs
   conn <- tryCatch(
     {
-      mongolite::mongo(collection = "urls",
+      mongolite::mongo(collection = mongo_collection,
                        db = mongo_database,
                        url = paste0("mongodb+srv://",
                                     Sys.getenv("MONGO_USER"),
