@@ -1,0 +1,157 @@
+#' get_coord_shares_mongo
+#'
+#' Given a dataset of CrowdTangle shares and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
+#'
+#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
+#' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
+#' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
+#' @param mongo_collection string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
+#' @param parallel enables parallel processing to speed up the process taking advantage of multiple cores (default FALSE). The number of cores is automatically set to all the available cores minus one
+#' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
+#' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
+#' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
+#' @param gtimestamps add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)
+#'
+#' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
+#'
+#' @examples
+#' output <- get_coord_shares(ct_shares.df)
+#'
+#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE)
+#'
+#' # Extract the outputs
+#' get_outputs(output)
+#'
+#' # Save the data frame of CrowdTangle shares marked with the “is_coordinated” column
+#' write.csv(ct_shares_marked.df, file=“ct_shares_marked.df.csv”)
+#'
+#' # Save the graph in a Gephi readable format
+#' library(igraph)
+#' write.graph(highly_connected_g, file="highly_connected_g.graphml", format = "graphml")
+#'
+#' # Save the data frame with the information about the highly connected coordinated entities
+#' write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
+#'
+#' @importFrom stats quantile
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom dplyr mutate mutate select filter
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom foreach foreach %dopar%
+#' @importFrom doSNOW registerDoSNOW
+#' @importFrom tidytable unnest. bind_rows.
+#'
+#' @export
+
+get_coord_shares <- function(mongo_database, mongo_url=NULL, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE) {
+
+  options(warn=-1)
+
+  if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+
+  # Connect to the ct_shares_info collection in mongoDB database
+  ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url)
+
+  # Check if ct_shares_mdb already existed. Otherwise the function will be closed since no available database already exists
+  if (ct_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
+
+  # estimate the coordination interval if not specified by the users
+  if(is.null(coordination_interval)){
+    coordination_interval <- estimate_coord_interval(ct_shares.df, clean_urls = clean_urls, keep_ourl_only= keep_ourl_only)
+    coordination_interval <- coordination_interval[[2]]
+  }
+
+  # use the coordination interval resulting from estimate_coord_interval
+  if(is.list(coordination_interval)){
+    coordination_interval <- coordination_interval[[2]]
+  }
+
+  # use the coordination interval set by the user
+  if(is.numeric(coordination_interval)){
+    if (coordination_interval == 0) {
+      stop("The coordination_interval value can't be 0.
+           \nPlease choose a value greater than zero or use coordination_interval=NULL to automatically calculate the interval")
+    } else {
+
+      coordination_interval <- paste(coordination_interval, "secs")
+
+      if (file.exists("log.txt")) {
+        write(paste("\nget_coord_shares script executed on:", format(Sys.time(), format = "%F %R %Z"),
+                    "\ncoordination interval set by the user:", coordination_interval), file="log.txt", append=TRUE)
+      } else {
+        write(paste0("#################### CooRnet #####################\n",
+                     "\nScript executed on:", format(Sys.time(), format = "%F %R %Z"),
+                     "\ncoordination interval set by the user:", coordination_interval),
+              file="log.txt")
+      }
+    }
+  }
+
+  # clean urls?
+  if(clean_urls==TRUE){
+
+    # Find urls in the mongoDB database and aggregate in a dataframe
+    urls_df <- ct_shares_mdb$aggregate(
+      '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
+      options = '{"allowDiskUse":true}')
+    names(urls_df) <- c("url","id_number_list")
+
+    # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
+    cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
+
+    # Erase URLs in the database if they are removed troughtout the cleaning procedure
+    erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
+    final_erased_ids_list <- list()
+    for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
+    for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
+
+    # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
+    # Occurences of " need to be substituted with \" within the update query
+    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url != "")])
+    original_urls_list <- gsub('"','\"',original_urls_list)
+    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
+
+    for (i in 1:length(original_urls_list)){
+
+      original_url <- original_urls_list[i]
+      cleaned_url <- cleaned_urls_list[i]
+
+      ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+    }
+
+    write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
+  }
+
+  URLs_mdb <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"freq": {"$gt": 1}}}]',options = '{"allowDiskUse":true}'))
+  names(URLS_mdb) <- c("URL", "ct_shares")
+  # URLS_mdb$URL <- as.character(URLS_mdb$URL)
+
+  # keep original URLs only?
+  if(keep_ourl_only==TRUE){
+
+    URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}]',options = '{"allowDiskUse":true}'))
+    names(URLS_mdb) <- c("URL", "ct_shares")
+
+    if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$URL)
+
+    write("Analysis performed on shares matching original URLs", file = "log.txt", append = TRUE)
+  }
+
+  URLs_list <- URLs_mdb$URL
+
+  # Define an interation parameter to use for running over all the collection
+  ct_shares.df <- data.frame()
+  it <- ct_shares_mdb$iterate('{}')
+
+  # Iterate until the 'it' variable is NULL
+  # keep only shares of URLs shared more than one time
+  while(!is.null(x <- it$one())){
+    single_url <- x$expanded
+    if (single_url %in% URLs_list) {
+      url_row <- data.frame(x)
+      names(url_row) <- gsub("_", ".", names(url_row))
+      ct_shares.df <- rbind(ct_shares.df, url_row)
+    }
+  }
+
+}
