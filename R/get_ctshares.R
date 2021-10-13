@@ -326,6 +326,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   for (url_id in erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
 
+  ct_shares.df <- data.frame()
+
   if (is_df_saved==TRUE) {
     ct_shares.df <- ct_shares_mdb$find('{}')
     names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
@@ -340,6 +342,5 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
         append = TRUE)
 
   rm(urls)
-
   return(ct_shares.df)
 }
