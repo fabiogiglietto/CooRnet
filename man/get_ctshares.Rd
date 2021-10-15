@@ -13,6 +13,7 @@ get_ctshares(
   mongo_url = "",
   mongo_database = "",
   sleep_time = 30,
+  is_df_saved = FALSE,
   clean_urls = FALSE,
   verbose = FALSE
 )
