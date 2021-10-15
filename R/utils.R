@@ -194,7 +194,7 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
     })
 }
 
-  connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url) {
+connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url) {
 
   if(missing(mongo_url) | mongo_url=="") {
     stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
@@ -226,10 +226,11 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
       message("Here's the original warning message:")
       message(cond)
       # Choose a return value in case of warning
-      return(NULL)},
-    finally={
-      message("Connection with MongoDB established...")
-    }
+      return(NULL)}
+    # ,
+    # finally={
+    #  message("Connection with MongoDB established...")
+    # }
   )
 
   return(conn)

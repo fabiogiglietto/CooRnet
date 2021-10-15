@@ -13,6 +13,7 @@ get_ctshares(
   mongo_url = "",
   mongo_database = "",
   sleep_time = 30,
+  is_df_saved = FALSE,
   clean_urls = FALSE,
   verbose = FALSE
 )
@@ -34,6 +35,8 @@ get_ctshares(
 
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.}
 
+\item{is_df_saved}{logical: save a dataframe containing the Crowdtangle shares (default: FALSE)}
+
 \item{clean_urls}{logical: clean the URLs from tracking parameters (default FALSE)}
 
 \item{verbose}{logical: show progress messages?}
@@ -49,6 +52,6 @@ to start using the library you need to set the CrowdTangle API key.
   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 }
 \examples{
-  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE)
+  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=30, is_df_saved=FALSE, clean_urls=FALSE, save_ctapi_output=FALSE)
 
 }
