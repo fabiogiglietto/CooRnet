@@ -228,7 +228,7 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
       # Choose a return value in case of warning
       return(NULL)},
     finally={
-      message("Connection with MongoDB established...")
+      # message("Connection with MongoDB established...")
     }
   )
 
