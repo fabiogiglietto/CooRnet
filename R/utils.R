@@ -226,11 +226,10 @@ connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url)
       message("Here's the original warning message:")
       message(cond)
       # Choose a return value in case of warning
-      return(NULL)}
-    # ,
-    # finally={
-    #  message("Connection with MongoDB established...")
-    # }
+      return(NULL)},
+    finally={
+      # message("Connection with MongoDB established...")
+    }
   )
 
   return(conn)
