@@ -1,8 +1,8 @@
 #' get_coord_shares_mongo
 #'
-#' Given a dataset of CrowdTangle shares and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
+#' Given a dataset of CrowdTangle shares on a MongoDB database and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
 #'
-#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
+#' @param mongo_database string: the name of the MongoDB used to host the collections.
 #' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
 #' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_collection string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
@@ -15,9 +15,9 @@
 #' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
 #'
 #' @examples
-#' output <- get_coord_shares(ct_shares.df)
+#' output <- get_coord_shares_mongo(mongo_database)
 #'
-#' output <- get_coord_shares(ct_shares.df = ct_shares.df, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE)
+#' output <- get_coord_shares_mongo(mongo_database = mongo_database, coordination_interval = coordination.interval, percentile_edge_weight=0.9, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE)
 #'
 #' # Extract the outputs
 #' get_outputs(output)

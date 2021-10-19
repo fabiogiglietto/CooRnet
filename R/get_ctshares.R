@@ -301,6 +301,11 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
   #  dplyr::group_by(expanded) %>%
   #  dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
 
+  # How to change:
+  # Step 1 - Create a new variable called "min_time" with the time of the first share of that $expanded
+  # Step 2 - Subtract "min_time" to the shares date
+  # Step 3 - Remove elements based on the difference between min_time e shares date
+
   # Aggregate list of dates for each expanded url with more than a share
   it <- ct_shares_mdb$aggregate(
   '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',

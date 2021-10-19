@@ -196,6 +196,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       utils::setTxtProgressBar(pb, pb$getVal()+1)
 
       url <- URLs$URL[i]
+      # TO DO: modify with mongoDB
       dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
 
       if (length(unique(dat.summary$account.url)) > 1) {
