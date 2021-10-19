@@ -2,7 +2,7 @@
 #'
 #' Given a dataset of CrowdTangle shares and a time threshold, this function detects networks of entities (pages, accounts and groups) that performed coordinated link sharing behavior
 #'
-#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
+#' @param ct_shares.df an open connection to an open ct_shares connection created by get_ctshares
 #' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
 #' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_collection string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
@@ -10,6 +10,7 @@
 #' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
 #' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
 #' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
+#' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
 #' @param gtimestamps add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)
 #'
 #' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
@@ -43,14 +44,27 @@
 #'
 #' @export
 
-get_coord_shares_mongo <- function(mongo_database, mongo_url=NULL, coordination_interval=NULL, parallel=FALSE, percentile_edge_weight=0.90, clean_urls=FALSE, keep_ourl_only=FALSE, gtimestamps=FALSE) {
+get_coord_shares_mongo <- function(ct_shares.df=NULL,
+                                   mongo_database,
+                                   mongo_url=NULL,
+                                   coordination_interval=NULL,
+                                   parallel=FALSE,
+                                   percentile_edge_weight=0.90,
+                                   clean_urls=FALSE,
+                                   keep_ourl_only=FALSE,
+                                   mongo_cluster=FALSE,
+                                   gtimestamps=FALSE) {
 
   options(warn=-1)
 
-  if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
-
   # Connect to the ct_shares_info collection in mongoDB database
-  ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url)
+  if(is.null(ct_shares.df)) {
+    if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+    ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
+  }
+  else {
+    ct_shares_mdb <- ct_shares.df
+  }
 
   # Check if ct_shares_mdb already existed. Otherwise the function will be closed since no available database already exists
   if (ct_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")

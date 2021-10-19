@@ -13,7 +13,9 @@ get_ctshares(
   mongo_url = "",
   mongo_database = "",
   sleep_time = 30,
-  is_df_saved = FALSE,
+  mongo_cluster = FALSE,
+  return_df = FALSE,
+  get_history = FALSE,
   clean_urls = FALSE,
   verbose = FALSE
 )
@@ -27,7 +29,7 @@ get_ctshares(
 
 \item{platforms}{string: default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram}
 
-\item{nmax}{integer: max number of results for query (default 1000 as per}
+\item{nmax}{integer: max number of results for query (default 1000)}
 
 \item{mongo_url}{string: address of the MongoDB server in standard URI Format (required, default empty string will raise an error)}
 
@@ -35,7 +37,11 @@ get_ctshares(
 
 \item{sleep_time}{pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.}
 
-\item{is_df_saved}{logical: save a dataframe containing the Crowdtangle shares (default: FALSE)}
+\item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
+
+\item{return_df}{logical: set to TRUE to return a dataframe of ct_shares (default FALSE)}
+
+\item{get_history}{logical: set to TRUE to retive history from CrowdTangle API (default FALSE)}
 
 \item{clean_urls}{logical: clean the URLs from tracking parameters (default FALSE)}
 
@@ -52,6 +58,6 @@ to start using the library you need to set the CrowdTangle API key.
   Open the environment variable file with file.edit("~/.Renviron"), write CROWDTANGLE_API_KEY = <YOUR_API_KEY>, save the file and restart your current R session to start using the CrowdTangle API
 }
 \examples{
-  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=30, is_df_saved=FALSE, clean_urls=FALSE, save_ctapi_output=FALSE)
+  df <- get_ctshares(urls, url_column=“url”, date_column=“date”, platforms="facebook,instagram", nmax=100, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE)
 
 }

@@ -6,11 +6,14 @@
 #' @param url_column string: name of the column (placed inside quote marks) where the URLs are stored (defaults to "url")
 #' @param date_column string: name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")
 #' @param platforms string: default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
-#' @param nmax integer: max number of results for query (default 1000 as per
+#' @param nmax integer: max number of results for query (default 1000)
 #' @param sleep_time pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.
 #' @param clean_urls logical: clean the URLs from tracking parameters (default FALSE)
 #' @param mongo_url string: address of the MongoDB server in standard URI Format (required, default empty string will raise an error)
 #' @param mongo_database string: the name of the MongoDB used to host the collections. Name can be choosen by the user (required, default empty string  will raise an error)
+#' @param return_df logical: set to TRUE to return a dataframe of ct_shares (default FALSE)
+#' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
+#' @param get_history logical: set to TRUE to retive history from CrowdTangle API (default FALSE)
 #' @param verbose logical: show progress messages?
 #'
 #' @return a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
@@ -30,7 +33,19 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, mongo_url="", mongo_database = "", sleep_time=30, is_df_saved = FALSE, clean_urls=FALSE, verbose=FALSE) {
+get_ctshares <- function(urls,
+                         url_column,
+                         date_column,
+                         platforms="facebook,instagram",
+                         nmax=1000,
+                         mongo_url="",
+                         mongo_database = "",
+                         sleep_time=30,
+                         mongo_cluster = FALSE,
+                         return_df = FALSE,
+                         get_history = FALSE,
+                         clean_urls=FALSE,
+                         verbose=FALSE) {
 
   if(missing(url_column)) {
     url_column = "url"
@@ -81,7 +96,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
   }
 
-  conn <- connect_mongodb_cluster("urls", mongo_database, mongo_url)
+  conn <- connect_mongodb_cluster("urls", mongo_database, mongo_url, mongo_cluster)
 
   # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
   if(conn$count() > 0) {
@@ -96,14 +111,22 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   # Define another mongoDB connection for a new collection to store CrowdTangle shares
 
-  ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url)
+  ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
 
-  # Insert a dataframe called urls as a collection. Before inserting, erase a previous collection with the same name
+  # Insert a dataframe called shares_info as a collection. Before inserting, erase a previous collection with the same name
   if(ct_shares_mdb$count() > 0) {
     message("Crowdtangle shares database already exists. Existing files may be erased, choose a new path if this is not intended.")
     invisible(readline(prompt="Press [Enter] to continue or [Esc] to exit"))
     ct_shares_mdb$drop()
   }
+
+  # create an indexes
+  conn$index(add = '{"urls" : 1}')
+  ct_shares_mdb$index(add = '{"expanded" : 1}')
+  ct_shares_mdb$index(add = '{"platformId" : 1}')
+  ct_shares_mdb$index(add = '{"expanded" : 1, "platformId" : 1}')
+
+  # ct_shares_mdb$run('{"createIndexes": "shares_info","indexes":[{"key":{"platformId":1, "expanded": 1},"name": "platformId_expanded_index","unique": true}]}')
 
   conn$insert(urls)
 
@@ -183,8 +206,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                                            "expandedLinks",
                                            "description",
                                            "postUrl",
-                                           # "history",
-                                           "id",
+                                           ifelse(get_history, "history", ""),
+                                           # "id", # same of platformId
                                            "message",
                                            "title",
                                            "statistics.actual.likeCount",
@@ -213,30 +236,34 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
         ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
         ct_shares.df <- dplyr::select(ct_shares.df, -original)
-        ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("id", "platformId", "postUrl", "expanded")]),]
+        ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
 
         ct_shares.df <- as.data.frame(ct_shares.df)
         ct_shares.df <- ct_shares.df %>%
-                        dplyr::rowwise() %>%
-                        dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
-                        # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
+          dplyr::rowwise() %>%
+          dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
+        # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
 
         # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
         # ct_shares.df$is_orig <- ifelse(n_original_url > 0, TRUE, FALSE)
 
-        ct_shares_mdb$insert(ct_shares.df) # save the shares in the database
-        # saveRDS(object = ct_shares.df, file = paste0("./rawdata/", i, ".rds"))
+        for (j in 1:nrow(ct_shares.df)) {
+          ct_shares_mdb$update(gsub('^.|.$', '', jsonlite::toJSON(ct_shares.df[j,])), upsert = TRUE)
+        }
       }
       rm(ct_shares.df, datalist, c)
     }
   }
 
+  if (verbose) message("Done with getting ct_shares! Now cleaning up...")
+
+  if (verbose) message("(1). Removing duplicates...")
   # remove possible inconsistent rows with entity URL equal "https://facebook.com/null"
   ct_shares_mdb$remove('{"account_url" : "https://facebook.com/null"}')
 
   # Iterate on aggregation for getting all duplicates of the same post_id
   it <- ct_shares_mdb$aggregate(
-    '[{"$group":{"_id":"$id", "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
+    '[{"$group":{"_id":{"platformId":"$platformId","expanded":"$expanded"}, "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
     options = '{"allowDiskUse":true}',
     iterate = TRUE
   )
@@ -255,6 +282,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   if(clean_urls==TRUE){
 
+    if (verbose) message("(2). Cleaning URLs...")
+
     # Create a dataframe with all expanded URLs and a dummy variable to use the clean_urls function in utils.R
     # old_expanded_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$old_expanded"}}]',options = '{"allowDiskUse":true}'))
     # old_expanded_df$n_row <- seq.int(1, length(example$`_id`))
@@ -266,8 +295,8 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
     # Find urls in the mongoDB database and aggregate in a dataframe
     urls_df <- ct_shares_mdb$aggregate(
-              '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
-              options = '{"allowDiskUse":true}')
+      '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
+      options = '{"allowDiskUse":true}')
     names(urls_df) <- c("url","id_number_list")
 
     # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
@@ -280,7 +309,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
 
     # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
-    # Occurences of " need to be substituted with \" within the update query
+    # Occurrences of " need to be substituted with \" within the update query
     original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url != "")])
     original_urls_list <- gsub('"','\"',original_urls_list)
     cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
@@ -296,16 +325,13 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
   }
 
-  # remove shares performed more than one week from first share
-  # ct_shares.df <- ct_shares.df %>%
-  #  dplyr::group_by(expanded) %>%
-  #  dplyr::filter(difftime(max(date), min(date), units = "secs") <= 604800)
+  if (verbose) message("(3). Cleaning shares performed outside the time span of one week from first post...")
 
   # Aggregate list of dates for each expanded url with more than a share
   it <- ct_shares_mdb$aggregate(
-  '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
-  options = '{"allowDiskUse":true}',
-  iterate = TRUE)
+    '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
+    options = '{"allowDiskUse":true}',
+    iterate = TRUE)
 
   erased_ids_list <- list()
 
@@ -326,21 +352,26 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
 
   for (url_id in erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
 
-  ct_shares.df <- data.frame()
-
-  if (is_df_saved==TRUE) {
-    ct_shares.df <- ct_shares_mdb$find('{}')
-    names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
-  }
-
   # write log
   write(paste("Original URLs:", nrow(urls),
-              "\nCT shares:", nrow(ct_shares.df),
-              "\nUnique URLs in CT shares:", length(unique(ct_shares.df$expanded)),
-              "\nLinks in CT shares matching original URLs:", as.numeric(table(ct_shares.df$is_orig)["TRUE"])),
+              "\nCT shares:", ct_shares_mdb$count(),
+              "\nUnique URLs in CT shares:", length(ct_shares_mdb$distinct("expanded")),
+              "\nCT shares matching original URLs:", ct_shares_mdb$count('{"is_orig":true}')),
         file = "log.txt",
         append = TRUE)
 
   rm(urls)
-  return(ct_shares.df)
+
+  if (return_df==TRUE) {
+    if (verbose) message("Returning a dataframe...")
+    ct_shares.df <- data.frame()
+    ct_shares.df <- ct_shares_mdb$find('{}')
+    names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
+    return(ct_shares.df)
+    ct_shares_mdb$drop()
+  }
+  else {
+    if (verbose) message("Returning an open MongoDB connection...")
+    return(ct_shares_mdb)
+  }
 }

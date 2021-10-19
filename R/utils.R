@@ -1,8 +1,10 @@
 #' @importFrom stringr str_replace
-#' @importFrom urltools url_decode
+#' @importFrom urltools url_decode scheme domain
 
 clean_urls <- function(df, url){
 
+  df <- df[!grepl("[[:blank:]]", df[[url]]),] # remove URLs with space
+  df <- df[!grepl("\"", df[[url]]),] # remove unescaped double quotes
   df <- df[!grepl("\\.\\.\\.$", df[[url]]),]
   df <- df[!grepl("/url?sa=t&source=web", df[[url]], fixed=TRUE),]
 
@@ -28,6 +30,7 @@ clean_urls <- function(df, url){
                               "/#\\..*",
                               "\\?mobile.*",
                               "&fbclid.*",
+                              "&tit.*",
                               ")",
                               "/$",
                               sep = "|")
@@ -45,16 +48,31 @@ clean_urls <- function(df, url){
                    "https://m.facebook.com/", "https://www.facebook.com/", "https://chat.whatsapp.com",
                    "http://chat.whatsapp.com", "http://wa.me", "https://wa.me", "https://api.whatsapp.com/send",
                    "https://api.whatsapp.com/", "https://play.google.com/store/apps/details", "https://www.twitter.com/",
-                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login")
+                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login", "https://t.me/joinchat")
 
   df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[url]]), ]
 
-  df[[url]] <- urltools::url_decode(stringr::str_replace(df[[url]], 'https://www.facebook.com/login/?next=', ''))
+  #df[[url]] <- urltools::url_decode(stringr::str_replace(df[[url]], 'https://www.facebook.com/login/?next=', ''))
   df <- df[grepl("http://|https://", df[[url]]),] # remove all the entries with the url that does not start with "http"
 
   df[[url]] <- stringr::str_replace(df[[url]], 'm.youtube.com', 'www.youtube.com')
   df[[url]] <- stringr::str_replace(df[[url]], 'youtu.be/', 'www.youtube.com/watch?v=')
   df[[url]] <- stringr::str_replace(df[[url]], '^(.*youtube\\.com/watch\\?).*(v=[^\\&]*).*', '\\1\\2') # cleanup YouTube URLs
+
+  df$scheme <- urltools::scheme(df$url)
+  # keep only valid schemes
+  valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+  df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
+
+  # remove domain urls
+  df$domain <- urltools::domain(df$url)
+  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain))
+  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain, "/"))
+
+  df$scheme <- NULL
+  df$domain <- NULL
+
+  rm(valid_schemes)
 
   return(df)
 }
@@ -66,11 +84,22 @@ clean_urls_mongo <- function(df, url){
 
   cleaned_url_name <- 'cleaned_url'
 
+  # remove URL with spaces and other invalid unencoded characters
+  df <- df[!grepl("[[:blank:]]", df$cleaned_url),] # remove URLs with space
+  df <- df[!grepl("\"", df[[url]]),] # remove unencoded double quotes
+
+  # keep only valid schemes
+  df$scheme <- urltools::scheme(df$cleaned_url)
+  valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+  df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
+
+  # remove domain urls
+  df$domain <- urltools::domain(df$url)
+  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain))
+  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain, "/"))
+
   df$cleaned_url[which(grepl("\\.\\.\\.$", df[[cleaned_url_name]]))] <- ""
   df$cleaned_url[which(grepl("/url?sa=t&source=web", df[[cleaned_url_name]], fixed=TRUE))] <- ""
-
-  # df <- df[!grepl("\\.\\.\\.$", df[[cleaned_url]]),]
-  # df <- df[!grepl("/url?sa=t&source=web", df[[cleaned_url]], fixed=TRUE),]
 
   paramters_to_clean <- paste("\\?utm_.*",
                               "feed_id.*",
@@ -94,6 +123,7 @@ clean_urls_mongo <- function(df, url){
                               "/#\\..*",
                               "\\?mobile.*",
                               "&fbclid.*",
+                              "&tit.*",
                               ")",
                               "/$",
                               sep = "|")
@@ -111,12 +141,13 @@ clean_urls_mongo <- function(df, url){
                    "https://m.facebook.com/", "https://www.facebook.com/", "https://chat.whatsapp.com",
                    "http://chat.whatsapp.com", "http://wa.me", "https://wa.me", "https://api.whatsapp.com/send",
                    "https://api.whatsapp.com/", "https://play.google.com/store/apps/details", "https://www.twitter.com/",
-                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login")
+                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login", "https://t.me/joinchat")
 
   # df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url]]), ]
   df$cleaned_url[which(grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url_name]]))] <- ""
 
-  df[[cleaned_url_name]] <- urltools::url_decode(stringr::str_replace(df[[cleaned_url_name]], 'https://www.facebook.com/login/?next=', ''))
+  # df[[cleaned_url_name]] <- urltools::url_decode(stringr::str_replace(df[[cleaned_url_name]], 'https://www.facebook.com/login/?next=', ''))
+  # commented because this line creates unencoded URLs that potentially breaks MongoDb queries
 
   # df <- df[grepl("http://|https://", df[[cleaned_url]]),] # remove all the entries with the url that does not start with "http"
   df$cleaned_url[which(!grepl("http://|https://", df[[cleaned_url_name]]))] <- ""
@@ -124,6 +155,9 @@ clean_urls_mongo <- function(df, url){
   df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], 'm.youtube.com', 'www.youtube.com')
   df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], 'youtu.be/', 'www.youtube.com/watch?v=')
   df[[cleaned_url_name]] <- stringr::str_replace(df[[cleaned_url_name]], '^(.*youtube\\.com/watch\\?).*(v=[^\\&]*).*', '\\1\\2') # cleanup YouTube URLs
+
+  df$scheme <- NULL
+  df$domain <- NULL
 
   return(df)
 }
@@ -194,7 +228,9 @@ query_link_enpoint <- function(query.string, sleep_time=10) {
     })
 }
 
-connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url) {
+#' @importFrom mongolite mongo
+
+connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url, mongo_cluster) {
 
   if(missing(mongo_url) | mongo_url=="") {
     stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
@@ -204,12 +240,14 @@ connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url)
     stop("Please provide the name of the mongoDB database")
   }
 
+  protocol <- ifelse(mongo_cluster, "mongodb+srv://", "mongodb://")
+
   # open a connection to the database to store original URLs
   conn <- tryCatch(
     {
       mongolite::mongo(collection = mongo_collection,
                        db = mongo_database,
-                       url = paste0("mongodb+srv://",
+                       url = paste0(protocol,
                                     Sys.getenv("MONGO_USER"),
                                     ":",
                                     Sys.getenv("MONGO_PWD"),
