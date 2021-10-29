@@ -49,6 +49,7 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
               statistics.actual.likeCount = sum(statistics.actual.likeCount),
               statistics.actual.sadCount = sum(statistics.actual.sadCount),
               statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
+    dplyr::mutate(comments.shares.ratio = (statistics.actual.commentCount-statistics.actual.shareCount)/(statistics.actual.commentCount+statistics.actual.shareCount)) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name)))  %>%
     dplyr::filter(cooR.shares > 0) %>%
