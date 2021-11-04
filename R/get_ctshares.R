@@ -41,8 +41,8 @@ get_ctshares <- function(urls,
                          mongo_url="",
                          mongo_database = "",
                          sleep_time=30,
-                         mongo_cluster = FALSE,
-                         return_df = FALSE,
+                         mongo_cluster = TRUE,
+                         return_df = TRUE,
                          get_history = FALSE,
                          clean_urls=FALSE,
                          verbose=FALSE) {
@@ -239,17 +239,28 @@ get_ctshares <- function(urls,
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
 
         ct_shares.df <- as.data.frame(ct_shares.df)
-        ct_shares.df <- ct_shares.df %>%
-          dplyr::rowwise() %>%
-          dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
-        # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
 
-        # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
-        # ct_shares.df$is_orig <- ifelse(n_original_url > 0, TRUE, FALSE)
-
-        for (j in 1:nrow(ct_shares.df)) {
-          ct_shares_mdb$update(gsub('^.|.$', '', jsonlite::toJSON(ct_shares.df[j,])), upsert = TRUE)
+        if(clean_urls==TRUE){
+          ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+          # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
+          # ct_shares.df <- ct_shares.df %>%
+          #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
+          #
+          #   ct_shares.df$cleaned_url <- NULL
         }
+
+        if (nrow(ct_shares.df)>=1){
+              ct_shares.df <- ct_shares.df %>%
+                              dplyr::rowwise() %>%
+                              dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
+            # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
+
+            # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
+            # ct_shares.df$is_orig <- ifelse(n_original_url > 0, TRUE, FALSE)
+                for (j in 1:nrow(ct_shares.df)) {
+                      ct_shares_mdb$update(gsub('^.|.$', '', jsonlite::toJSON(ct_shares.df[j,])), upsert = TRUE)
+                }
+            }
       }
       rm(ct_shares.df, datalist, c)
     }
@@ -262,100 +273,90 @@ get_ctshares <- function(urls,
   ct_shares_mdb$remove('{"account_url" : "https://facebook.com/null"}')
 
   # Iterate on aggregation for getting all duplicates of the same post_id
-  it <- ct_shares_mdb$aggregate(
-    '[{"$group":{"_id":{"platformId":"$platformId","expanded":"$expanded"}, "dups": {"$addToSet": "$_id"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
-    options = '{"allowDiskUse":true}',
-    iterate = TRUE
-  )
 
-  final_dups_list <- list()
-
-  # remove duplicated post_ids given that the mongoDB id is unique
-  while(!is.null(x <- it$one())){
-    final_dups_list <- append(final_dups_list,x$dups[-1])
-  }
-
-  for (post_id in final_dups_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}',post_id))
+  ct_shares_mdb$aggregate('[{ "$group": {"_id":{"platformId":"$platformId", "expanded":"$expanded"},
+                            "doc": {"$first": "$$ROOT"}}},{"$replaceRoot": {"newRoot": "$doc"}},
+                            {"$out": "shares_info"}]',options='{ "allowDiskUse": true }')
 
   # the idea is that most of the data processing can happen directly on the database to allow analysis of large quantity of urls/shares
   # for now I just get the shares from the database in to a data frame here to make the rest of the code work
 
-  if(clean_urls==TRUE){
-
-    if (verbose) message("(2). Cleaning URLs...")
-
-    # Create a dataframe with all expanded URLs and a dummy variable to use the clean_urls function in utils.R
-    # old_expanded_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$old_expanded"}}]',options = '{"allowDiskUse":true}'))
-    # old_expanded_df$n_row <- seq.int(1, length(example$`_id`))
-
-    # Get the list of all cleaned expanded URLs
-    # new_expanded_df <- clean_urls(old_expanded_df, "_id")
-
-    # ct_shares_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded"}}]',options = '{"allowDiskUse":true}'))
-
-    # Find urls in the mongoDB database and aggregate in a dataframe
-    urls_df <- ct_shares_mdb$aggregate(
-      '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
-      options = '{"allowDiskUse":true}')
-    names(urls_df) <- c("url","id_number_list")
-
-    # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
-    cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
-
-    # Erase URLs in the database if they are removed troughtout the cleaning procedure
-    erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
-    final_erased_ids_list <- list()
-    for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
-    for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
-
-    # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
-    # Occurrences of " need to be substituted with \" within the update query
-    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url != "")])
-    original_urls_list <- gsub('"','\"',original_urls_list)
-    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
-
-    for (i in 1:length(original_urls_list)){
-
-      original_url <- original_urls_list[i]
-      cleaned_url <- cleaned_urls_list[i]
-
-      ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
-    }
-
-    write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
-  }
+  # if(clean_urls==TRUE){
+  #
+  #   if (verbose) message("(2). Cleaning URLs...")
+  #
+  #   # Create a dataframe with all expanded URLs and a dummy variable to use the clean_urls function in utils.R
+  #   # old_expanded_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$old_expanded"}}]',options = '{"allowDiskUse":true}'))
+  #   # old_expanded_df$n_row <- seq.int(1, length(example$`_id`))
+  #
+  #   # Get the list of all cleaned expanded URLs
+  #   # new_expanded_df <- clean_urls(old_expanded_df, "_id")
+  #
+  #   # ct_shares_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded"}}]',options = '{"allowDiskUse":true}'))
+  #
+  #   # Find urls in the mongoDB database and aggregate in a dataframe
+  #   urls_df <- ct_shares_mdb$aggregate(
+  #     '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
+  #     options = '{"allowDiskUse":true}')
+  #   names(urls_df) <- c("url","id_number_list")
+  #
+  #   # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
+  #   cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
+  #
+  #   # # Erase URLs in the database if they are removed troughtout the cleaning procedure
+  #   # erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
+  #   # final_erased_ids_list <- list()
+  #   # for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
+  #   # for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
+  #
+  #   # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
+  #   # Occurrences of " need to be substituted with \" within the update query
+  #   original_urls_list <- as.list(cleaned_urls_df$url)
+  #   # original_urls_list <- gsub('"','\"',original_urls_list)
+  #   cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
+  #
+  #   for (i in 1:length(original_urls_list)){
+  #
+  #     original_url <- stringi::stri_enc_toutf8(sprintf('%s',original_urls_list[i]))
+  #     cleaned_url <- stringi::stri_enc_toutf8(sprintf('%s',cleaned_urls_list[i]))
+  #
+  #     if (cleaned_url != "") ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+  #     else ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', original_url))
+  #   }
+  #
+  #   write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
+  # }
 
   if (verbose) message("(3). Cleaning shares performed outside the time span of one week from first post...")
 
-  # How to change:
-  # Step 1 - Create a new variable called "min_time" with the time of the first share of that $expanded
-  # Step 2 - Subtract "min_time" to the shares date
-  # Step 3 - Remove elements based on the difference between min_time e shares date
+  # How to remove dates more than one week after the first share:
+  # Step 1 - "Group" expanded link, date and original docs and compute the min date in the list
+  # Step 1 - "Unwind" simultaneously dates and docs by matching with the same unwinding index both variables
+  # Step 2 - "Redact" to keep only IDs of expanded link with dates before the first week
+  # Step 3 - "Unset" the min_date variable
+  # Step 4 - "ReplaceRoot" with original doc
 
-  # Aggregate list of dates for each expanded url with more than a share
-  it <- ct_shares_mdb$aggregate(
-    '[{"$group":{"_id":"$expanded", "ids_list": {"$addToSet": "$_id"}, "date_list": {"$addToSet": "$date"}, "count": {"$sum":1}}}, {"$match": {"count": {"$gt": 1}}}]',
-    options = '{"allowDiskUse":true}',
-    iterate = TRUE)
+  # # Aggregate list of dates for each expanded url with more than a share
+  ct_shares_mdb$aggregate('[{"$group": {"_id":"$expanded", "date": {"$addToSet": "$date"},  "min_date": {"$min": "$date"}, "doc": {"$push": "$$ROOT"}}},
+                           {"$unwind": {"path" : "$date", "includeArrayIndex" : "date_index", "preserveNullAndEmptyArrays" : true}},
+                           {"$unwind": {"path" : "$doc", "includeArrayIndex" : "doc_index", "preserveNullAndEmptyArrays" : true}},
+                           {"$project": {"_id":1, "date": 1, "min_date": 1, "doc": 1, "compare": { "$cmp": ["$date_index", "$doc_index"]}}},
+                           {"$match": {"compare": 0}},
+                           {"$project": {"_id":1, "date": 1, "min_date": 1, "doc": 1}},
+                           {"$redact": {"$cond":
+                           {"if": {"$gt":[{"$divide" : [{"$subtract": [{"$toDate": "$date"}, {"$toDate": "$min_date"}]}, 1000]},86400]},
+                           "then": "$$PRUNE",
+                           "else": "$$KEEP"}}},
+                           {"$unset": "min_date"},
+                           {"$replaceRoot": {"newRoot":"$doc"}},
+                           {"$out": "shares_info"}]',
+                           options='{ "allowDiskUse": true }')
 
-  erased_ids_list <- list()
-
-  while(!is.null(x <- it$one())){
-
-    date_list <- strptime(x$date_list, "%Y-%m-%d %H:%M:%S")
-
-    # id_list <- x$ids_list[order(date_list, decreasing=FALSE)]
-    # date_list <- sort(date_list, decreasing=FALSE)
-
-    is_week <- difftime(max(date_list), min(date_list), units="secs") <= 604800
-
-    if (is_week) {
-      ids_list<- x$ids_list
-      erased_ids_list <- append(erased_ids_list, ids_list)
-    }
-  }
-
-  for (url_id in erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
+  # ct_shares_mdb$aggregate('[{"$group": {"_id": {"platformId":"$platformId","expanded":"$expanded"}, "min_date": {"$min": "$date"}}},
+                          # {"$addFields": {"min_date": {"$min": {"$toDate": "$date"}}, "diff_date": {"$divide" :[{"$subtract": [{"$toDate": "$date"}, {"$toDate": "$min_date"}]}, 1000]}}}]',
+                          # options = '{"allowDiskUse":true}')
+  # ct_shares_mdb$remove('{"diff_date": {"$gt": 86400}}')
+  # ct_shares_mdb$update('{}','{"$unset":{"min_date": 1, "diff_date": 1}}',multi = TRUE)
 
   # write log
   write(paste("Original URLs:", nrow(urls),
