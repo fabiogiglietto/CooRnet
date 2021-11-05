@@ -13,8 +13,8 @@ get_ctshares(
   mongo_url = "",
   mongo_database = "",
   sleep_time = 30,
-  mongo_cluster = FALSE,
-  return_df = FALSE,
+  mongo_cluster = TRUE,
+  return_df = TRUE,
   get_history = FALSE,
   clean_urls = FALSE,
   verbose = FALSE
