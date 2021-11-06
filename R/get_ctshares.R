@@ -241,7 +241,7 @@ get_ctshares <- function(urls,
         ct_shares.df <- as.data.frame(ct_shares.df)
 
         if(clean_urls==TRUE){
-          ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+          ct_shares.df <- clean_urls(ct_shares.df, "url")
           # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
           # ct_shares.df <- ct_shares.df %>%
           #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
