@@ -352,12 +352,6 @@ get_ctshares <- function(urls,
                            {"$out": "shares_info"}]',
                            options='{ "allowDiskUse": true }')
 
-  # ct_shares_mdb$aggregate('[{"$group": {"_id": {"platformId":"$platformId","expanded":"$expanded"}, "min_date": {"$min": "$date"}}},
-                          # {"$addFields": {"min_date": {"$min": {"$toDate": "$date"}}, "diff_date": {"$divide" :[{"$subtract": [{"$toDate": "$date"}, {"$toDate": "$min_date"}]}, 1000]}}}]',
-                          # options = '{"allowDiskUse":true}')
-  # ct_shares_mdb$remove('{"diff_date": {"$gt": 86400}}')
-  # ct_shares_mdb$update('{}','{"$unset":{"min_date": 1, "diff_date": 1}}',multi = TRUE)
-
   # write log
   write(paste("Original URLs:", nrow(urls),
               "\nCT shares:", ct_shares_mdb$count(),
