@@ -13,6 +13,7 @@
 #' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
 #' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
 #' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
+#' @param return_df logical: set to TRUE to return a dataframe of ct_shares (default FALSE)
 #' @param gtimestamps add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)
 #'
 #' @return A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number
@@ -54,7 +55,8 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                                    percentile_edge_weight=0.90,
                                    clean_urls=FALSE,
                                    keep_ourl_only=FALSE,
-                                   mongo_cluster=FALSE,
+                                   mongo_cluster=TRUE,
+                                   return_df = FALSE,
                                    gtimestamps=FALSE) {
 
   options(warn=-1)
@@ -62,7 +64,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   # Connect to the ct_shares_info collection in mongoDB database
   if(is.null(ct_shares.df)) {
     if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
-    ct_shares_mdb <- connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
+    ct_shares_mdb <-  connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
   }
   else {
     ct_shares_mdb <- ct_shares.df
@@ -83,24 +85,17 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
     # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
     cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
 
-    # Erase URLs in the database if they are removed troughtout the cleaning procedure
-    erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
-    final_erased_ids_list <- list()
-    for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
-    for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
-
     # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
     # Occurences of " need to be substituted with \" within the update query
-    original_urls_list <- as.list(cleaned_urls_df$url[which(cleaned_urls_df$cleaned_url != "")])
-    original_urls_list <- gsub('"','\"',original_urls_list)
-    cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
+    original_urls_list <- as.list(cleaned_urls_df$url)
 
     for (i in 1:length(original_urls_list)){
 
-      original_url <- original_urls_list[i]
-      cleaned_url <- cleaned_urls_list[i]
+      original_url <- stringi::stri_enc_toutf8(sprintf('%s',original_urls_list[i]))
+      cleaned_url <- stringi::stri_enc_toutf8(sprintf('%s',cleaned_urls_list[i]))
 
-      ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+      if (cleaned_url != "") ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+      else ct_shares_mdb$remove(sprintf('{"expanded": "%s"}', original_url))
     }
 
     write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
@@ -125,19 +120,21 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   URLs_list <- URLs_mdb$URL
 
   # Define an interation parameter to use for running over all the collection
-  ct_shares.df <- data.frame()
-  it <- ct_shares_mdb$iterate('{}')
+  ct_shares.df <- ct_shares_mdb$find('{}')
+  # it <- ct_shares_mdb$iterate('{}')
+
+  ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs_list)
 
   # Iterate until the 'it' variable is NULL
   # keep only shares of URLs shared more than one time
-  while(!is.null(x <- it$one())){
-    single_url <- x$expanded
-    if (single_url %in% URLs_list) {
-      url_row <- data.frame(x)
-      names(url_row) <- gsub("_", ".", names(url_row))
-      ct_shares.df <- dplyr::bind_rows(ct_shares.df, url_row)
-    }
-  }
+  # while(!is.null(x <- it$one())){
+  #   single_url <- x$expanded
+  #   if (single_url %in% URLs_list) {
+  #     url_row <- data.frame(x)
+  #     names(url_row) <- gsub("_", ".", names(url_row))
+  #     ct_shares.df <- dplyr::bind_rows(ct_shares.df, url_row)
+  #   }
+  # }
 
   # estimate the coordination interval if not specified by the users
   if(is.null(coordination_interval)){
@@ -197,12 +194,12 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
         url <- URLs_mdb$URL[i]
         dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
 
-        if (length(unique(dat.summary$account.url)) > 1) {
+        if (length(unique(dat.summary$account$url)) > 1) {
           dat.summary <- dat.summary %>%
             dplyr::mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
             dplyr::group_by(cut) %>%
             dplyr::mutate(count=n(),
-                          account.url=list(account.url),
+                          account.url=list(account$url),
                           share_date=list(date),
                           url = url) %>%
             dplyr::select(cut, count, account.url, share_date, url) %>%
@@ -228,7 +225,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                             ct_shares.df$date %in% coordinated_shares$share_date &
-                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
+                                            ct_shares.df$account$url %in% coordinated_shares$account.url, TRUE, FALSE)
 
     highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
 
@@ -272,12 +269,12 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
       # TO DO: modify with mongoDB
       dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
 
-      if (length(unique(dat.summary$account.url)) > 1) {
+      if (length(unique(dat.summary$account$url)) > 1) {
         dat.summary <- dat.summary %>%
           dplyr::mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
           dplyr::group_by(cut) %>%
           dplyr::mutate(count=n(),
-                        account.url=list(account.url),
+                        account.url=list(account$url),
                         share_date=list(date),
                         url = url) %>%
           dplyr::select(cut, count, account.url, share_date, url) %>%
@@ -301,7 +298,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                             ct_shares.df$date %in% coordinated_shares$share_date &
-                                            ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
+                                            ct_shares.df$account$url %in% coordinated_shares$account$url, TRUE, FALSE)
 
     # call build_coord_graph
     highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
@@ -321,8 +318,16 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
 
-    results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
-
-    return(results_list)
+    if (return_df==TRUE) {
+      if (verbose) message("Returning dataframe in the output...")
+      results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
+      return(results_list)}
+    else{
+      if (verbose) message("Saving coordinated dataframe on MongoDB database...")
+      coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
+      coord_shares_mdb$insert(ct_shares.df)
+      results_list <- list(highly_connected_g, highly_connected_coordinated_entities)
+      return(results_list)
+    }
   }
 }
