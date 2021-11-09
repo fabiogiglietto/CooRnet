@@ -237,11 +237,10 @@ get_ctshares <- function(urls,
         ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
         ct_shares.df <- dplyr::select(ct_shares.df, -original)
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
-
         ct_shares.df <- as.data.frame(ct_shares.df)
 
         if(clean_urls==TRUE){
-          ct_shares.df <- clean_urls(ct_shares.df, "url")
+          ct_shares.df <- clean_urls(ct_shares.df, "expanded")
           # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
           # ct_shares.df <- ct_shares.df %>%
           #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
@@ -368,7 +367,7 @@ get_ctshares <- function(urls,
     ct_shares.df <- ct_shares_mdb$find('{}')
     names(ct_shares.df) <- gsub("_", ".", names(ct_shares.df)) # patch to rename the fields to their original name (mongolite changes dot with underscore)
     return(ct_shares.df)
-    ct_shares_mdb$drop()
+    # ct_shares_mdb$drop()
   }
   else {
     if (verbose) message("Returning an open MongoDB connection...")
