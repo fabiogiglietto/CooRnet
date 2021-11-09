@@ -59,15 +59,16 @@ clean_urls <- function(df, url){
   df[[url]] <- stringr::str_replace(df[[url]], 'youtu.be/', 'www.youtube.com/watch?v=')
   df[[url]] <- stringr::str_replace(df[[url]], '^(.*youtube\\.com/watch\\?).*(v=[^\\&]*).*', '\\1\\2') # cleanup YouTube URLs
 
-  df$scheme <- urltools::scheme(df$url)
+  df$scheme <- urltools::scheme(df[[url]])
   # keep only valid schemes
   valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
   df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
 
   # remove domain urls
-  df$domain <- urltools::domain(df$url)
-  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain))
-  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain, "/"))
+  df$domain <- urltools::domain(df[[url]])
+
+  df <- df[df[[url]] != paste0(df$scheme, "://", df$domain), ]
+  df <- df[df[[url]] != paste0(df$scheme, "://", df$domain, "/"), ]
 
   df$scheme <- NULL
   df$domain <- NULL
