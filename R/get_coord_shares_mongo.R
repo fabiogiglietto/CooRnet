@@ -62,14 +62,14 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   options(warn=-1)
 
   # Connect to the ct_shares_info collection in mongoDB database
-  if(is.null(ct_shares.df)) {
-    if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
-    ct_shares_mdb <-  connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
-  }
-  else {
-    ct_shares_mdb <- ct_shares.df
-  }
+  # if(is.null(ct_shares.df)) {
+  if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+  # }
+  # else {
+  #  ct_shares_mdb <- ct_shares.df
+  # }
 
+  ct_shares_mdb <-  connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
   # Check if ct_shares_mdb already existed. Otherwise the function will be closed since no available database already exists
   if (ct_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
 
@@ -244,9 +244,17 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
 
-    results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
-
-    return(results_list)
+    if (return_df==TRUE) {
+      cat("\nReturning dataframe in the output...")
+      results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
+      return(results_list)}
+    else{
+      cat("\nSaving coordinated dataframe on MongoDB database...")
+      coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
+      coord_shares_mdb$insert(ct_shares.df)
+      results_list <- list(highly_connected_g, highly_connected_coordinated_entities)
+      return(results_list)
+    }
   }
 
   ###################
@@ -319,11 +327,11 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
           file="log.txt", append=TRUE)
 
     if (return_df==TRUE) {
-      if (verbose) message("Returning dataframe in the output...")
+      cat("\nReturning dataframe in the output...")
       results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
       return(results_list)}
     else{
-      if (verbose) message("Saving coordinated dataframe on MongoDB database...")
+      cat("\nSaving coordinated dataframe on MongoDB database...")
       coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
       coord_shares_mdb$insert(ct_shares.df)
       results_list <- list(highly_connected_g, highly_connected_coordinated_entities)
