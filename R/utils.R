@@ -86,7 +86,7 @@ clean_urls_mongo <- function(df, url){
 
   # remove URL with spaces and other invalid unencoded characters
   df <- df[!grepl("[[:blank:]]", df$cleaned_url),] # remove URLs with space
-  df <- df[!grepl("\"", df[[url]]),] # remove unencoded double quotes
+  df <- df[!grepl("\"", df[[cleaned_url_name]]),] # remove unencoded double quotes
 
   # keep only valid schemes
   df$scheme <- urltools::scheme(df$cleaned_url)
@@ -94,9 +94,9 @@ clean_urls_mongo <- function(df, url){
   df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
 
   # remove domain urls
-  df$domain <- urltools::domain(df$url)
-  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain))
-  df <- subset(df, df$url != paste0(df$scheme, "://", df$domain, "/"))
+  df$domain <- urltools::domain(df$cleaned_url)
+  df <- subset(df, df$cleaned_url != paste0(df$scheme, "://", df$domain))
+  df <- subset(df, df$cleaned_url != paste0(df$scheme, "://", df$domain, "/"))
 
   df$cleaned_url[which(grepl("\\.\\.\\.$", df[[cleaned_url_name]]))] <- ""
   df$cleaned_url[which(grepl("/url?sa=t&source=web", df[[cleaned_url_name]], fixed=TRUE))] <- ""
