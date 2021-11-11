@@ -239,17 +239,19 @@ get_ctshares <- function(urls,
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
         ct_shares.df <- as.data.frame(ct_shares.df)
 
-        if(clean_urls==TRUE){
-          ct_shares.df <- clean_urls(ct_shares.df, "expanded")
-          # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
-          # ct_shares.df <- ct_shares.df %>%
-          #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
-          #
-          #   ct_shares.df$cleaned_url <- NULL
-        }
-
         if (nrow(ct_shares.df)>=1){
-              ct_shares.df <- ct_shares.df %>%
+
+          if(clean_urls==TRUE){
+
+            ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+            # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
+            # ct_shares.df <- ct_shares.df %>%
+            #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
+            #
+            #   ct_shares.df$cleaned_url <- NULL
+          }
+
+          ct_shares.df <- ct_shares.df %>%
                               dplyr::rowwise() %>%
                               dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
             # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
