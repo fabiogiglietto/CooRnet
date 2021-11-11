@@ -276,37 +276,36 @@ connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url,
 }
 
 # Gets a Newsguard bearer token given user given NG_KEY and NG_SECRET stored in .Renviron
-#' @importFrom httr oauth_endpoint oauth_app POST content
-#' @importFrom jsonlite fromJSON
+#' @importFrom httr oauth_endpoint oauth_app POST content authenticate
+#' @importFrom jsonlite:: fromJSON
 #'
 get_ng_bearer <- function() {
-
-
+  
   ng_key <- Sys.getenv('NG_KEY')
   ng_secret <- Sys.getenv('NG_SECRET')
-
-  newsguard_endpoint <- oauth_endpoint(request="https://account.newsguardtech.com/account-auth/oauth/token",authorize = "https://account.newsguardtech.com/account-auth/oauth/token",access ="https://account.newsguardtech.com/account-auth/oauth/token")
-
-  newsguard_app <- oauth_app("newsguard",
+  
+  newsguard_endpoint <- httr::oauth_endpoint(request="https://account.newsguardtech.com/account-auth/oauth/token",
+                                             authorize = "https://account.newsguardtech.com/account-auth/oauth/token",
+                                             access ="https://account.newsguardtech.com/account-auth/oauth/token")
+  
+  newsguard_app <- httr::oauth_app("newsguard",
                              key = ng_key,
                              secret = ng_secret
   )
-
+  
   if (ng_secret == "" | ng_key== ""){
     stop("Please set Newsguard credential as envvar NG_KEY and NG_SECRET", call. = FALSE)
   }
-
-  req <- POST(newsguard_endpoint$access, encode = "form",
+  
+  req <- httr::POST(newsguard_endpoint$access, encode = "form",
               body = list(
                 client_id = newsguard_app$key,
                 client_secret = newsguard_app$secret,
                 redirect_uri = newsguard_app$redirect_uri,
                 grant_type = "client_credentials"),
-              authenticate(newsguard_app$key, newsguard_app$secret))
-  req_json <- content(req,"text")
-  bearer_token <- fromJSON(req_json)$access_token
-
-
+              httr::authenticate(newsguard_app$key, newsguard_app$secret))
+  req_json <- httr::content(req,"text")
+  bearer_token <- jsonlite::fromJSON(req_json)$access_token
+  
   return(bearer_token)
 }
-
