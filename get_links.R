@@ -103,4 +103,9 @@ output <- CooRnet::get_coord_shares_mongo(mongo_database = "MEAG_INDIA",
                                           keep_ourl_only = FALSE,
                                           mongo_cluster = FALSE)
 
-get_outputs(coord_shares_output = output)
+CooRnet::get_outputs_mongo(coord_shares_output = output,
+            component_summary = TRUE,
+            cluster_summary = TRUE,
+            top_coord_urls = TRUE,
+            top_coord_shares = TRUE,
+            gdrive_folder_id = "1Xv7aO8Cn_L0h_AwyuRaX5hM_eHhVwMBM")
