@@ -8,11 +8,11 @@
 #' @param coordination_interval a threshold in seconds that defines a coordinated share. Given a dataset of CrowdTangle shares, this threshold is automatically estimated by the estimate_coord_interval interval function. Alternatively it can be manually passed to the function in seconds
 #' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_collection string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
+#' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
 #' @param parallel enables parallel processing to speed up the process taking advantage of multiple cores (default FALSE). The number of cores is automatically set to all the available cores minus one
 #' @param percentile_edge_weight defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)
 #' @param clean_urls clean the URLs from the tracking parameters (default FALSE)
 #' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
-#' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
 #' @param return_df logical: set to TRUE to return a dataframe of ct_shares (default FALSE)
 #' @param gtimestamps add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)
 #'
@@ -48,7 +48,7 @@
 #' @export
 
 get_coord_shares_mongo <- function(ct_shares.df=NULL,
-                                   mongo_database,
+                                   mongo_database=NULL,
                                    mongo_url=NULL,
                                    coordination_interval=NULL,
                                    parallel=FALSE,
@@ -64,6 +64,8 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   # Connect to the ct_shares_info collection in mongoDB database
   # if(is.null(ct_shares.df)) {
   if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+  if(is.null(mongo_database)) stop("Please provide a name for the MongoDB database used to store the posts that shared your URLs")
+
   # }
   # else {
   #  ct_shares_mdb <- ct_shares.df
@@ -334,7 +336,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
       cat("\nSaving coordinated dataframe on MongoDB database...")
       coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
       coord_shares_mdb$insert(ct_shares.df)
-      results_list <- list(highly_connected_g, highly_connected_coordinated_entities)
+      results_list <- list(coord_shares_mdb, highly_connected_g, highly_connected_coordinated_entities)
       return(results_list)
     }
   }

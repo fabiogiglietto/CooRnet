@@ -1,4 +1,4 @@
-#' get_component_summary
+#' get_component_summary_mongo_ng
 #'
 #' A function to get summary data by coordinated component
 #'
@@ -30,11 +30,12 @@
 #'   plot(clusters)
 #'
 #' @importFrom dplyr %>% group_by summarise mutate top_n arrange
+#' @importFrom jsonlite flatten
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
 #'
 #' @export
-get_component_summary <- function(output){
+get_component_summary_mongo_ng <- function(output){
   ct_shares_marked.df <- output[[1]]
   highly_connected_coordinated_entities <- output[[3]]
   rm(output)
@@ -43,10 +44,13 @@ get_component_summary <- function(output){
   ct_shares_marked.df$full_domain <- urltools::domain(ct_shares_marked.df$expanded) # eg. www.foxnews.com, video.foxnews.com, nation.foxnews.com
   ct_shares_marked.df$parent_domain <- paste(urltools::suffix_extract(ct_shares_marked.df$full_domain)$domain, urltools::suffix_extract(ct_shares_marked.df$full_domain)$suffix, sep = ".")
   # add the component id to the ct_shares_marked.df
+  ct_shares_marked.df <- jsonlite::flatten(ct_shares_marked.df)
+
   ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                y=highly_connected_coordinated_entities[,c("name", "component")],
                                by.x = "account.url",
                                by.y = "name")
+
   # query the the newsguardtech.com API
   domain_score <- data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA)
   cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
