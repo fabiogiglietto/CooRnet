@@ -306,7 +306,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                             ct_shares.df$date %in% coordinated_shares$share_date &
-                                            ct_shares.df$account$url %in% coordinated_shares$account$url, TRUE, FALSE)
+                                            ct_shares.df$account$url %in% coordinated_shares$account.url, TRUE, FALSE)
 
     # call build_coord_graph
     highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
