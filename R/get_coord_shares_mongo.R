@@ -253,7 +253,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
       cat("\nSaving coordinated dataframe on MongoDB database...")
       coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
       coord_shares_mdb$insert(ct_shares.df)
-      results_list <- list(highly_connected_g, highly_connected_coordinated_entities)
+      results_list <- list(coord_shares_mdb,highly_connected_g, highly_connected_coordinated_entities)
       return(results_list)
     }
   }

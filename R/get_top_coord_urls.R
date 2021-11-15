@@ -4,6 +4,7 @@
 #'
 #' @param output the output list resulting from the function get_coord_shares
 #' @param order_by name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
+#' @param return_df logical: set to TRUE if a dataframe of ct_shares is returned by get_coord_shares_mongo (default TRUE)
 #' @param component return the top URLs by network component (TRUE, default) or just the top URLs (FALSE)
 #' @param top number of the top URLs to be retrieved
 #'
@@ -23,9 +24,15 @@
 #'
 #' @export
 
-get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, top=10){
+get_top_coord_urls <- function(output, order_by = "engagement", return_df = TRUE, component=TRUE, top=10){
 
-  ct_shares_marked.df <- output[[1]]
+
+  if (return_df==TRUE) ct_shares_marked.df <- output[[1]]
+  else {
+    ct_shares_marked_mdb <- output[[1]]
+    ct_shares_marked.df <- ct_shares_marked_mdb$find('{}')
+  }
+
   highly_connected_coordinated_entities <- output[[3]]
   rm(output)
 
