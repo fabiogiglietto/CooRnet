@@ -48,8 +48,8 @@ get_outputs_mongo(
 A function to get the outputs of the get_coord_shares function
 }
 \examples{
-get_outputs(coord_shares_output=output)
+get_outputs_mongo(coord_shares_output=output)
 
-get_outputs(coord_shares_output=output, gdrive_folder_id="0BwwA4oUTeiV1TGRPeTVjaWRDY1E")
+get_outputs_mongo(coord_shares_output=output, gdrive_folder_id="0BwwA4oUTeiV1TGRPeTVjaWRDY1E")
 
 }
