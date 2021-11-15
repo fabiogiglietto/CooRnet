@@ -73,31 +73,34 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   # Check if ct_shares_mdb already existed. Otherwise the function will be closed since no available database already exists
   if (ct_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
 
-  # clean urls?
+  # Retrieve all the database within the specified collection
+  ct_shares.df <- ct_shares_mdb$find('{}')
+
+  # Clean urls
   if(clean_urls==TRUE){
 
-    # Find urls in the mongoDB database and aggregate in a dataframe
-    urls_df <- ct_shares_mdb$aggregate(
-      '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
-      options = '{"allowDiskUse":true}')
-    names(urls_df) <- c("url","id_number_list")
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
 
-    # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
-    cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
-
-    # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
-    # Occurences of " need to be substituted with \" within the update query
-    original_urls_list <- as.list(cleaned_urls_df$url)
-
-    for (i in 1:length(original_urls_list)){
-
-      original_url <- stringi::stri_enc_toutf8(sprintf('%s',original_urls_list[i]))
-      cleaned_url <- stringi::stri_enc_toutf8(sprintf('%s',cleaned_urls_list[i]))
-
-      if (cleaned_url != "") ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
-      else ct_shares_mdb$remove(sprintf('{"expanded": "%s"}', original_url))
-    }
-
+    # # Find urls in the mongoDB database and aggregate in a dataframe
+    # urls_df <- ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]', options = '{"allowDiskUse":true}')
+    # names(urls_df) <- c("url","id_number_list")
+    #
+    # # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
+    # cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
+    #
+    # # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
+    # # Occurences of " need to be substituted with \" within the update query
+    # original_urls_list <- as.list(cleaned_urls_df$url)
+    # cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url)
+    #
+    # for (i in 1:length(original_urls_list)){
+    #
+    #   original_url <- stringi::stri_enc_toutf8(sprintf('%s',original_urls_list[i]))
+    #   cleaned_url <- stringi::stri_enc_toutf8(sprintf('%s',cleaned_urls_list[i]))
+    #
+    #   if (cleaned_url != "") ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
+    #   else ct_shares_mdb$remove(sprintf('{"expanded": "%s"}', original_url))
+    # }
     write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
   }
 
@@ -109,7 +112,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   if(keep_ourl_only==TRUE){
 
     URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}}]',options = '{"allowDiskUse":true}'))
-    names(URLs_mdb) <- c("URL", "ct_shares")
+    names(URLs_original) <- c("URL", "ct_shares")
 
     if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
     else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$URL)
@@ -118,10 +121,6 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   }
 
   URLs_list <- URLs_mdb$URL
-
-  # Define an interation parameter to use for running over all the collection
-  ct_shares.df <- ct_shares_mdb$find('{}')
-  # it <- ct_shares_mdb$iterate('{}')
 
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs_list)
 
@@ -306,7 +305,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                             ct_shares.df$date %in% coordinated_shares$share_date &
-                                            ct_shares.df$account$url %in% coordinated_shares$account$url, TRUE, FALSE)
+                                            ct_shares.df$account$url %in% coordinated_shares$account.url, TRUE, FALSE)
 
     # call build_coord_graph
     highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)

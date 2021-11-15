@@ -2,10 +2,13 @@
 #'
 #' This function estimates a threshold in seconds that defines a coordinated link share. While it is common that multiple (pages/groups/account) entities share the same link, some tend to perform these actions in an unusually short period of time. Unusual is thus defined here as a function of the median co-share time difference. More specifically, the function ranks all co-shares by time-difference from first share and focuses on the behaviour of the quickest second share performing q\% (default 0.5) URLs. The value returned is the median time in seconds spent by these URLs to cumulate the p\% (default 0.1) of their total shares
 #'
-#' @param ct_shares.df the data.frame of link posts resulting from the function get_ctshares
+#' @param ct_shares.df a dataframe containing the Crowdtangle shares after running get_ctshares.R
+#' @param mongo_database string: the name of the MongoDB used to host the collections.
+#' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param q parameter that controls the quantile of quickest URLs to be filtered. Default to 0.1 [0-1]
 #' @param p parameter that controls the percentage of total shares to be reached. Default to 0.5 [0-1]
 #' @param clean_urls clean up unnecessary url paramters and malformed urls, and keep just the URLs included in the original data set (default FALSE)
+#' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
 #' @param keep_ourl_only restrict the analysis to ct shares links matching the original URLs (default=FALSE)
 #'
 #' @return a list containing two objects: summary statistics of q\% quickest second share performing URLs, and a time in seconds corresponding to the median time spent by these URLs to cumulate the p\% of their total shares
@@ -18,7 +21,14 @@
 #'
 #' @export
 
-estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE, keep_ourl_only=FALSE) {
+estimate_coord_interval <- function(ct_shares.df=NULL,
+                                    mongo_database,
+                                    mongo_url=NULL,
+                                    q=0.1,
+                                    p=0.5,
+                                    clean_urls=FALSE,
+                                    mongo_cluster=TRUE,
+                                    keep_ourl_only=FALSE) {
 
   if(p < 0 | p > 1){
     stop("The p value must be between 0 and 1")
@@ -39,14 +49,17 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
           file="log.txt", append = TRUE)
   }
 
-  # keep original URLs only?
-  if(keep_ourl_only==TRUE){
-    ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
-    if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
-    write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
+  if(is.null(ct_shares.df)){
+    if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
+    ct_shares_mdb <-  connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
+    # Check if ct_shares_mdb already existed. Otherwise the function will be closed since no available database already exists
+    if (ct_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
+
+    # Retrieve all the database within the specified collection
+    ct_shares.df <- ct_shares_mdb$find('{}')
   }
 
-  # clean urls?
+  # Clean urls
   if(clean_urls==TRUE){
     ct_shares.df <- clean_urls(ct_shares.df, "expanded")
     write("Coordination interval estimated on cleaned URLs", file = "log.txt", append = TRUE)
@@ -54,13 +67,25 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
 
   ct_shares.df <- ct_shares.df[, c("platformId", "date", "expanded"),]
 
-  # get a list of all shared URLs
-  URLs <- as.data.frame(table(ct_shares.df$expanded))
-  names(URLs) <- c("URL", "ct_shares")
-  URLs <- subset(URLs, URLs$ct_shares>1) # remove URLs shared only 1 time (can't be coordinated)
-  URLs$URL <- as.character(URLs$URL)
+  # Get a list of all shared URLs
+  URLs_mdb <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"freq": {"$gt": 1}}}]',options = '{"allowDiskUse":true}'))
+  names(URLs_mdb) <- c("URL", "ct_shares")
 
-  ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
+  # keep original URLs only?
+  if(keep_ourl_only==TRUE){
+    # ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
+    # if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}}]',options = '{"allowDiskUse":true}'))
+    names(URLs_original) <- c("URL", "ct_shares")
+
+    if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$URL)
+    write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
+  }
+
+  URLs_list <- URLs_mdb$URL
+
+  ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs_list)
 
   ranked_shares <- ct_shares.df %>%
     dplyr::group_by(expanded) %>%

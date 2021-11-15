@@ -328,7 +328,7 @@ get_ctshares <- function(urls,
   #   write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
   # }
 
-  if (verbose) message("(3). Cleaning shares performed outside the time span of one week from first post...")
+  if (verbose) message("(2). Cleaning shares performed outside the time span of one week from first post...")
 
   # How to remove dates more than one week after the first share:
   # Step 1 - "Group" expanded link, date and original docs and compute the min date in the list
