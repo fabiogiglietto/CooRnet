@@ -6,14 +6,15 @@
 \usage{
 get_coord_shares_mongo(
   ct_shares.df = NULL,
-  mongo_database,
+  mongo_database = NULL,
   mongo_url = NULL,
   coordination_interval = NULL,
   parallel = FALSE,
   percentile_edge_weight = 0.9,
   clean_urls = FALSE,
   keep_ourl_only = FALSE,
-  mongo_cluster = FALSE,
+  mongo_cluster = TRUE,
+  return_df = FALSE,
   gtimestamps = FALSE
 )
 }
@@ -35,6 +36,8 @@ get_coord_shares_mongo(
 \item{keep_ourl_only}{restrict the analysis to ct shares links matching the original URLs (default=FALSE)}
 
 \item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
+
+\item{return_df}{logical: set to TRUE to return a dataframe of ct_shares (default FALSE)}
 
 \item{gtimestamps}{add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)}
 
