@@ -32,6 +32,7 @@
 #' @importFrom jsonlite flatten
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
+#' @importFrom httr GET add_headers
 #'
 #' @export
 
@@ -65,7 +66,8 @@ get_cluster_summary_mongo_ng <- function(output){
   for (i in 1:nrow(domain_score)) {
     utils::setTxtProgressBar(pb, pb$getVal()+1)
     parent_domain <- domain_score$parent_domain[i]
-    query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain), add_headers(Authorization = paste0("Bearer ",ng_bearer)))
+    query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
+                       httr::add_headers(Authorization = paste0("Bearer ",ng_bearer)))
     tryCatch(
       {
         if (query$status_code == 200) {
