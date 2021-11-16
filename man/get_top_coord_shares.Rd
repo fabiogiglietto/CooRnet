@@ -7,6 +7,7 @@
 get_top_coord_shares(
   output,
   order_by = "engagement",
+  return_df = TRUE,
   component = TRUE,
   top = 10
 )
@@ -15,6 +16,8 @@ get_top_coord_shares(
 \item{output}{the output list resulting from the function get_coord_shares}
 
 \item{order_by}{name of the column used to order the top shares. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
+
+\item{return_df}{logical: set to TRUE if a dataframe of ct_shares is returned by get_coord_shares_mongo (default TRUE)}
 
 \item{component}{return the top posts grouped by network component (TRUE, default) or just the top posts by engagement (FALSE)}
 

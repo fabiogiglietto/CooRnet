@@ -5,21 +5,30 @@
 \title{estimate_coord_interval}
 \usage{
 estimate_coord_interval(
-  ct_shares.df,
+  ct_shares.df = NULL,
+  mongo_database,
+  mongo_url = NULL,
   q = 0.1,
   p = 0.5,
   clean_urls = FALSE,
+  mongo_cluster = TRUE,
   keep_ourl_only = FALSE
 )
 }
 \arguments{
-\item{ct_shares.df}{the data.frame of link posts resulting from the function get_ctshares}
+\item{ct_shares.df}{a dataframe containing the Crowdtangle shares after running get_ctshares.R}
+
+\item{mongo_database}{string: the name of the MongoDB used to host the collections.}
+
+\item{mongo_url}{string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)}
 
 \item{q}{parameter that controls the quantile of quickest URLs to be filtered. Default to 0.1 [0-1]}
 
 \item{p}{parameter that controls the percentage of total shares to be reached. Default to 0.5 [0-1]}
 
 \item{clean_urls}{clean up unnecessary url paramters and malformed urls, and keep just the URLs included in the original data set (default FALSE)}
+
+\item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
 
 \item{keep_ourl_only}{restrict the analysis to ct shares links matching the original URLs (default=FALSE)}
 }

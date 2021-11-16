@@ -13,7 +13,7 @@
 #' @param mongo_database string: the name of the MongoDB used to host the collections. Name can be choosen by the user (required, default empty string  will raise an error)
 #' @param return_df logical: set to TRUE to return a dataframe of ct_shares (default FALSE)
 #' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
-#' @param get_history logical: set to TRUE to retive history from CrowdTangle API (default FALSE)
+#' @param get_history logical: set to TRUE to retrieve history from CrowdTangle API (default FALSE)
 #' @param verbose logical: show progress messages?
 #'
 #' @return a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
@@ -239,29 +239,18 @@ get_ctshares <- function(urls,
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
         ct_shares.df <- as.data.frame(ct_shares.df)
 
+        if(clean_urls==TRUE) ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+
         if (nrow(ct_shares.df)>=1){
-
-          if(clean_urls==TRUE){
-
-            ct_shares.df <- clean_urls(ct_shares.df, "expanded")
-            # write("Original URLs have been cleaned", file = "log.txt", append = TRUE)
-            # ct_shares.df <- ct_shares.df %>%
-            #                 dplyr::mutate(expanded = replace(expanded, expanded != "", cleaned_url))
-            #
-            #   ct_shares.df$cleaned_url <- NULL
-          }
-
-          ct_shares.df <- ct_shares.df %>%
-                              dplyr::rowwise() %>%
-                              dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
-            # dplyr::mutate(is_orig = if_else(conn$count(sprintf('{"url": "%s"}',expanded))>0, TRUE, FALSE))
+            ct_shares.df <- ct_shares.df %>%
+                            dplyr::rowwise() %>%
+                            dplyr::mutate(is_orig = ifelse(expanded %in% urls$url, TRUE, FALSE))
 
             # n_original_url <- conn$count(sprintf('{"url": "%s"}',ct_shares.df$expanded))
-            # ct_shares.df$is_orig <- ifelse(n_original_url > 0, TRUE, FALSE)
-                for (j in 1:nrow(ct_shares.df)) {
-                      ct_shares_mdb$update(gsub('^.|.$', '', jsonlite::toJSON(ct_shares.df[j,])), upsert = TRUE)
-                }
+            for (j in 1:nrow(ct_shares.df)) {
+                  ct_shares_mdb$update(gsub('^.|.$', '', jsonlite::toJSON(ct_shares.df[j,])), upsert = TRUE)
             }
+         }
       }
       rm(ct_shares.df, datalist, c)
     }
