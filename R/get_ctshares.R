@@ -183,8 +183,12 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     }
   }
 
-  ct_shares.df <- tidytable::bind_rows.(datalist)
-  rm(datalist)
+  if (length(datalist) > 0) {
+    ct_shares.df <- tidytable::bind_rows.(datalist)
+    rm(datalist)
+  } else {
+    stop("\nNo ct_shares were found!")
+  }
 
   # save original API output
   if(save_ctapi_output==TRUE){
