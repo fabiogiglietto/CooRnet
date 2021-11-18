@@ -50,7 +50,7 @@ if (newformat == TRUE) {
 
   df$url <- tolower(df$url)
 
-  valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+  valid_schemes <- read.csv(file = valid_schemes_csv)
   df <- clean_urls(df, "url", valid_schemes) # clean up the url to avoid duplicates
 
   urls <- df %>%

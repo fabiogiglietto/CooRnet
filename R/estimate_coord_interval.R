@@ -49,6 +49,8 @@ estimate_coord_interval <- function(ct_shares.df=NULL,
           file="log.txt", append = TRUE)
   }
 
+  is_mongodb_df <- FALSE
+
   if(is.null(ct_shares.df)){
     if(is.null(mongo_url)) stop("Please provide the address of the MongoDB server used to store the posts that shared your URLs")
     ct_shares_mdb <-  connect_mongodb_cluster("shares_info", mongo_database, mongo_url, mongo_cluster)
@@ -57,34 +59,51 @@ estimate_coord_interval <- function(ct_shares.df=NULL,
 
     # Retrieve all the database within the specified collection
     ct_shares.df <- ct_shares_mdb$find('{}')
+    is_mongodb_df <- TRUE
   }
 
   # Clean urls
   if(clean_urls==TRUE){
-    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+    valid_schemes <- read.csv(file = valid_schemes_csv)
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded", valid_schemes)
     write("Coordination interval estimated on cleaned URLs", file = "log.txt", append = TRUE)
   }
 
   ct_shares.df <- ct_shares.df[, c("platformId", "date", "expanded"),]
+  URLs <- NULL
 
   # Get a list of all shared URLs
-  URLs_mdb <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"freq": {"$gt": 1}}}]',options = '{"allowDiskUse":true}'))
-  names(URLs_mdb) <- c("URL", "ct_shares")
+  if (is_mongodb_df==TRUE) {
+  URLs <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"freq": {"$gt": 1}}}]',options = '{"allowDiskUse":true}'))
+  names(URLs) <- c("URL", "ct_shares")
+  }
+  else {
+    URLs <- as.data.frame(table(ct_shares.df$expanded))
+    names(URLs) <- c("URL", "ct_shares")
+    URLs <- subset(URLs, URLs$ct_shares>1) # remove URLs shared only 1 time (can't be coordinated)
+    URLs$URL <- as.character(URLs$URL)
+  }
 
   # keep original URLs only?
   if(keep_ourl_only==TRUE){
-    # ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
-    # if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+
+    if (is_mongodb_df==TRUE) {
     URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}}]',options = '{"allowDiskUse":true}'))
     names(URLs_original) <- c("URL", "ct_shares")
 
     if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
-    else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$URL)
+    else URLs <- subset(URLs, URLs$URL %in% URLs_original$URL)
+    }
+
+    else {
+      ct_shares.df <- subset(ct_shares.df, ct_shares.df$is_orig==TRUE)
+      if (nrow(ct_shares.df) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+    }
+
     write("Coordination interval estimated on shares matching original URLs", file = "log.txt", append = TRUE)
   }
 
-  URLs_list <- URLs_mdb$URL
-
+  URLs_list <- URLs$URL
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs_list)
 
   ranked_shares <- ct_shares.df %>%

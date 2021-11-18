@@ -85,7 +85,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # clean urls?
   if(clean_urls==TRUE){
-    valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+    valid_schemes <- read.csv(file = valid_schemes_csv)
     ct_shares.df <- clean_urls(ct_shares.df, "expanded", valid_schemes)
     write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
   }

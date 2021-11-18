@@ -85,7 +85,7 @@ get_ctshares <- function(urls,
 
   # clean the URLs
   if(clean_urls==TRUE){
-    valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+    valid_schemes <- read.csv(file = valid_schemes_csv)
     urls <- clean_urls(urls, "url", valid_schemes)
 
     # in case of duplicated urls, keeps only the one with the oldest date

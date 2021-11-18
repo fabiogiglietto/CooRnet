@@ -1,6 +1,8 @@
 #' @importFrom stringr str_replace
 #' @importFrom urltools url_decode scheme domain
 
+valid_schemes_csv <- "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv"
+
 clean_urls <- function(df, url, valid_schemes) {
 
   df <- df[!grepl("[[:blank:]]", df[[url]]),] # remove URLs with space
