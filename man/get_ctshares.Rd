@@ -41,7 +41,7 @@ get_ctshares(
 
 \item{return_df}{logical: set to TRUE to return a dataframe of ct_shares (default FALSE)}
 
-\item{get_history}{logical: set to TRUE to retive history from CrowdTangle API (default FALSE)}
+\item{get_history}{logical: set to TRUE to retrieve history from CrowdTangle API (default FALSE)}
 
 \item{clean_urls}{logical: clean the URLs from tracking parameters (default FALSE)}
 

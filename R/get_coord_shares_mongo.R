@@ -80,8 +80,8 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
 
   # Clean urls
   if(clean_urls==TRUE){
-
-    ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+    valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+    ct_shares.df <- clean_urls(ct_shares.df, "expanded", valid_schemes)
 
     # # Find urls in the mongoDB database and aggregate in a dataframe
     # urls_df <- ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]', options = '{"allowDiskUse":true}')

@@ -1,7 +1,7 @@
 #' @importFrom stringr str_replace
 #' @importFrom urltools url_decode scheme domain
 
-clean_urls <- function(df, url){
+clean_urls <- function(df, url, valid_schemes) {
 
   df <- df[!grepl("[[:blank:]]", df[[url]]),] # remove URLs with space
   df <- df[!grepl("\"", df[[url]]),] # remove unescaped double quotes
@@ -61,7 +61,7 @@ clean_urls <- function(df, url){
 
   df$scheme <- urltools::scheme(df[[url]])
   # keep only valid schemes
-  valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+
   df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
 
   # remove domain urls
@@ -78,7 +78,7 @@ clean_urls <- function(df, url){
   return(df)
 }
 
-clean_urls_mongo <- function(df, url){
+clean_urls_mongo <- function(df, url, valid_schemes){
 
   df <- df %>%
         dplyr::mutate(cleaned_url = url)
@@ -91,7 +91,7 @@ clean_urls_mongo <- function(df, url){
 
   # keep only valid schemes
   df$scheme <- urltools::scheme(df$cleaned_url)
-  valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+
   df <- df[df$scheme %in% valid_schemes$URI.Scheme,]
 
   # remove domain urls

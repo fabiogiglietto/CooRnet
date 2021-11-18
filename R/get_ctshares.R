@@ -85,7 +85,8 @@ get_ctshares <- function(urls,
 
   # clean the URLs
   if(clean_urls==TRUE){
-    urls <- clean_urls(urls, "url")
+    valid_schemes <- read.csv(file = "https://www.iana.org/assignments/uri-schemes/uri-schemes-1.csv")
+    urls <- clean_urls(urls, "url", valid_schemes)
 
     # in case of duplicated urls, keeps only the one with the oldest date
     urls <- urls %>%
@@ -239,7 +240,7 @@ get_ctshares <- function(urls,
         ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df[,c("platformId", "postUrl", "expanded")]),]
         ct_shares.df <- as.data.frame(ct_shares.df)
 
-        if(clean_urls==TRUE) ct_shares.df <- clean_urls(ct_shares.df, "expanded")
+        if(clean_urls==TRUE) ct_shares.df <- clean_urls(ct_shares.df, "expanded", valid_schemes)
 
         if (nrow(ct_shares.df)>=1){
             ct_shares.df <- ct_shares.df %>%
