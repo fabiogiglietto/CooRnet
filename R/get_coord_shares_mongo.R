@@ -113,13 +113,14 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
   # keep original URLs only?
   if(keep_ourl_only==TRUE){
 
-    URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}}]',options = '{"allowDiskUse":true}'))
-    names(URLs_original) <- c("URL", "ct_shares")
+    URLs_original <- ct_shares_mdb$find(query = '{"is_orig" : { "$eq" : true }}',
+                                        fields = '{"expanded" : true}')
 
     if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
-    else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$URL)
+    else URLs_mdb <- subset(URLs_mdb, URLs_mdb$URL %in% URLs_original$expanded)
 
     write("Analysis performed on shares matching original URLs", file = "log.txt", append = TRUE)
+    rm(URLs_original)
   }
 
   URLs_list <- URLs_mdb$URL
