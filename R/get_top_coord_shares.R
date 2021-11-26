@@ -49,7 +49,7 @@ get_top_coord_shares <- function(output, order_by = "engagement", component=TRUE
               statistics.actual.likeCount = sum(statistics.actual.likeCount),
               statistics.actual.sadCount = sum(statistics.actual.sadCount),
               statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
-    dplyr::select(c("account.url","date","title","description","message","link","postUrl",
+    dplyr::select(c("account.url","date","title","description","message","postUrl",
              "account.name","account.handle","account.subscriberCount","expanded",
              "statistics.actual.likeCount", "statistics.actual.shareCount",
              "statistics.actual.commentCount", "statistics.actual.loveCount",
