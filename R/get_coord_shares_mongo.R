@@ -140,7 +140,7 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
 
   # estimate the coordination interval if not specified by the users
   if(is.null(coordination_interval)){
-    coordination_interval <- estimate_coord_interval(ct_shares.df, clean_urls = clean_urls, keep_ourl_only= keep_ourl_only)
+    coordination_interval <- estimate_coord_interval(mongo_database = mongo_database, mongo_url = mongo_url, clean_urls = clean_urls, keep_ourl_only= keep_ourl_only)
     coordination_interval <- coordination_interval[[2]]
   }
 

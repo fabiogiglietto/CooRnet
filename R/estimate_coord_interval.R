@@ -69,7 +69,6 @@ estimate_coord_interval <- function(ct_shares.df=NULL,
     write("Coordination interval estimated on cleaned URLs", file = "log.txt", append = TRUE)
   }
 
-  ct_shares.df <- ct_shares.df[, c("platformId", "date", "expanded"),]
   URLs <- NULL
 
   # Get a list of all shared URLs
@@ -88,11 +87,11 @@ estimate_coord_interval <- function(ct_shares.df=NULL,
   if(keep_ourl_only==TRUE){
 
     if (is_mongodb_df==TRUE) {
-    URLs_original <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded", "freq": {"$sum":1}}},{"$match": {"is_orig": true}}]',options = '{"allowDiskUse":true}'))
-    names(URLs_original) <- c("URL", "ct_shares")
+      URLs_original <- ct_shares_mdb$find(query = '{"is_orig" : { "$eq" : true }}',
+                                          fields = '{"expanded" : true}')
 
-    if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
-    else URLs <- subset(URLs, URLs$URL %in% URLs_original$URL)
+      if (nrow(URLs_original) < 2) stop("Can't execute with keep_ourl_only=TRUE. Not enough posts matching original URLs")
+      else URLs <- subset(URLs, URLs$URL %in% URLs_original$expanded)
     }
 
     else {
@@ -104,6 +103,8 @@ estimate_coord_interval <- function(ct_shares.df=NULL,
   }
 
   URLs_list <- URLs$URL
+
+  ct_shares.df <- ct_shares.df[, c("platformId", "date", "expanded"),]
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs_list)
 
   ranked_shares <- ct_shares.df %>%
