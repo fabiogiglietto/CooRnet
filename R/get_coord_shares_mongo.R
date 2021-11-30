@@ -37,6 +37,7 @@
 #' write.csv(highly_connected_coordinated_entities, file=“highly_connected_coordinated_entities.csv”)
 #'
 #' @importFrom stats quantile
+#' @importFrom jsonlite fromJSON
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom dplyr mutate mutate select filter
 #' @importFrom parallel detectCores makeCluster stopCluster
@@ -246,17 +247,23 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
 
+
+    coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
+
+    if(coord_shares_mdb$count() > 0) coord_shares_mdb$drop()
+    coord_shares_mdb$insert(ct_shares.df)
+
     if (return_df==TRUE) {
       cat("\nReturning dataframe in the output...")
       results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
-      return(results_list)}
+      }
     else{
-      cat("\nSaving coordinated dataframe on MongoDB database...")
-      coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
-      coord_shares_mdb$insert(ct_shares.df)
+      cat("\nReturning MongoDB database connection...")
       results_list <- list(coord_shares_mdb,highly_connected_g, highly_connected_coordinated_entities)
-      return(results_list)
     }
+
+    return(results_list)
+    cat("\nDone!")
   }
 
   ###################
@@ -328,16 +335,18 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
 
+    if(coord_shares_mdb$count() > 0) coord_shares_mdb$drop()
+    coord_shares_mdb$insert(ct_shares.df)
+
     if (return_df==TRUE) {
       cat("\nReturning dataframe in the output...")
       results_list <- list(ct_shares.df, highly_connected_g, highly_connected_coordinated_entities)
-      return(results_list)}
-    else{
-      cat("\nSaving coordinated dataframe on MongoDB database...")
-      coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
-      coord_shares_mdb$insert(ct_shares.df)
-      results_list <- list(coord_shares_mdb, highly_connected_g, highly_connected_coordinated_entities)
-      return(results_list)
     }
+    else{
+      cat("\nReturning MongoDB database connection...")
+      results_list <- list(coord_shares_mdb, highly_connected_g, highly_connected_coordinated_entities)
+    }
+    return(results_list)
+    cat("\nDone!")
   }
 }
