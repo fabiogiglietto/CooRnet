@@ -7,6 +7,9 @@
 get_outputs(
   coord_shares_output,
   ct_shares_marked.df = TRUE,
+  mongo_url = NULL,
+  mongo_collection = NULL,
+  mongo_cluster = FALSE,
   highly_connected_g = TRUE,
   highly_connected_coordinated_entities = TRUE,
   component_summary = FALSE,
@@ -20,6 +23,12 @@ get_outputs(
 \item{coord_shares_output}{the list from the get_coord_shares function}
 
 \item{ct_shares_marked.df}{a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated (default TRUE)}
+
+\item{mongo_url}{string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)}
+
+\item{mongo_collection}{string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)}
+
+\item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
 
 \item{highly_connected_g}{graph of coordinated networks of pages/groups/accounts (default TRUE)}
 
