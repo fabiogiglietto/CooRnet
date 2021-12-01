@@ -7,7 +7,9 @@
 get_top_coord_shares(
   output,
   order_by = "engagement",
-  return_df = TRUE,
+  mongo_url = NULL,
+  mongo_database = NULL,
+  mongo_cluster = TRUE,
   component = TRUE,
   top = 10
 )
@@ -17,7 +19,11 @@ get_top_coord_shares(
 
 \item{order_by}{name of the column used to order the top shares. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
 
-\item{return_df}{logical: set to TRUE if a dataframe of ct_shares is returned by get_coord_shares_mongo (default TRUE)}
+\item{mongo_url}{string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)}
+
+\item{mongo_database}{string: name of the MongoDB database where the shares have been saved. Set to NULL to avoid using mongo (default NULL)}
+
+\item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
 
 \item{component}{return the top posts grouped by network component (TRUE, default) or just the top posts by engagement (FALSE)}
 
@@ -31,9 +37,7 @@ A function to get the top n posts by engagement containing URLs shared in a coor
 }
 \examples{
   # get the top ten posts containing URLs shared by each network component and by engagement
-  df <- get_top_news(output, order_by = "engagement", top=10)
+  df <- get_top_coord_shares(output, order_by = "engagement", top=10)
 
-  # get the top ten posts containing URLs shared in a coordinated way, by engagement
-  df <- get_top_news(output, order_by = "engagement", top=10)
 
 }

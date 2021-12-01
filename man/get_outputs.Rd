@@ -8,7 +8,7 @@ get_outputs(
   coord_shares_output,
   ct_shares_marked.df = TRUE,
   mongo_url = NULL,
-  mongo_collection = NULL,
+  mongo_database = NULL,
   mongo_cluster = FALSE,
   highly_connected_g = TRUE,
   highly_connected_coordinated_entities = TRUE,
@@ -26,7 +26,7 @@ get_outputs(
 
 \item{mongo_url}{string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)}
 
-\item{mongo_collection}{string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)}
+\item{mongo_database}{string: name of the MongoDB database where the shares have been saved. Set to NULL to avoid using mongo (default NULL)}
 
 \item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
 

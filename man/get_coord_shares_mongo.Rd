@@ -40,8 +40,6 @@ get_coord_shares_mongo(
 \item{return_df}{logical: set to TRUE to return a dataframe of ct_shares (default FALSE)}
 
 \item{gtimestamps}{add timestamps of the fist and last coordinated shares on each node. Slow on large networks (default=FALSE)}
-
-\item{mongo_collection}{string: name of the MongoDB collection where the shares have been saved. Set to NULL to avoid using mongo (default NULL)}
 }
 \value{
 A list (results_list) containing four objects: 1. The input data.table (ct_shares.dt) of shares with an additional boolean variable (coordinated) that identifies coordinated shares, 2. An igraph graph (highly_connected_g) with networks of coordinated entities whose edges also contains a t_coord_share attribute (vector) reporting the timestamps of every time the edge was detected as coordinated sharing, 3. A dataframe with a list of coordinated entities (highly_connected_coordinated_entities) with respective name (the account url), number of shares performed, average subscriber count, platform, account name, if the account name changed, if the account is verified, account handle, degree and component number

@@ -30,6 +30,7 @@ Imports:
   foreach (>= 1.5),
   parallel (>= 3.6),
   doSNOW (>= 1.0),
+  mongolite (>= 2.4),
   googledrive (>= 1.0)
 Encoding: UTF-8
 LazyData: true

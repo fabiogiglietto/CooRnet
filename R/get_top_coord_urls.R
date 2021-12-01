@@ -14,10 +14,7 @@
 #'
 #' @examples
 #' # get the top ten URLs shared in a coordinated way by each network component, by engagement
-#' df <- get_top_coord_urls(output, order_by = "engagement", return_df = TRUE, component = TRUE, top=10)
-#'
-#' # get the top ten URLs shared in a coordinated way, by engagement
-#' df <- get_top_news(output, order_by = "engagement", top=10)
+#' df <- get_top_coord_urls(output, order_by = "engagement", component = TRUE, top=10)
 #'
 #' @importFrom dplyr filter n left_join rowwise mutate select arrange group_by top_n
 #' @importFrom rlang sym
