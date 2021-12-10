@@ -45,12 +45,12 @@ clean_urls <- function(df, url, valid_schemes) {
   df[[url]] <- gsub("\\/$", "", df[[url]]) # delete remaining trailing slash
   df[[url]] <- gsub("\\&$", "", df[[url]]) # delete remaining trailing &
 
-  filter_urls <- c("^http://127.0.0.1", "https://www.youtube.com/watch", "https://www.youtube.com/", "http://www.youtube.com/",
-                   "https://youtu.be", "https://m.youtube.com", "https://m.facebook.com/story",
-                   "https://m.facebook.com/", "https://www.facebook.com/", "https://chat.whatsapp.com",
-                   "http://chat.whatsapp.com", "http://wa.me", "https://wa.me", "https://api.whatsapp.com/send",
-                   "https://api.whatsapp.com/", "https://play.google.com/store/apps/details", "https://www.twitter.com/",
-                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login", "https://t.me/joinchat")
+  filter_urls <- c("^http://127.0.0.1", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
+                   "^https://youtu.be$", "^https://m.youtube.com$", "^https://m.facebook.com/story",
+                   "^https://m.facebook.com/$", "^https://www.facebook.com/$", "^https://chat.whatsapp.com$",
+                   "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
+                   "^https://api.whatsapp.com/$", "^https://play.google.com/store/apps/details$", "^https://www.twitter.com/$", "^https://www.twitter.com$",
+                   "^https://instagram.com/accounts/login", "^https://www.instagram.com/accounts/login", "^https://t.me/joinchat$")
 
   df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[url]]), ]
 
@@ -139,12 +139,12 @@ clean_urls_mongo <- function(df, url, valid_schemes){
   df[[cleaned_url_name]] <- gsub("\\/$", "", df[[cleaned_url_name]]) # delete remaining trailing slash
   df[[cleaned_url_name]] <- gsub("\\&$", "", df[[cleaned_url_name]]) # delete remaining trailing &
 
-  filter_urls <- c("^http://127.0.0.1", "https://www.youtube.com/watch", "https://www.youtube.com/", "http://www.youtube.com/",
-                   "https://youtu.be", "https://m.youtube.com", "https://m.facebook.com/story",
-                   "https://m.facebook.com/", "https://www.facebook.com/", "https://chat.whatsapp.com",
-                   "http://chat.whatsapp.com", "http://wa.me", "https://wa.me", "https://api.whatsapp.com/send",
-                   "https://api.whatsapp.com/", "https://play.google.com/store/apps/details", "https://www.twitter.com/",
-                   "https://instagram.com/accounts/login", "https://www.instagram.com/accounts/login", "https://t.me/joinchat")
+  filter_urls <- c("^http://127.0.0.1", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
+                   "^https://youtu.be$", "^https://m.youtube.com$", "^https://m.facebook.com/story",
+                   "^https://m.facebook.com/$", "^https://www.facebook.com/$", "^https://chat.whatsapp.com$",
+                   "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
+                   "^https://api.whatsapp.com/$", "^https://play.google.com/store/apps/details$", "^https://www.twitter.com/$", "^https://www.twitter.com$",
+                   "^https://instagram.com/accounts/login", "^https://www.instagram.com/accounts/login", "^https://t.me/joinchat$")
 
   # df <- df[!grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url]]), ]
   df$cleaned_url[which(grepl(paste(filter_urls, collapse = "|"), df[[cleaned_url_name]]))] <- ""
