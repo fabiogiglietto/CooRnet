@@ -160,7 +160,7 @@ get_ctshares <- function(urls,
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
                            "&includeSummary=FALSE",
-                           "&includeHistory=FALSE", # history takes a lot of space on the db
+                            ifelse(get_history, "&includeHistory=TRUE", "&includeHistory=FALSE"), # history takes a lot of space on the db
                            "&sortBy=date",
                            "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
                            "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
