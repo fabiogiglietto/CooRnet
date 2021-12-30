@@ -38,7 +38,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
     dplyr::summarize(shares = n(),
                      coord.shares = sum(is_coordinated==TRUE),
                      account.avg.subscriberCount=mean(account.subscriberCount),
-                     account.id = dplyr::first(account.id),
+                     account.platformId = dplyr::first(account.platformId),
                      account.name = dplyr::first(account.name), # name
                      account.name.changed = dplyr::first(account.name.changed),
                      account.handle.changed = dplyr::first(account.handle.changed), # handle
@@ -65,6 +65,7 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   V(full_g)$account.avg.subscriberCount <- sapply(V(full_g)$name, function(x) vertex.info$account.avg.subscriberCount[vertex.info$account.url == x])
   V(full_g)$account.platform <- sapply(V(full_g)$name, function(x) vertex.info$account.platform[vertex.info$account.url == x])
   V(full_g)$account.name <- sapply(V(full_g)$name, function(x) vertex.info$account.name[vertex.info$account.url == x])
+  V(full_g)$account.platformId<- sapply(V(full_g)$name, function(x) vertex.info$account.platformId[vertex.info$account.url == x])
   V(full_g)$name.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.name.changed[vertex.info$account.url == x])
   V(full_g)$account.handle <- sapply(V(full_g)$name, function(x) vertex.info$account.handle[vertex.info$account.url == x])
   V(full_g)$handle.changed <- sapply(V(full_g)$name, function(x) vertex.info$account.handle.changed[vertex.info$account.url == x])
