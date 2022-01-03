@@ -334,6 +334,8 @@ get_coord_shares_mongo <- function(ct_shares.df=NULL,
                 "\nnumber of component:", length(unique(highly_connected_coordinated_entities$component))),
           file="log.txt", append=TRUE)
 
+    coord_shares_mdb <- connect_mongodb_cluster("coord_shares_info", mongo_database, mongo_url, mongo_cluster)
+
     if(coord_shares_mdb$count() > 0) coord_shares_mdb$drop()
     coord_shares_mdb$insert(ct_shares.df)
 
