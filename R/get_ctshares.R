@@ -27,7 +27,8 @@
 #' @importFrom httr GET content
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr select group_by filter %>% select_if
-#' @importFrom utils setTxtProgressBar txtProgressBar menu URLencode
+#' @importFrom utils setTxtProgressBar txtProgressBar menu
+#' @importFrom urltools url_encode
 #' @importFrom tidytable unnest. bind_rows.
 #' @importFrom mongolite mongo
 #'
@@ -155,7 +156,7 @@ get_ctshares <- function(urls,
 
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
-                           "link=", utils::URLencode(link, reserved = TRUE),
+                           "link=", urltools::url_encode(link),
                            "&platforms=", platforms,
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
@@ -346,7 +347,7 @@ get_ctshares <- function(urls,
   # write log
   write(paste("Original URLs:", nrow(urls),
               "\nCT shares:", ct_shares_mdb$count(),
-              "\nUnique URLs in CT shares:", length(ct_shares_mdb$distinct("expanded")),
+              "\nUnique URLs in CT shares:", nrow(ct_shares_mdb$aggregate('[{"$group": {"_id":"$expanded"}}]',options='{ "allowDiskUse": true }')),
               "\nCT shares matching original URLs:", ct_shares_mdb$count('{"is_orig":true}')),
         file = "log.txt",
         append = TRUE)
