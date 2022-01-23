@@ -168,7 +168,7 @@ get_ctshares <- function(urls,
                            "&count=", nmax)
 
     # call the API, returns NA if call fails
-    if (verbose) message("Calling: ", query.string, " (link: ", link, ")")
+    if (verbose) message("Calling: ", query.string, " (link #", pb$getVal(), ": ", link, ")")
     c <- query_link_enpoint(query.string, sleep_time)
 
     if (any(!is.na(c))) { # check if the call failed returning NA
@@ -181,7 +181,10 @@ get_ctshares <- function(urls,
         counter <- 1L
         while (counter <= 10 & !is.null(c$result$pagination$nextPage)) # stop after 10 iterations
         {
-          if (verbose) message("Calling: ", c$result$pagination$nextPage, " (link: ", link, "(", counter, "))")
+          if (verbose) {
+            message("Calling: ", c$result$pagination$nextPage, " (link #", pb$getVal(), ": ", link, "(", counter, "))")
+          }
+
           c <- query_link_enpoint(c$result$pagination$nextPage, sleep_time)
           counter <- sum(counter, 1)
 
