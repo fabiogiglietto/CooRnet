@@ -21,7 +21,7 @@ get_component_summary(
 
 \item{mongo_cluster}{logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)}
 
-\item{newsguard_info}{logical: set to TRUE if Newsguard information are added to the final cluster summary (default FALSE)}
+\item{newsguard_info}{logical: set to TRUE to get NewsGuard rating for domains shared by the component. NewsGuard credentials required (default FALSE)}
 }
 \value{
 A data frame containing summary data by each coordinated component:

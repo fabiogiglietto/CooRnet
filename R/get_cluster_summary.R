@@ -6,7 +6,7 @@
 #' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_database string: name of the MongoDB database where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
-#' @param newsguard_info logical: set to TRUE if Newsguard information are added to the final cluster summary (default FALSE)
+#' @param newsguard_info logical: set to TRUE to get NewsGuard rating for domains shared by the culster NewsGuard credentials required (default FALSE)
 #'
 #' @return A data frame containing summary data by each coordinated cluster:
 #' the average subscribers number of entities in a cluster,
@@ -74,8 +74,8 @@ get_cluster_summary <- function(output,
   ct_shares_marked.df$parent_domain <- paste(urltools::suffix_extract(ct_shares_marked.df$full_domain)$domain, urltools::suffix_extract(ct_shares_marked.df$full_domain)$suffix, sep = ".")
 
   # add the cluster id to the ct_shares_marked.df
-  ct_shares_marked.df <- ct_shares_marked.df %>%
-                         dplyr::mutate(account.url = account$url)
+  ct_shares_marked.df <- ct_shares_marked.df
+
   ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                y=highly_connected_coordinated_entities[,c("name", "cluster", "component")],
                                by.x = "account.url",

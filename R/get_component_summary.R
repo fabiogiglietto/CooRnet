@@ -6,7 +6,7 @@
 #' @param mongo_url string: address of the MongoDB server in standard URI Format. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_database string: name of the MongoDB database where the shares have been saved. Set to NULL to avoid using mongo (default NULL)
 #' @param mongo_cluster logical: set to TRUE if you are using a MongoDB cluster instead of standalone instance (default FALSE)
-#' @param newsguard_info logical: set to TRUE if Newsguard information are added to the final cluster summary (default FALSE)
+#' @param newsguard_info logical: set to TRUE to get NewsGuard rating for domains shared by the component. NewsGuard credentials required (default FALSE)
 #'
 #' @return A data frame containing summary data by each coordinated component:
 #' the average subscribers number of entities in a component,
@@ -74,7 +74,7 @@ get_component_summary <- function(output,
 
   # add the component id to the ct_shares_marked.df
   ct_shares_marked.df <- ct_shares_marked.df %>%
-                         dplyr::mutate(account.url = account$url)
+                         dplyr::mutate(account.url = account.url)
   ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                y=highly_connected_coordinated_entities[,c("name", "component")],
                                by.x = "account.url",
@@ -118,7 +118,7 @@ get_component_summary <- function(output,
           }
           else {
             print(paste(query$status_code, i))
-            write(paste("Unexpected http response code by the News Guard api", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
+            write(paste("Unexpected http response code by the NewsGuard api", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
           }
         },
         error=function(cond) {
@@ -134,6 +134,14 @@ get_component_summary <- function(output,
     ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                  y=domain_score,
                                  by="parent_domain")
+
+    summary_domains <- ct_shares_marked.df %>%
+      dplyr::group_by(component) %>%
+      summarise(unique.full_domain = length(unique(full_domain)),
+                unique.parent_domain = length(unique(parent_domain)),
+                newsguard.parent_domain.score = mean(newsguard_score, na.rm = T),
+                newsguard.parent_domain.rated = length(unique(parent_domain[!is.na(newsguard_score)]))) %>%
+      mutate(newsguard.parent_domain.prop = newsguard.parent_domain.rated/unique.parent_domain)
   }
   else {
     summary_domains <- ct_shares_marked.df %>%

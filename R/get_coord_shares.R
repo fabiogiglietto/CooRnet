@@ -197,15 +197,15 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       utils::setTxtProgressBar(pb, pb$getVal()+1)
 
       url <- URLs$URL[i]
-      # TO DO: modify with mongoDB
+
       dat.summary <- subset(ct_shares.df, ct_shares.df$expanded==url)
 
-      if (length(unique(dat.summary$account$url)) > 1) {
+      if (length(unique(dat.summary$account.url)) > 1) {
         dat.summary <- dat.summary %>%
           dplyr::mutate(cut = cut(as.POSIXct(date), breaks = coordination_interval)) %>%
           dplyr::group_by(cut) %>%
           dplyr::mutate(count=n(),
-                 account.url=list(account$url),
+                 account.url=list(account.url),
                  share_date=list(date),
                  url = url) %>%
           dplyr::select(cut, count, account.url, share_date, url) %>%
@@ -229,7 +229,7 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
     # mark the coordinated shares in the data set
     ct_shares.df$is_coordinated <- ifelse(ct_shares.df$expanded %in% coordinated_shares$url &
                                            ct_shares.df$date %in% coordinated_shares$share_date &
-                                           ct_shares.df$account$url %in% coordinated_shares$account.url, TRUE, FALSE)
+                                           ct_shares.df$account.url %in% coordinated_shares$account.url, TRUE, FALSE)
 
     # call build_coord_graph
     highly_c_list <- build_coord_graph(ct_shares.df=ct_shares.df, coordinated_shares=coordinated_shares, percentile_edge_weight=percentile_edge_weight, timestamps=gtimestamps)
