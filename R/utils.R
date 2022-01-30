@@ -255,7 +255,8 @@ connect_mongodb_cluster <- function(mongo_collection, mongo_database, mongo_url,
                                     ":",
                                     Sys.getenv("MONGO_PWD"),
                                     "@",
-                                    mongo_url))
+                                    mongo_url,
+                                    "/?sockettimeoutms=3600000"))
     },
     error=function(cond) {
       message("Error while trying to establish a connection with MongoDB:")
