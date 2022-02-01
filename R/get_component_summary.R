@@ -35,6 +35,7 @@
 #' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
+#' @importFrom jsonlite flatten
 #'
 #' @export
 
@@ -59,6 +60,7 @@ get_component_summary <- function(output,
     if (ct_shares_marked_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
 
     ct_shares_marked.df <- as.data.frame(ct_shares_marked_mdb$find('{}')) # import collection as a dataframe
+    ct_shares_marked.df <- jsonlite::flatten(ct_shares_marked.df)
   }
   else ct_shares_marked.df <- output[[1]]
 
