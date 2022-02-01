@@ -75,8 +75,6 @@ get_component_summary <- function(output,
   ct_shares_marked.df$parent_domain <- paste(urltools::suffix_extract(ct_shares_marked.df$full_domain)$domain, urltools::suffix_extract(ct_shares_marked.df$full_domain)$suffix, sep = ".")
 
   # add the component id to the ct_shares_marked.df
-  ct_shares_marked.df <- ct_shares_marked.df %>%
-                         dplyr::mutate(account.url = account.url)
   ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                y=highly_connected_coordinated_entities[,c("name", "component")],
                                by.x = "account.url",

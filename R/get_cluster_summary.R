@@ -76,8 +76,6 @@ get_cluster_summary <- function(output,
   ct_shares_marked.df$parent_domain <- paste(urltools::suffix_extract(ct_shares_marked.df$full_domain)$domain, urltools::suffix_extract(ct_shares_marked.df$full_domain)$suffix, sep = ".")
 
   # add the cluster id to the ct_shares_marked.df
-  ct_shares_marked.df <- ct_shares_marked.df
-
   ct_shares_marked.df <- merge(x=ct_shares_marked.df,
                                y=highly_connected_coordinated_entities[,c("name", "cluster", "component")],
                                by.x = "account.url",
