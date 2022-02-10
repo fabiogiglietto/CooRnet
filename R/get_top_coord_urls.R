@@ -59,31 +59,31 @@ get_top_coord_urls <- function(output,
   urls <- ct_shares_marked.df %>%
     dplyr::group_by(expanded) %>%
     dplyr::summarise(shares = dplyr::n(),
-              engagement = sum(statistics$actual$likeCount,
-                               statistics$actual$shareCount,
-                               statistics$actual$commentCount,
-                               statistics$actual$loveCount,
-                               statistics$actual$wowCount,
-                               statistics$actual$hahaCount,
-                               statistics$actual$sadCount,
-                               statistics$actual$angryCount),
-              statistics.actual.likeCount = sum(statistics$actual$likeCount),
-              statistics.actual.shareCount = sum(statistics$actual$shareCount),
-              statistics.actual.commentCount = sum(statistics$actual$commentCount),
-              statistics.actual.loveCount = sum(statistics$actual$loveCount),
-              statistics.actual.wowCount = sum(statistics$actual$wowCount),
-              statistics.actual.hahaCount = sum(statistics$actual$hahaCount),
-              statistics.actual.loveCount = sum(statistics$actual$loveCount),
-              statistics.actual.sadCount = sum(statistics$actual$sadCount),
-              statistics.actual.angryCount = sum(statistics$actual$angryCount)) %>%
+              engagement = sum(statistics.actual$likeCount,
+                               statistics.actual$shareCount,
+                               statistics.actual$commentCount,
+                               statistics.actual$loveCount,
+                               statistics.actual$wowCount,
+                               statistics.actual$hahaCount,
+                               statistics.actual$sadCount,
+                               statistics.actual$angryCount),
+              statistics.actual.likeCount = sum(statistics.actual$likeCount),
+              statistics.actual.shareCount = sum(statistics.actual$shareCount),
+              statistics.actual.commentCount = sum(statistics.actual$commentCount),
+              statistics.actual.loveCount = sum(statistics.actual$loveCount),
+              statistics.actual.wowCount = sum(statistics.actual$wowCount),
+              statistics.actual.hahaCount = sum(statistics.actual$hahaCount),
+              statistics.actual.loveCount = sum(statistics.actual$loveCount),
+              statistics.actual.sadCount = sum(statistics.actual$sadCount),
+              statistics.actual.angryCount = sum(statistics.actual$angryCount)) %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account$url %in% highly_connected_coordinated_entities$name)))  %>%
+    dplyr::mutate(cooR.shares = length(which(ct_shares_marked.df$expanded == expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name)))  %>%
     dplyr::filter(cooR.shares > 0) %>%
-    dplyr::mutate(account.url = paste(unique(ct_shares_marked.df$account$url[ct_shares_marked.df$expanded==expanded]), collapse=","),
-           cooR.account.url = paste(unique(ct_shares_marked.df$account$url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account$url %in% highly_connected_coordinated_entities$name]), collapse=","),
-           cooR.account.url.list = list(unique(ct_shares_marked.df$account$url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account$url %in% highly_connected_coordinated_entities$name])),
-           account.name = paste(unique(shQuote(ct_shares_marked.df$account$name[ct_shares_marked.df$expanded==expanded])), collapse=","),
-           cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account$name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account$url %in% highly_connected_coordinated_entities$name])), collapse=","),
+    dplyr::mutate(account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded]), collapse=","),
+           cooR.account.url = paste(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name]), collapse=","),
+           cooR.account.url.list = list(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])),
+           account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=","),
+           cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is.coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=","),
            components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ",")) %>%
     dplyr::select(-cooR.account.url.list) %>%
     as.data.frame()
