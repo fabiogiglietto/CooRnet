@@ -163,7 +163,7 @@ get_ctshares_mongo <- function(urls,
                            "&includeSummary=FALSE",
                             ifelse(get_history, "&includeHistory=TRUE", "&includeHistory=FALSE"), # history takes a lot of space on the db
                            "&sortBy=date",
-                           "&searchField=TEXT_FIELDS_AND_IMAGE_TEXT",
+                           "&searchField=Include_query_strings",
                            "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
                            "&count=", nmax)
 
