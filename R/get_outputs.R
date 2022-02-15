@@ -23,6 +23,7 @@
 #' @importFrom googledrive drive_upload as_id
 #' @importFrom igraph write.graph
 #' @importFrom utils write.csv
+#' @importFrom jsonlite flatten
 #'
 #' @export
 
@@ -53,7 +54,7 @@ get_outputs <- function(coord_shares_output,
 
         if (coord_shares_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
 
-        coord_shares_output[[1]] <- as.data.frame(coord_shares_mdb$find('{}')) # import collection as a dataframe
+        coord_shares_output[[1]] <- jsonlite::flatten(as.data.frame(coord_shares_mdb$find('{}'))) # import collection as a dataframe
     }
 
     names(coord_shares_output[[1]]) <- gsub("_", ".", names(coord_shares_output[[1]]))
