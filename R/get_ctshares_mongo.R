@@ -128,19 +128,15 @@ get_ctshares_mongo <- function(urls,
   ct_shares_mdb$index(add = '{"platformId" : 1}')
   ct_shares_mdb$index(add = '{"expanded" : 1, "platformId" : 1}')
 
-  # ct_shares_mdb$run('{"createIndexes": "shares_info","indexes":[{"key":{"platformId":1, "expanded": 1},"name": "platformId_expanded_index","unique": true}]}')
-
-  conn$insert(urls)
+  conn$insert(urls) # save the urls in a collection
+  conn$disconnect() # close connection to the urls collection
 
   # progress bar
   total <- nrow(urls)
   pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
 
-  # Define an interation parameter to use for running over all the collection
-  it <- conn$iterate('{}')
-
-  # Iterate until the 'it' variable is NULL
-  while(!is.null(x <- it$one())){
+  # Get the shares for each URL
+  for (j in 1:nrow(urls)) {
 
     # query the CrowdTangle API
     ct_shares.df <- NULL
@@ -152,7 +148,7 @@ get_ctshares_mongo <- function(urls,
     startDate <- as.POSIXct(x$date, origin="1970-01-01", tz = "UTC")
     endDate <- startDate+604800
 
-    link <- x$url
+    link <- urls$url[j]
 
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
@@ -272,63 +268,7 @@ get_ctshares_mongo <- function(urls,
                             "doc": {"$first": "$$ROOT"}}},{"$replaceRoot": {"newRoot": "$doc"}},
                             {"$out": "shares_info"}]',options='{ "allowDiskUse": true }')
 
-  # the idea is that most of the data processing can happen directly on the database to allow analysis of large quantity of urls/shares
-  # for now I just get the shares from the database in to a data frame here to make the rest of the code work
-
-  # if(clean_urls==TRUE){
-  #
-  #   if (verbose) message("(2). Cleaning URLs...")
-  #
-  #   # Create a dataframe with all expanded URLs and a dummy variable to use the clean_urls function in utils.R
-  #   # old_expanded_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$old_expanded"}}]',options = '{"allowDiskUse":true}'))
-  #   # old_expanded_df$n_row <- seq.int(1, length(example$`_id`))
-  #
-  #   # Get the list of all cleaned expanded URLs
-  #   # new_expanded_df <- clean_urls(old_expanded_df, "_id")
-  #
-  #   # ct_shares_df <- as.data.frame(ct_shares_mdb$aggregate('[{"$group":{"_id":"$expanded"}}]',options = '{"allowDiskUse":true}'))
-  #
-  #   # Find urls in the mongoDB database and aggregate in a dataframe
-  #   urls_df <- ct_shares_mdb$aggregate(
-  #     '[{"$group":{"_id":"$expanded","id_number": {"$addToSet": "$_id"}}}]',
-  #     options = '{"allowDiskUse":true}')
-  #   names(urls_df) <- c("url","id_number_list")
-  #
-  #   # Apply the new version of clear_urls in order to create a dataframe with cleaned URLs
-  #   cleaned_urls_df <- clean_urls_mongo(urls_df, "url")
-  #
-  #   # # Erase URLs in the database if they are removed troughtout the cleaning procedure
-  #   # erased_ids_list <- as.list(cleaned_urls_df$id_number_list[which(cleaned_urls_df$cleaned_url == "")])
-  #   # final_erased_ids_list <- list()
-  #   # for (ids_list in erased_ids_list) final_erased_ids_list <- append(final_erased_ids_list,ids_list)
-  #   # for (url_id in final_erased_ids_list) ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', url_id))
-  #
-  #   # Substitute URLs in the database if they are cleaned troughtout the cleaning procedure
-  #   # Occurrences of " need to be substituted with \" within the update query
-  #   original_urls_list <- as.list(cleaned_urls_df$url)
-  #   # original_urls_list <- gsub('"','\"',original_urls_list)
-  #   cleaned_urls_list <- as.list(cleaned_urls_df$cleaned_url[which(cleaned_urls_df$cleaned_url != "")])
-  #
-  #   for (i in 1:length(original_urls_list)){
-  #
-  #     original_url <- stringi::stri_enc_toutf8(sprintf('%s',original_urls_list[i]))
-  #     cleaned_url <- stringi::stri_enc_toutf8(sprintf('%s',cleaned_urls_list[i]))
-  #
-  #     if (cleaned_url != "") ct_shares_mdb$update(sprintf('{"expanded" : "%s"}',original_url), sprintf('{"$set": {"expanded": "%s"}}',cleaned_url) , multiple = TRUE)
-  #     else ct_shares_mdb$remove(sprintf('{"_id":{"$oid":"%s"}}', original_url))
-  #   }
-  #
-  #   write("Analysis performed on cleaned URLs", file = "log.txt", append = TRUE)
-  # }
-
   if (verbose) message("(2). Cleaning shares performed outside the time span of one week from first post...")
-
-  # How to remove dates more than one week after the first share:
-  # Step 1 - "Group" expanded link, date and original docs and compute the min date in the list
-  # Step 1 - "Unwind" simultaneously dates and docs by matching with the same unwinding index both variables
-  # Step 2 - "Redact" to keep only IDs of expanded link with dates before the first week
-  # Step 3 - "Unset" the min_date variable
-  # Step 4 - "ReplaceRoot" with original doc
 
   # # Aggregate list of dates for each expanded url with more than a share
   ct_shares_mdb$aggregate('[{"$group": {"_id":"$expanded", "date": {"$addToSet": "$date"},  "min_date": {"$min": "$date"}, "doc": {"$push": "$$ROOT"}}},
