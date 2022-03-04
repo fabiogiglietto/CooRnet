@@ -129,7 +129,7 @@ get_ctshares_mongo <- function(urls,
   ct_shares_mdb$index(add = '{"expanded" : 1, "platformId" : 1}')
 
   conn$insert(urls) # save the urls in a collection
-  conn$disconnect() # close connection to the urls collection
+  rm(conn) # close the connection to the urls collection
 
   # progress bar
   total <- nrow(urls)
