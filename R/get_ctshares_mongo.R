@@ -145,7 +145,7 @@ get_ctshares_mongo <- function(urls,
     utils::setTxtProgressBar(pb, pb$getVal()+1)
 
     # set date limits: one week after date_published
-    startDate <- as.POSIXct(x$date, origin="1970-01-01", tz = "UTC")
+    startDate <- as.POSIXct(urls$date[j], origin="1970-01-01", tz = "UTC")
     endDate <- startDate+604800
 
     link <- urls$url[j]
