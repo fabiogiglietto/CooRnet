@@ -105,10 +105,6 @@ get_ctshares_mongo <- function(urls,
     message("URLs database already exists. Existing files may be erased, choose a new path if this is not intended.")
     invisible(readline(prompt="Press [Enter] to continue or [Esc] to exit"))
     conn$drop()
-    # invisible(readline("Press q to exit or c to continue"))
-    # b <- scan("stdin", character(), n=1)
-    # if (b=="q") break
-    # if (b=="c")
   }
 
   # Define another mongoDB connection for a new collection to store CrowdTangle shares
