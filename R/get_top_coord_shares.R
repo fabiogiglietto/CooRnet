@@ -21,6 +21,7 @@
 #' @importFrom rlang sym
 #' @importFrom tibble as_tibble
 #' @importFrom plyr desc
+#' @importFrom jsonlite flatten
 #'
 #' @export
 
@@ -47,6 +48,8 @@ get_top_coord_shares <- function(output,
     if (ct_shares_marked_mdb$count() == 0) stop("Please provide a name of an already existing mongoDB database. To do so, use get_ctshares function before calling this function.")
 
     ct_shares_marked.df <- as.data.frame(ct_shares_marked_mdb$find('{}')) # import collection as a dataframe
+    ct_shares_marked.df <- jsonlite::flatten(ct_shares_marked.df)
+
   }
   else ct_shares_marked.df <- output[[1]]
 
@@ -55,29 +58,25 @@ get_top_coord_shares <- function(output,
   rm(output)
 
   urls <- ct_shares_marked.df %>%
-    dplyr::filter(is.coordinated==TRUE & account$url %in% highly_connected_coordinated_entities$name) %>%
-    dplyr::mutate(account.url = account$url,
-                  account.name = account$name,
-                  account.handle = account$handle,
-                  account.subscriberCount = account$subscriberCount) %>%
+    dplyr::filter(is.coordinated==TRUE & account.url %in% highly_connected_coordinated_entities$name) %>%
     dplyr::left_join(highly_connected_coordinated_entities[, c("name", "component")], by = c("account.url" = "name")) %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(engagement = sum(statistics$actual$likeCount,
-                               statistics$actual$shareCount,
-                               statistics$actual$commentCount,
-                               statistics$actual$loveCount,
-                               statistics$actual$wowCount,
-                               statistics$actual$hahaCount,
-                               statistics$actual$sadCount,
-                               statistics$actual$angryCount),
-              statistics.actual.likeCount = sum(statistics$actual$likeCount),
-              statistics.actual.shareCount = sum(statistics$actual$shareCount),
-              statistics.actual.commentCount = sum(statistics$actual$commentCount),
-              statistics.actual.wowCount = sum(statistics$actual$wowCount),
-              statistics.actual.hahaCount = sum(statistics$actual$hahaCount),
-              statistics.actual.loveCount = sum(statistics$actual$loveCount),
-              statistics.actual.sadCount = sum(statistics$actual$sadCount),
-              statistics.actual.angryCount = sum(statistics$actual$angryCount)) %>%
+    dplyr::mutate(engagement = sum(statistics.actual.likeCount,
+                               statistics.actual.shareCount,
+                               statistics.actual.commentCount,
+                               statistics.actual.loveCount,
+                               statistics.actual.wowCount,
+                               statistics.actual.hahaCount,
+                               statistics.actual.sadCount,
+                               statistics.actual.angryCount),
+              statistics.actual.likeCount = sum(statistics.actual.likeCount),
+              statistics.actual.shareCount = sum(statistics.actual.shareCount),
+              statistics.actual.commentCount = sum(statistics.actual.commentCount),
+              statistics.actual.wowCount = sum(statistics.actual.wowCount),
+              statistics.actual.hahaCount = sum(statistics.actual.hahaCount),
+              statistics.actual.loveCount = sum(statistics.actual.loveCount),
+              statistics.actual.sadCount = sum(statistics.actual.sadCount),
+              statistics.actual.angryCount = sum(statistics.actual.angryCount)) %>%
     dplyr::select(c("account.url","date","title","description","message","postUrl",
              "account.name","account.handle","account.subscriberCount","expanded",
              "statistics.actual.likeCount", "statistics.actual.shareCount",
