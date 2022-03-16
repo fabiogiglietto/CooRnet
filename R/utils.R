@@ -40,13 +40,6 @@ clean_urls <- function(df, url){
   df[[url]] <- gsub("\\/$", "", df[[url]]) # delete remaining trailing slash
   df[[url]] <- gsub("\\&$", "", df[[url]]) # delete remaining trailing &
 
-  # filter_urls <- c("^http://127.0.0.1", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
-  #                  "^https://youtu.be$", "^https://m.youtube.com$", "^https://m.facebook.com/story",
-  #                  "^https://m.facebook.com/$", "^https://www.facebook.com/$", "^https://chat.whatsapp.com$",
-  #                  "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
-  #                  "^https://api.whatsapp.com/$", "^https://play.google.com/store/apps/details$", "^https://www.twitter.com/$", "^https://www.twitter.com$",
-  #                  "^https://instagram.com/accounts/login", "^https://www.instagram.com/accounts/login", "^https://t.me/joinchat$")
-
   filter_urls <- c("^http://127.0.0.1", "^https://chat.whatsapp.com$",
                    "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
                    "^https://api.whatsapp.com/$", "^https://play.google.com/store/apps/details$",
