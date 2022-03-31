@@ -13,11 +13,13 @@ navbar:
           href: tutorial00.html
         - text: "CT Historical tutorial"
           href: tutorial01.html
+        - text: "WebSci 2022 tutorial"
+          href: tutorial_websci22.html
   right:
     - text: "GitHub"
       icon: fa-github
       href: https://github.com/fabiogiglietto/CooRnet/
-      
+
 output:
   html_document:
     theme: simplex
