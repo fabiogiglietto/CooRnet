@@ -1,0 +1,41 @@
+---
+output: html_document
+css: style.css
+pagetitle: "CoorNet Tutoria @WebSci2022"
+author: "Nicola Righetti"
+---
+
+<div style="margin-top:15px;">
+
+# Coornet: Detecting problematic online coordinate link-sharing behaviour
+
+[Summary:\
+]{.ul}Coordinated Inauthentic behavior is among the most dangerous and effective way to propagate problematic information online. This tutorial will present CooRnet an R packages developed in 2020 to detect a specific type of online coordinated behavior: coordinated link sharing on Facebook. The tutorial will be organized in two parts: the first part will introduce the participants to the concept of Coordinated Link Sharing behavior (CLSB) and will explain the main functionalities of the Coornet package. The second part will support the participants in their own CLSB detection starting from CrowdTangle data.
+
+This tutorial is organizes as part of WebSci 2022.
+
+The tutorial will introduce the participant to the study and the detection of CIB and more precisely of Coordinated Link Sharing Behavior (CLSB). The tutorial will be based on the CooRnet R packaged developed by Giglietto at al. (2020). CooRnet is an open-source R packages that, leveraging the Crowdtangle API, detects CLSB behavior performed by public groups, public pages or verified public profiles on Facebook. This is done through a 5 steps methodology that includes: \
+1) URLs idenfitication & collection; \
+2) Collection of sharing activity ; \
+3) Detection of coordinated behavior; \
+4) Identification of coordinated accounts and clusters.
+
+The tutorial will cover the following topics:
+
+\- Online Coordinated Inauthentic Behavior, what is it and why is it a problem?\
+- Leveraging Crowdtangle data to detect CLSB on Facebook\
+- CooRnet functions, implementation of CIB concepts\
+- Analysis and interpretation of CooRnet's output\
+- Open problems and current challenges of CIB
+
+[Tutorial organizers:]{.ul}
+
+Fabio Giglietto, Associate Professor, University of Urbino Carlo Bo, [fabio.giglietto\@uniurb.it](mailto:fabio.giglietto@uniurb.it)
+Luca Rossi, Associate Professor, IT University of Copenhagen, [lucr\@itu.dk](mailto:lucr@itu.dk)\
+Nicola Righetti, Research Associate, University of Vienna, [nicola.righetti\@univie.ac.at](mailto:nicola.righetti@univie.ac.at)\
+Giada Marino, Postdoc, University of Sassary, [gmarino\@uniss.it](mailto:gmarino@uniss.it)\
+\
+\
+[Prerequisites:\
+\
+]{.ul}Coornet is a package for R thus a [recent version of R](https://cran.r-project.org/bin/)- ideally with an IDE such as [RStudio](https://www.rstudio.com/products/rstudio/download/) or [VSCode](https://code.visualstudio.com/download)- is required to participate. Knowledge of R is helpful but not necessary to participate.
