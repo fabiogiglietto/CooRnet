@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Nicola Righetti" />
+<meta name="author" content="Luca Rossi" />
 
 
 <title>CoorNet Tutoria <span class="citation">@WebSci2022</span></title>
@@ -291,33 +291,40 @@ $(document).ready(function () {
 </div>
 
 
-<div style="margin-top:15px;">
-
-<div id="coornet-detecting-problematic-online-coordinate-link-sharing-behaviour" class="section level1">
-<h1>Coornet: Detecting problematic online coordinate link-sharing behaviour</h1>
-<p><u>Summary:<br />
-</u>Coordinated Inauthentic behavior is among the most dangerous and effective way to propagate problematic information online. This tutorial will present CooRnet an R packages developed in 2020 to detect a specific type of online coordinated behavior: coordinated link sharing on Facebook. The tutorial will be organized in two parts: the first part will introduce the participants to the concept of Coordinated Link Sharing behavior (CLSB) and will explain the main functionalities of the Coornet package. The second part will support the participants in their own CLSB detection starting from CrowdTangle data.</p>
-<p>This tutorial is organizes as part of WebSci 2022.</p>
-<p>The tutorial will introduce the participant to the study and the detection of CIB and more precisely of Coordinated Link Sharing Behavior (CLSB). The tutorial will be based on the CooRnet R packaged developed by Giglietto at al. (2020). CooRnet is an open-source R packages that, leveraging the Crowdtangle API, detects CLSB behavior performed by public groups, public pages or verified public profiles on Facebook. This is done through a 5 steps methodology that includes:<br />
-1) URLs idenfitication &amp; collection;<br />
-2) Collection of sharing activity ;<br />
-3) Detection of coordinated behavior;<br />
-4) Identification of coordinated accounts and clusters.</p>
+<div id="websci22-tutorial" class="section level1">
+<h1>WebSci22 Tutorial</h1>
+<div id="coornet-detecting-problematic-online-coordinate-link-sharing-behaviour" class="section level3">
+<h3>Coornet: Detecting problematic online coordinate link-sharing behaviour</h3>
+<div id="summary" class="section level4">
+<h4><u>Summary</u></h4>
+<p>Coordinated Inauthentic behavior is among the most dangerous and effective way to propagate problematic information online. This tutorial will present CooRnet an R packages developed in 2020 to detect a specific type of online coordinated behavior: coordinated link sharing on Facebook. The tutorial will be organized in two parts: the first part will introduce the participants to the concept of Coordinated Link Sharing behavior (CLSB) and will explain the main functionalities of the Coornet package. The second part will support the participants in their own CLSB detection starting from CrowdTangle data.</p>
+<p>This tutorial will be held online and it is organized as part of the <a href="https://websci22.webscience.org/">14th ACM Web Science Conference 2022</a>.</p>
+<p>The tutorial will introduce the participant to the study and the detection of CIB and more precisely of Coordinated Link Sharing Behavior (CLSB). The tutorial will be based on the CooRnet R packaged developed by Giglietto at al. (2020). CooRnet is an open-source R packages that, leveraging the Crowdtangle API, detects CLSB behavior performed by public groups, public pages or verified public profiles on Facebook.</p>
+<p>This is done through a 5 steps methodology that includes:</p>
+<ol style="list-style-type: decimal">
+<li><p>URLs identification &amp; collection;</p></li>
+<li><p>Collection of sharing activity ;</p></li>
+<li><p>Detection of coordinated behavior;</p></li>
+<li><p>Identification of coordinated accounts and clusters.</p></li>
+</ol>
 <p>The tutorial will cover the following topics:</p>
 <p>- Online Coordinated Inauthentic Behavior, what is it and why is it a problem?<br />
-- Leveraging Crowdtangle data to detect CLSB on Facebook<br />
+- Leveraging CrowdTangle data to detect CLSB on Facebook<br />
 - CooRnet functions, implementation of CIB concepts<br />
 - Analysis and interpretation of CooRnet’s output<br />
 - Open problems and current challenges of CIB</p>
-<p><u>Tutorial organizers:</u></p>
+</div>
+<div id="tutorial-organizers" class="section level4">
+<h4><u>Tutorial organizers</u></h4>
 <p>Fabio Giglietto, Associate Professor, University of Urbino Carlo Bo, <a href="mailto:fabio.giglietto@uniurb.it">fabio.giglietto@uniurb.it</a> Luca Rossi, Associate Professor, IT University of Copenhagen, <a href="mailto:lucr@itu.dk">lucr@itu.dk</a><br />
 Nicola Righetti, Research Associate, University of Vienna, <a href="mailto:nicola.righetti@univie.ac.at">nicola.righetti@univie.ac.at</a><br />
-Giada Marino, Postdoc, University of Sassary, <a href="mailto:gmarino@uniss.it">gmarino@uniss.it</a><br />
-<br />
-<br />
-<u>Prerequisites:<br />
-<br />
-</u>Coornet is a package for R thus a <a href="https://cran.r-project.org/bin/">recent version of R</a>- ideally with an IDE such as <a href="https://www.rstudio.com/products/rstudio/download/">RStudio</a> or <a href="https://code.visualstudio.com/download">VSCode</a>- is required to participate. Knowledge of R is helpful but not necessary to participate.</p>
+Giada Marino, Postdoc, University of Sassary, <a href="mailto:gmarino@uniss.it">gmarino@uniss.it</a></p>
+</div>
+<div id="prerequisites" class="section level4">
+<h4><u>Prerequisites</u></h4>
+<p>Coornet is a package for R thus a <a href="https://cran.r-project.org/bin/">recent version of R</a> - ideally with an IDE such as <a href="https://www.rstudio.com/products/rstudio/download/">RStudio</a> or <a href="https://code.visualstudio.com/download">VSCode</a> - is required to participate. A valid token to make authorzied call to the Crowdtangle API is also required. Knowledge of R and CrowdTangle interface is helpful but not necessary to participate.</p>
+</div>
+</div>
 </div>
 
 
