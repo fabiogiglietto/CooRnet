@@ -9,11 +9,13 @@ author: "Luca Rossi"
 
 ### Coornet: Detecting problematic online coordinate link-sharing behaviour
 
-#### [Summary]{.ul}
+------------------------------------------------------------------------
+
+#### Summary
 
 Coordinated Inauthentic behavior is among the most dangerous and effective way to propagate problematic information online. This tutorial will present CooRnet an R packages developed in 2020 to detect a specific type of online coordinated behavior: coordinated link sharing on Facebook. The tutorial will be organized in two parts: the first part will introduce the participants to the concept of Coordinated Link Sharing behavior (CLSB) and will explain the main functionalities of the Coornet package. The second part will support the participants in their own CLSB detection starting from CrowdTangle data.
 
-This tutorial will be held online and it is organized as part of the [14th ACM Web Science Conference 2022](https://websci22.webscience.org/).
+This tutorial will be held online on June 26th 2022 and it is organized as part of the [14th ACM Web Science Conference 2022](https://websci22.webscience.org/).
 
 The tutorial will introduce the participant to the study and the detection of CIB and more precisely of Coordinated Link Sharing Behavior (CLSB). The tutorial will be based on the CooRnet R packaged developed by Giglietto at al. (2020). CooRnet is an open-source R packages that, leveraging the Crowdtangle API, detects CLSB behavior performed by public groups, public pages or verified public profiles on Facebook.
 
@@ -35,12 +37,16 @@ The tutorial will cover the following topics:
 - Analysis and interpretation of CooRnet's output\
 - Open problems and current challenges of CIB
 
-#### [Tutorial organizers]{.ul}
+#### Tutorial organizers
 
 Fabio Giglietto, Associate Professor, University of Urbino Carlo Bo, [fabio.giglietto\@uniurb.it](mailto:fabio.giglietto@uniurb.it) Luca Rossi, Associate Professor, IT University of Copenhagen, [lucr\@itu.dk](mailto:lucr@itu.dk)\
 Nicola Righetti, Research Associate, University of Vienna, [nicola.righetti\@univie.ac.at](mailto:nicola.righetti@univie.ac.at)\
 Giada Marino, Postdoc, University of Sassary, [gmarino\@uniss.it](mailto:gmarino@uniss.it)
 
-#### [Prerequisites]{.ul}
+#### Prerequisites
 
 Coornet is a package for R thus a [recent version of R](https://cran.r-project.org/bin/) - ideally with an IDE such as [RStudio](https://www.rstudio.com/products/rstudio/download/) or [VSCode](https://code.visualstudio.com/download) - is required to participate. A valid token to make authorzied call to the Crowdtangle API is also required. Knowledge of R and CrowdTangle interface is helpful but not necessary to participate.
+
+#### Registration
+
+Registration fee for attending this tutorial is included in the general WebSci22 conference registration, or can be booked seperately as workshop/tutorial only registration. See the [registration page](https://websci22.webscience.org/registration/) for details.
