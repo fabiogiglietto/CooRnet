@@ -45,7 +45,7 @@ clean_urls <- function(df, url, valid_schemes) {
   df[[url]] <- gsub("\\/$", "", df[[url]]) # delete remaining trailing slash
   df[[url]] <- gsub("\\&$", "", df[[url]]) # delete remaining trailing &
 
-  filter_urls <- c("^http://127.0.0.1", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
+  filter_urls <- c("^http://127.0.0.1", "^https://play.google.com$", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
                    "^https://youtu.be$", "^https://m.youtube.com$", "^https://m.facebook.com/story",
                    "^https://m.facebook.com/$", "^https://www.facebook.com/$", "^https://chat.whatsapp.com$",
                    "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
@@ -139,7 +139,7 @@ clean_urls_mongo <- function(df, url, valid_schemes){
   df[[cleaned_url_name]] <- gsub("\\/$", "", df[[cleaned_url_name]]) # delete remaining trailing slash
   df[[cleaned_url_name]] <- gsub("\\&$", "", df[[cleaned_url_name]]) # delete remaining trailing &
 
-  filter_urls <- c("^http://127.0.0.1", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
+  filter_urls <- c("^http://127.0.0.1", "^https://play.google.com$", "^https://www.youtube.com/watch$", "^https://www.youtube.com/$", "^http://www.youtube.com/$",
                    "^https://youtu.be$", "^https://m.youtube.com$", "^https://m.facebook.com/story",
                    "^https://m.facebook.com/$", "^https://www.facebook.com/$", "^https://chat.whatsapp.com$",
                    "^http://chat.whatsapp.com$", "^http://wa.me$", "^https://wa.me$", "^https://api.whatsapp.com/send$",
