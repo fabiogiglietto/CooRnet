@@ -11,7 +11,6 @@ get_coord_shares_mongo(
   coordination_interval = NULL,
   parallel = FALSE,
   percentile_edge_weight = 0.9,
-  clean_urls = FALSE,
   keep_ourl_only = FALSE,
   mongo_cluster = TRUE,
   return_df = FALSE,
@@ -30,8 +29,6 @@ get_coord_shares_mongo(
 \item{parallel}{enables parallel processing to speed up the process taking advantage of multiple cores (default FALSE). The number of cores is automatically set to all the available cores minus one}
 
 \item{percentile_edge_weight}{defines the percentile of the edge distribution to keep in order to identify a network of coordinated entities. In other terms, this value determines the minimum number of times that two entities had to coordinate in order to be considered part of a network. (default 0.90)}
-
-\item{clean_urls}{clean the URLs from the tracking parameters (default FALSE)}
 
 \item{keep_ourl_only}{restrict the analysis to ct shares links matching the original URLs (default=FALSE)}
 
