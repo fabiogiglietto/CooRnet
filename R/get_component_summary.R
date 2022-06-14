@@ -64,10 +64,61 @@ get_component_summary <- function(output){
               facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
               facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
 
-  summary_domains <- ct_shares_marked.df %>%
-    dplyr::group_by(component) %>%
-    dplyr::summarise(unique.full_domain = length(unique(full_domain)),
-              unique.parent_domain = length(unique(parent_domain)))
+    if (!(Sys.getenv('NG_KEY')=="" & Sys.getenv('NG_SECRET')=="")){
+      # query the the newsguardtech.com API
+      domain_score <- data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA)
+      cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
+      total <- nrow(domain_score) # progress bar
+      pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
+      ng_bearer <- get_ng_bearer()
+
+      for (i in 1:nrow(domain_score)) {
+        utils::setTxtProgressBar(pb, pb$getVal()+1)
+        parent_domain <- domain_score$parent_domain[i]
+        query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
+                           httr::add_headers(Authorization = paste0("Bearer ",ng_bearer)))
+        tryCatch(
+          {
+            if (query$status_code == 200) {
+              json <- httr::content(query, as = "text", encoding = "UTF-8")
+              c <- jsonlite::fromJSON(json, flatten = TRUE)
+              if (length(c$score) > 0) {
+                domain_score$newsguard_score[i] <- c$score
+              }
+            }
+            else {
+              print(paste(query$status_code, i))
+              write(paste("Unexpected http response code by the NewsGuard api", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
+            }
+          },
+          error=function(cond) {
+            print(paste("Error:", message(cond), "on URL:", i))
+            write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
+          },
+          finally={
+            Sys.sleep(0.01)
+          })
+      }
+      cat("\nAlmost done...\n")
+      # add the newsguardtech.com score to the domains
+      ct_shares_marked.df <- merge(x=ct_shares_marked.df,
+                                   y=domain_score,
+                                   by="parent_domain")
+
+      summary_domains <- ct_shares_marked.df %>%
+        dplyr::group_by(component) %>%
+        summarise(unique.full_domain = length(unique(full_domain)),
+                  unique.parent_domain = length(unique(parent_domain)),
+                  newsguard.parent_domain.score = mean(newsguard_score, na.rm = T),
+                  newsguard.parent_domain.rated = length(unique(parent_domain[!is.na(newsguard_score)]))) %>%
+        mutate(newsguard.parent_domain.prop = newsguard.parent_domain.rated/unique.parent_domain)
+    }
+  else {
+    summary_domains <- ct_shares_marked.df %>%
+      dplyr::group_by(component) %>%
+      dplyr::summarise(unique.full_domain = length(unique(full_domain)),
+                       unique.parent_domain = length(unique(parent_domain)))
+  }
 
   summary <- merge(summary_entities, summary_domains, by = "component")
   rm(summary_entities, summary_domains)
