@@ -5,11 +5,15 @@ pagetitle: "CoorNet Tutoria @WebSci2022"
 author: "Luca Rossi"
 ---
 
-#  WebSci22 Tutorial
+# WebSci22 Tutorial
 
 ### Coornet: Detecting problematic online coordinate link-sharing behaviour
 
 ------------------------------------------------------------------------
+
+#### Login instruction
+
+[Registered users zoom link](https://uniurb-it.zoom.us/j/85611774493?pwd=Lm6oAn8cAuQFoVLKdmbEcOrEU3I5S6.1)
 
 #### Summary
 
