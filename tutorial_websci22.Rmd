@@ -11,10 +11,6 @@ author: "Luca Rossi"
 
 ------------------------------------------------------------------------
 
-#### Login instruction
-
-[Registered users zoom link](https://uniurb-it.zoom.us/j/85611774493?pwd=Lm6oAn8cAuQFoVLKdmbEcOrEU3I5S6.1)
-
 #### Summary
 
 Coordinated Inauthentic behavior is among the most dangerous and effective way to propagate problematic information online. This tutorial will present CooRnet an R packages developed in 2020 to detect a specific type of online coordinated behavior: coordinated link sharing on Facebook. The tutorial will be organized in two parts: the first part will introduce the participants to the concept of Coordinated Link Sharing behavior (CLSB) and will explain the main functionalities of the Coornet package. The second part will support the participants in their own CLSB detection starting from CrowdTangle data.
