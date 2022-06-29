@@ -4,7 +4,7 @@
 #'
 #' @param output the output list resulting from the function get_coord_shares
 #' @param order_by name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"
-#' @param component return the top URLs by network component (TRUE, default) or just the top URLs (FALSE)
+#' @param group_by return the top URLs by components, clusters or none (component, default)
 #' @param top number of the top URLs to be retrieved
 #'
 #' @return A data frame (grouped_df) containing the top URLs shared in a coordinated way by the highly coordinated entities, with shares and engagement statistics, list of entities and components that shared the link
@@ -23,7 +23,12 @@
 #'
 #' @export
 
-get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, top=10){
+get_top_coord_urls <- function(output, order_by = "engagement", group_by="components", top=10){
+
+  if(!group_by %in% c("components", "clusters", "none"))
+  {
+    stop(paste0("Please provid a valid group_by value (components, clusters or none)"))
+  }
 
   ct_shares_marked.df <- output[[1]]
   highly_connected_coordinated_entities <- output[[3]]
@@ -58,11 +63,12 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
            cooR.account.url.list = list(unique(ct_shares_marked.df$account.url[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])),
            account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded])), collapse=","),
            cooR.account.name = paste(unique(shQuote(ct_shares_marked.df$account.name[ct_shares_marked.df$expanded==expanded & ct_shares_marked.df$is_coordinated==TRUE & ct_shares_marked.df$account.url %in% highly_connected_coordinated_entities$name])), collapse=","),
-           components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ",")) %>%
+           components = paste(unique(highly_connected_coordinated_entities$component[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ","),
+           clusters = paste(unique(highly_connected_coordinated_entities$cluster[highly_connected_coordinated_entities$name %in% unlist(cooR.account.url.list)]), collapse = ",")) %>%
     dplyr::select(-cooR.account.url.list) %>%
     as.data.frame()
 
-  if(component==TRUE) {
+  if(group_by=="components") {
     urls <- urls %>%
       dplyr::arrange(components, !!sym(order_by)) %>%
       dplyr::group_by(components) %>%
@@ -70,7 +76,15 @@ get_top_coord_urls <- function(output, order_by = "engagement", component=TRUE, 
       dplyr::filter(rank <= top) %>%
       dplyr::arrange(components, rank)
   }
-  else {
+  else if(group_by=="clusters") {
+    urls <- urls %>%
+      dplyr::arrange(clusters, !!sym(order_by)) %>%
+      dplyr::group_by(clusters) %>%
+      dplyr::mutate(rank = rank(plyr::desc(!!sym(order_by)), ties.method = "first")) %>%
+      dplyr::filter(rank <= top) %>%
+      dplyr::arrange(clusters, rank)
+  }
+  else if (group_by=="none") {
     urls <- urls %>%
       dplyr::top_n(top, wt=!!sym(order_by)) %>%
       dplyr::arrange(-!!sym(order_by)) %>%

@@ -4,14 +4,19 @@
 \alias{get_top_coord_urls}
 \title{get_top_coord_urls}
 \usage{
-get_top_coord_urls(output, order_by = "engagement", component = TRUE, top = 10)
+get_top_coord_urls(
+  output,
+  order_by = "engagement",
+  group_by = "components",
+  top = 10
+)
 }
 \arguments{
 \item{output}{the output list resulting from the function get_coord_shares}
 
 \item{order_by}{name of the column used to order the top news. Default to "engagement". Other possible values are: "statistics.actual.likeCount", "statistics.actual.shareCount", "statistics.actual.commentCount", "statistics.actual.loveCount", "statistics.actual.wowCount", "statistics.actual.hahaCount", "statistics.actual.sadCount","statistics.actual.angryCount"}
 
-\item{component}{return the top URLs by network component (TRUE, default) or just the top URLs (FALSE)}
+\item{group_by}{return the top URLs by components, clusters or none (component, default)}
 
 \item{top}{number of the top URLs to be retrieved}
 }
