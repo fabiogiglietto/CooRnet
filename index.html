@@ -323,8 +323,10 @@ $(document).ready(function () {
 library(&quot;devtools&quot;)
 devtools::install_github(&quot;fabiogiglietto/CooRnet&quot;)</code></pre>
 </div>
-<div id="api-key" class="section level2">
-<h2>API key</h2>
+<div id="api-keys" class="section level2">
+<h2>API keys</h2>
+<div id="crowdtangle-required" class="section level3">
+<h3>CrowdTangle (required)</h3>
 <p>This package requires a <A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</A> key entry in your R environment file. The R environment file is loaded every time R is started/restarted.</p>
 <p>The following steps show how to add the key to your R environment file.</p>
 <ol style="list-style-type: decimal">
@@ -332,6 +334,21 @@ devtools::install_github(&quot;fabiogiglietto/CooRnet&quot;)</code></pre>
 <li>Add a new line and enter your API key in the following format: CROWDTANGLE_API_KEY=<YOUR_API_KEY>.</li>
 <li>Save the file and restart your current R session to start using CooRnet.</li>
 </ol>
+</div>
+<div id="newsguard-optional" class="section level3">
+<h3>NewsGuard (optional)</h3>
+<p>Optionally, you can also set your credential to access NewsGuard API. The integration returns the average <A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard rating score</A> obtained by the domains shared by a coordinated network.</p>
+<p>This process requires an active subscription to <A HREF="https://www.newsguardtech.com">NewsGuard API</A> and key entries in your R environment file. The R environment file is loaded every time R is started/restarted.</p>
+<p>The following steps show how to add the key to your R environment file.</p>
+<ol style="list-style-type: decimal">
+<li><p>Open your .Renviron file. The file is usually located in your home directory. If the file does not exist, just create one and name it .Renviron.</p></li>
+<li><p>Add two new line and enter your API key in the following format:</p></li>
+</ol>
+<p>NG_KEY = “YOUR_API_KEY”NG_SECRET = “YOUR_API_SECRET”</p>
+<ol start="3" style="list-style-type: decimal">
+<li>Save the file and restart your current R session to start using CooRnet.</li>
+</ol>
+</div>
 </div>
 <div id="usage" class="section level2">
 <h2>Usage</h2>

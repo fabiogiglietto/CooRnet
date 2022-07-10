@@ -51,9 +51,9 @@ The following steps show how to add the key to your R environment file.
 3) Save the file and restart your current R session to start using CooRnet.
 
 ### NewsGuard (optional)
-Optionally, you can also set your credential to access NewsGuard API. The integration returns the average <A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/"><NewsGuard rating score</A> obtained by the domains shared by a coordinated network.
+Optionally, you can also set your credential to access NewsGuard API. The integration returns the average <A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard rating score</A> obtained by the domains shared by a coordinated network.
 
-This process requires an active subscription to <A HREF="https://www.newsguardtech.com"><NewsGuard API</A> and key entries in your R environment file. The R environment file is loaded every time R is started/restarted.
+This process requires an active subscription to <A HREF="https://www.newsguardtech.com">NewsGuard API</A> and key entries in your R environment file. The R environment file is loaded every time R is started/restarted.
 
 The following steps show how to add the key to your R environment file.
 
