@@ -97,6 +97,14 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # keep only shares of URLs shared more than one time
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
+  
+  if (nrow(URLs) == 0) {
+  stop("### Not enought URLs! ###")
+  }
+  
+  if (nrow(ct_shares.df) == 0) {
+  stop("### Not enought shares! ###")
+  }
 
   ###############
   # Parallel ####
