@@ -33,7 +33,7 @@ draw_url_timeline_chart <- function(output, top_coord_urls=NULL, top_url_id=1) {
   if (is.null(top_coord_urls)) {
     # nope
     cat("\n\nBuilding a table of top shared URLs...")
-    top_coord_urls <- CooRnet::get_top_coord_urls(output = output, order_by = "statistics.actual.shareCount", component = FALSE, top = 10)
+    top_coord_urls <- CooRnet::get_top_coord_urls(output = output, order_by = "statistics.actual.shareCount", group_by = "none", top = 10)
   }
 
   # keep only shares of choosen top urls
