@@ -48,7 +48,7 @@ if (newformat == TRUE) {
   df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from description
   df$url <- ifelse(df$type!="Link" & is.na(df$url), stringr::str_extract(df$message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
   df$url <- ifelse(df$type == "YouTube", df$expandedLinks.original, df$url) # extract YouTube links
-  
+
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
   urls <- df %>%
@@ -75,7 +75,7 @@ if (newformat == TRUE) {
   df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "(?<=:=:)(.*)"), df$url) # extract expanded links from description
   df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Description, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from description
   df$url <- ifelse(df$Type!="Link" & is.na(df$url), stringr::str_extract(df$Message, "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"), df$url) # extract links from message
-  df$url <- ifelse(df$type == "YouTube", df$Link, df$url) # extract YouTube links
+  df$url <- ifelse(df$Type == "YouTube", df$Link, df$url) # extract YouTube links
 
   df <- clean_urls(df, "url") # clean up the url to avoid duplicates
 
