@@ -100,7 +100,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
     # build the querystring
     query.string <- paste0("https://api.crowdtangle.com/links?",
                            "link=", urltools::url_encode(url=link),
-                           "&platforms=", platforms,
+                           "&platforms=", gsub(" ", "", platforms, fixed = TRUE), # remove space from user input if any
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
                            "&includeSummary=FALSE",
