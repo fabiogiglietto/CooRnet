@@ -3,13 +3,14 @@
 #' A function to get the URLs shares from CrowdTangle
 #'
 #' @param urls a dataframe with at least a column "url" containing the URLs, and a column "date" with their published date
-#' @param url_column name of the column (placed inside quote marks) where the URLs are stored (defaults to "url")
-#' @param date_column name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")
-#' @param platforms default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
-#' @param nmax max number of results for query (default 1000 as per
-#' @param sleep_time pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.
-#' @param clean_urls clean the URLs from tracking parameters (default FALSE)
-#' @param save_ctapi_output saves the original CT API output in ./rawdata/ct_shares.df.0.rds
+#' @param url_column string: name of the column (placed inside quote marks) where the URLs are stored (defaults to "url")
+#' @param date_column string: name of the column (placed inside quote marks) where the date of the URLs are stored (defaults to "date")
+#' @param platforms string: default to "facebook,instagram". You can specify only "facebook" to search on Facebook, or only "instagram" to search on Instagram
+#' @param nmax integer: max number of results for query (default 1000 as per
+#' @param sleep_time integer: pause between queries to respect API rate limits. Default to 30 secs, it can be lowered or increased depending on the assigned \href{https://help.crowdtangle.com/en/articles/3443476-api-cheat-sheet}{API rate limit}.
+#' @param clean_urls logical: clean the URLs from tracking parameters (default FALSE)
+#' @param logical: get_history get historical engagement for each post. Used by draw_url_timeline_chart.R (default TRUE)
+#' @param save_ctapi_output logical: saves the original CT API output in ./rawdata/ct_shares.df.0.rds (default FALSE)
 #'
 #' @return a data.frame of posts that shared the URLs and a number of variables returned by the \href{https://github.com/CrowdTangle/API/wiki/Links}{CrowdTangle API links endpoint} and the original data set of news
 #'
@@ -28,7 +29,15 @@
 #'
 #' @export
 
-get_ctshares <- function(urls, url_column, date_column, platforms="facebook,instagram", nmax=1000, sleep_time=30, clean_urls=FALSE, save_ctapi_output=FALSE) {
+get_ctshares <- function(urls,
+                         url_column,
+                         date_column,
+                         platforms="facebook,instagram",
+                         nmax=1000,
+                         sleep_time=30,
+                         clean_urls=FALSE,
+                         get_history=TRUE,
+                         save_ctapi_output=FALSE) {
 
   if(missing(url_column)) {
     url_column = "url"
@@ -104,7 +113,7 @@ get_ctshares <- function(urls, url_column, date_column, platforms="facebook,inst
                            "&startDate=", gsub(" ", "T", as.character(startDate)),
                            "&endDate=", gsub(" ", "T", as.character(endDate)),
                            "&includeSummary=FALSE",
-                           "&includeHistory=TRUE",
+                           ifelse(get_history, "&includeHistory=TRUE", "&includeHistory=FALSE"), # history uses a lot of RAM
                            "&sortBy=date",
                            "&token=", Sys.getenv("CROWDTANGLE_API_KEY"),
                            "&count=", nmax)
