@@ -12,9 +12,10 @@
 <meta name="author" content="Fabio Giglietto" />
 
 
-<title>CooRnet: an r package to detect coordinated link sharing behaviour</title>
+<title>CooRnet: an r package to detect coordinated link sharing
+behaviour</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -60,6 +61,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -84,6 +86,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -141,11 +146,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -174,8 +183,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -183,16 +192,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -236,7 +238,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -252,7 +254,7 @@ $(document).ready(function () {
   <a href="abc.html">CooRnet and the A-B-C Framework</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Tutorials
      
     <span class="caret"></span>
@@ -266,6 +268,9 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="tutorial_websci22.html">WebSci 2022 tutorial</a>
+    </li>
+    <li>
+      <a href="https://github.com/fabiogiglietto/CooRnet_at_DMI_WS_2023">DMI Winter School 2023</a>
     </li>
   </ul>
 </li>
@@ -303,17 +308,36 @@ $(document).ready(function () {
 </script>
 </head>
 <div style="margin-top:15px;">
-<p><img src="https://docs.google.com/drawings/d/e/2PACX-1vQ8V_WGl9RZ7rYzWA6sfXhbODgsZv4UwJGgS3sgoE3b_wXLh-3zJYRWtHwLyXveLZkmSW7C1iZAqC6w/pub?w=414&amp;h=113" /></p>
-<p><em><a href="https://twitter.com/fabiogiglietto">Fabio Giglietto</a>, <a href="https://github.com/nicolarighetti">Nicola Righetti</a>, <a href="https://github.com/lrossi79">Luca Rossi</a></em></p>
+<p><img
+src="https://docs.google.com/drawings/d/e/2PACX-1vQ8V_WGl9RZ7rYzWA6sfXhbODgsZv4UwJGgS3sgoE3b_wXLh-3zJYRWtHwLyXveLZkmSW7C1iZAqC6w/pub?w=414&amp;h=113" /></p>
+<p><em><a href="https://twitter.com/fabiogiglietto">Fabio Giglietto</a>,
+<a href="https://github.com/nicolarighetti">Nicola Righetti</a>, <a
+href="https://github.com/lrossi79">Luca Rossi</a></em></p>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>Given a set of URLs, this package detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.</p>
+<p>Given a set of URLs, this package detects coordinated link sharing
+behavior (CLSB) and outputs the network of entities that performed such
+behavior.</p>
 </div>
-<div id="what-do-we-mean-by-coordinated-link-sharing-behavior" class="section level2">
+<div id="what-do-we-mean-by-coordinated-link-sharing-behavior"
+class="section level2">
 <h2>What do we mean by coordinated link sharing behavior?</h2>
-<p>CLSB refers to a specific coordinated activity performed by a network of Facebook pages, groups and verified public profiles (Facebook public entities) that repeatedly shared the same news articles in a very short time from each other.</p>
-<p>To identify such networks, we designed, implemented and tested an algorithm that detects sets of Facebook public entities which performed CLSB by (1) estimating a time threshold that identifies URLs shares performed by multiple distinguished entities within an unusually short period of time (as compared to the entire dataset), and (2) grouping the entities that repeatedly shared the same news story within this coordination interval. The rationale is that, while it may be common that several entities share the same URLs, it is unlikely, unless a consistent coordination exists, that this occurs within the time threshold and repeatedly.</p>
-<p>See also <A HREF="#References">references</A> for a more detailed description and real-world applications.</p>
+<p>CLSB refers to a specific coordinated activity performed by a network
+of Facebook pages, groups and verified public profiles (Facebook public
+entities) that repeatedly shared the same news articles in a very short
+time from each other.</p>
+<p>To identify such networks, we designed, implemented and tested an
+algorithm that detects sets of Facebook public entities which performed
+CLSB by (1) estimating a time threshold that identifies URLs shares
+performed by multiple distinguished entities within an unusually short
+period of time (as compared to the entire dataset), and (2) grouping the
+entities that repeatedly shared the same news story within this
+coordination interval. The rationale is that, while it may be common
+that several entities share the same URLs, it is unlikely, unless a
+consistent coordination exists, that this occurs within the time
+threshold and repeatedly.</p>
+<p>See also <A HREF="#References">references</A> for a more detailed
+description and real-world applications.</p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -327,30 +351,58 @@ devtools::install_github(&quot;fabiogiglietto/CooRnet&quot;)</code></pre>
 <h2>API keys</h2>
 <div id="crowdtangle-required" class="section level3">
 <h3>CrowdTangle (required)</h3>
-<p>This package requires a <A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</A> key entry in your R environment file. The R environment file is loaded every time R is started/restarted.</p>
-<p>The following steps show how to add the key to your R environment file.</p>
+<p>This package requires a
+<A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</A> key
+entry in your R environment file. The R environment file is loaded every
+time R is started/restarted.</p>
+<p>The following steps show how to add the key to your R environment
+file.</p>
 <ol style="list-style-type: decimal">
-<li>Open your .Renviron file. The file is usually located in your home directory. If the file does not exist, just create one and name it .Renviron.</li>
-<li>Add a new line and enter your API key in the following format: CROWDTANGLE_API_KEY=“YOUR_API_KEY”.</li>
-<li>Save the file and restart your current R session to start using CooRnet.</li>
+<li>Open your .Renviron file. The file is usually located in your home
+directory. If the file does not exist, just create one and name it
+.Renviron.</li>
+<li>Add a new line and enter your API key in the following format:
+CROWDTANGLE_API_KEY=“YOUR_API_KEY”.</li>
+<li>Save the file and restart your current R session to start using
+CooRnet.</li>
 </ol>
 </div>
 <div id="newsguard-optional" class="section level3">
 <h3>NewsGuard (optional)</h3>
-<p>Optionally, you can also set your credential to access NewsGuard API. The integration returns the average <A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard rating score</A> obtained by the domains shared by a coordinated network.</p>
-<p>This process requires an active subscription to <A HREF="https://www.newsguardtech.com">NewsGuard API</A> and key entries in your R environment file. The R environment file is loaded every time R is started/restarted.</p>
-<p>The following steps show how to add the key to your R environment file.</p>
+<p>Optionally, you can also set your credential to access NewsGuard API.
+The integration returns the average
+<A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard
+rating score</A> obtained by the domains shared by a coordinated
+network.</p>
+<p>This process requires an active subscription to
+<A HREF="https://www.newsguardtech.com">NewsGuard API</A> and key
+entries in your R environment file. The R environment file is loaded
+every time R is started/restarted.</p>
+<p>The following steps show how to add the key to your R environment
+file.</p>
 <ol style="list-style-type: decimal">
-<li><p>Open your .Renviron file. The file is usually located in your home directory. If the file does not exist, just create one and name it .Renviron.</p></li>
-<li><p>Add two new line and enter your API key in the following format: NG_KEY=“YOUR_API_KEY” NG_SECRET=“YOUR_API_SECRET”</p></li>
-<li><p>Save the file and restart your current R session to start using CooRnet.</p></li>
+<li><p>Open your .Renviron file. The file is usually located in your
+home directory. If the file does not exist, just create one and name it
+.Renviron.</p></li>
+<li><p>Add two new line and enter your API key in the following format:
+NG_KEY=“YOUR_API_KEY” NG_SECRET=“YOUR_API_SECRET”</p></li>
+<li><p>Save the file and restart your current R session to start using
+CooRnet.</p></li>
 </ol>
 </div>
 </div>
 <div id="usage" class="section level2">
 <h2>Usage</h2>
-<p>CooRnet requires a list of urls with respective publication date. Such list can be collected from various sources including CrowdTangle itself (e.g. Historical Data with a link post type filter), Twitter APIs (filtering for tweets with a url) and GDELT.</p>
-<p>In this example, we use <A HREF="https://github.com/jandix/mediacloudr">mediacloudr</A>, an API Wrapper for the mediacloud.org API, to retrieve our initial list of news stories. Alternatively, is it also possible to use a CSV file exported from <A HREF="https://explorer.mediacloud.org/#/home">MediaCloud Explorer</A>.</p>
+<p>CooRnet requires a list of urls with respective publication date.
+Such list can be collected from various sources including CrowdTangle
+itself (e.g. Historical Data with a link post type filter), Twitter APIs
+(filtering for tweets with a url) and GDELT.</p>
+<p>In this example, we use
+<A HREF="https://github.com/jandix/mediacloudr">mediacloudr</A>, an API
+Wrapper for the mediacloud.org API, to retrieve our initial list of news
+stories. Alternatively, is it also possible to use a CSV file exported
+from <A HREF="https://explorer.mediacloud.org/#/home">MediaCloud
+Explorer</A>.</p>
 <pre class="r"><code>library(&quot;mediacloudr&quot;)
 
 # add API key to your R environment file.
@@ -384,18 +436,24 @@ write.csv(highly_connected_coordinated_entities, file = &quot;highly_connected_c
 # save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
 igraph::write.graph(highly_connected_g, file = &quot;highly_connected_g.graphml&quot;, format = &quot;graphml&quot;)
 </code></pre>
-<p>For a more step-by-step approach, you may want to take a look to our <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet tutorial</A>.</p>
+<p>For a more step-by-step approach, you may want to take a look to our
+<A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet
+tutorial</A>.</p>
 </div>
 <div id="advanced-usage" class="section level2">
 <h2>Advanced Usage</h2>
-<p>CooRnet also features additional functions that streamlines the analysis of coordinated networks.</p>
+<p>CooRnet also features additional functions that streamlines the
+analysis of coordinated networks.</p>
 <div id="component-summary" class="section level3">
 <h3>Component Summary</h3>
-<p>get_component_summary creates an handy aggregated views of network properties including:</p>
+<p>get_component_summary creates an handy aggregated views of network
+properties including:</p>
 <ol style="list-style-type: decimal">
-<li>the proportion of coordinated shares over the total shares (coorshare_ratio)</li>
+<li>the proportion of coordinated shares over the total shares
+(coorshare_ratio)</li>
 <li>the average coordinated score (avg_cooRscore)</li>
-<li>a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1)</li>
+<li>a measure of dispersion (gini) in the distribution of domains
+coordinatedly shared by the component (0-1)</li>
 <li>the top 5 coordinatedly shared domains (ranked by n. of shares)</li>
 <li>the total number coordinatedly shared of domains</li>
 </ol>
@@ -408,8 +466,14 @@ write.csv(comp_summary, file = &quot;comp_summary.csv&quot;)
 </div>
 <div id="top-urls" class="section level3">
 <h3>Top URLs</h3>
-<p>get_top_coord_urls creates a ranked list of best performing URLs shared by coordinated networks. URLs can be sorted by various criteria including “engagement” wich is a sum of comments, shares and reactions (likes and other reactions) gathered by that URL.</p>
-<p>You can customize the behaviour of get_top_coord_urls by specifing that you want a rank of URLs per componenent (top URLs for each network) or not and specify the number of URLs you want the function to return.</p>
+<p>get_top_coord_urls creates a ranked list of best performing URLs
+shared by coordinated networks. URLs can be sorted by various criteria
+including “engagement” wich is a sum of comments, shares and reactions
+(likes and other reactions) gathered by that URL.</p>
+<p>You can customize the behaviour of get_top_coord_urls by specifing
+that you want a rank of URLs per componenent (top URLs for each network)
+or not and specify the number of URLs you want the function to
+return.</p>
 <pre class="r"><code>top_urls_per_components &lt;- get_top_coord_urls(output, order_by = &quot;engagement&quot;, component = TRUE, top = 10)
 
 top_urls_all &lt;- get_top_coord_urls(output, order_by = &quot;engagement&quot;, component = FALSE, top = 10)
@@ -423,8 +487,15 @@ write.csv(top_urls_all, file = &quot;top_urls_all.csv&quot;)
 </div>
 <div id="top-shares" class="section level3">
 <h3>Top Shares</h3>
-<p>get_top_coord_shares creates a ranked list of best performing posts with link (shares) published by coordinated networks. Shares can be sorted by various criteria including “engagement” wich is of comments, shares and reactions (likes and other reactions) gathered by that post.</p>
-<p>You can customize the behaviour of get_top_coord_shares by specifing that you want a rank of URLs per componenent (top shares for each network) or not and specify the number of URLs you want the function to return.</p>
+<p>get_top_coord_shares creates a ranked list of best performing posts
+with link (shares) published by coordinated networks. Shares can be
+sorted by various criteria including “engagement” wich is of comments,
+shares and reactions (likes and other reactions) gathered by that
+post.</p>
+<p>You can customize the behaviour of get_top_coord_shares by specifing
+that you want a rank of URLs per componenent (top shares for each
+network) or not and specify the number of URLs you want the function to
+return.</p>
 <pre class="r"><code>top_shares_per_components &lt;- get_top_coord_shares(output, order_by = &quot;engagement&quot;, component = TRUE, top = 10)
 
 top_shares_all &lt;- get_top_coord_shares(output, order_by = &quot;engagement&quot;, component = FALSE, top = 10)
@@ -439,15 +510,33 @@ write.csv(top_shares_all, file = &quot;top_shares_all.csv&quot;)
 </div>
 <div id="acknowledgements" class="section level2">
 <h2>Acknowledgements</h2>
-<p>CooRnet has been developed as part of <a href="https://sites.google.com/uniurb.it/mine/home">Patterns of Facebook Interactions around Insular and Cross-Partisan Media Sources in the Run-up of the 2018 Italian Election</a> research project activities.</p>
-<p>The project is supported, in part, by a grant by a grant from Social Science Research Council. Data and tools provided by Facebook.</p>
+<p>CooRnet has been developed as part of <a
+href="https://sites.google.com/uniurb.it/mine/home">Patterns of Facebook
+Interactions around Insular and Cross-Partisan Media Sources in the
+Run-up of the 2018 Italian Election</a> research project activities.</p>
+<p>The project is supported, in part, by a grant by a grant from Social
+Science Research Council. Data and tools provided by Facebook.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li><p>Giglietto, F., Righetti, N., Rossi, L., &amp; Marino, G. (2020). Coordinated Link Sharing Behavior as a Signal to Surface Sources of Problematic Information on Facebook. International Conference on Social Media and Society, 85–91. <a href="https://doi.org/10.1145/3400806.3400817" class="uri">https://doi.org/10.1145/3400806.3400817</a></p></li>
-<li><p>Giglietto, F., Righetti, N., Rossi, L., &amp; Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication and Society, 1–25. <a href="https://doi.org/10.1080/1369118X.2020.1739732" class="uri">https://doi.org/10.1080/1369118X.2020.1739732</a></p></li>
-<li><p>Giglietto, F., Righetti, N., &amp; Marino, G. (2019). Understanding Coordinated and Inauthentic Link Sharing Behavior on Facebook in the Run-up to 2018 General Election and 2019 European Election in Italy. <a href="https://doi.org/10.31235/osf.io/3jteh" class="uri">https://doi.org/10.31235/osf.io/3jteh</a></p></li>
+<li><p>Giglietto, F., Righetti, N., Rossi, L., &amp; Marino, G. (2020).
+Coordinated Link Sharing Behavior as a Signal to Surface Sources of
+Problematic Information on Facebook. International Conference on Social
+Media and Society, 85–91. <a
+href="https://doi.org/10.1145/3400806.3400817"
+class="uri">https://doi.org/10.1145/3400806.3400817</a></p></li>
+<li><p>Giglietto, F., Righetti, N., Rossi, L., &amp; Marino, G. (2020).
+It takes a village to manipulate the media: coordinated link sharing
+behavior during 2018 and 2019 Italian elections. Information,
+Communication and Society, 1–25. <a
+href="https://doi.org/10.1080/1369118X.2020.1739732"
+class="uri">https://doi.org/10.1080/1369118X.2020.1739732</a></p></li>
+<li><p>Giglietto, F., Righetti, N., &amp; Marino, G. (2019).
+Understanding Coordinated and Inauthentic Link Sharing Behavior on
+Facebook in the Run-up to 2018 General Election and 2019 European
+Election in Italy. <a href="https://doi.org/10.31235/osf.io/3jteh"
+class="uri">https://doi.org/10.31235/osf.io/3jteh</a></p></li>
 </ul>
 </div>
 

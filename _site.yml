@@ -15,6 +15,8 @@ navbar:
           href: tutorial01.html
         - text: "WebSci 2022 tutorial"
           href: tutorial_websci22.html
+        - text: "DMI Winter School 2023"
+          href: https://github.com/fabiogiglietto/CooRnet_at_DMI_WS_2023
   right:
     - text: "GitHub"
       icon: fa-github

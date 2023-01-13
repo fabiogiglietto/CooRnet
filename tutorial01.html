@@ -14,7 +14,7 @@
 
 <title>Tutorial CrowdTangle Historical Data</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -84,6 +85,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -141,11 +145,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -174,8 +182,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -183,16 +191,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -236,7 +237,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -252,7 +253,7 @@ $(document).ready(function () {
   <a href="abc.html">CooRnet and the A-B-C Framework</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Tutorials
      
     <span class="caret"></span>
@@ -266,6 +267,9 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="tutorial_websci22.html">WebSci 2022 tutorial</a>
+    </li>
+    <li>
+      <a href="https://github.com/fabiogiglietto/CooRnet_at_DMI_WS_2023">DMI Winter School 2023</a>
     </li>
   </ul>
 </li>
@@ -292,23 +296,81 @@ $(document).ready(function () {
 
 
 <div style="margin-top:15px;">
-<div id="detecting-coordinated-entities-with-crowdtangle-historical-data" class="section level1">
+<div
+id="detecting-coordinated-entities-with-crowdtangle-historical-data"
+class="section level1">
 <h1>Detecting coordinated entities with CrowdTangle Historical Data</h1>
-<p>In this tutorial we show how to use a list of entities sharing URLs on Facebook and/or Instagram to detect other entities linked to them by means of coordinated sharing of the same URLs, and therefore potentially associated with the same agenda. Detecting coordinated entities starting from a CrowdTangle list or saved searches has many applications including keeping a list of problematic entities updated over time and dipediving on a specific issue.</p>
-<p>For the sake of this tutorial, we start from the Facebook pages of German alternative news media listed in <a href="https://arxiv.org/abs/2004.02566?fbclid=IwAR1oxVcJnngUsMnhihK7nlanh1MAcnxlDTc1pp32mVe5ZgBkPBsf_9aVNfg">this paper</a></p>
-<p>First, we <a href="https://help.crowdtangle.com/en/articles/1140912-what-is-a-list">create a list on CrowdTangle</a> including all the pages from which the research will begin.</p>
-<p>Then, we use the <a href="https://help.crowdtangle.com/en/articles/1194215-using-crowdtangle-s-historical-data">CrowdTangle Historical Search</a> to get all the post including links that have been shared by the pages included in the starting list. The user has to indicate a time window. We used the same time frame used by the authors of the study we are building on (from January 7, 2020 to March 22, 2020). You should get an email with a link to a CSV file containing the requested data (a list of link type posts). You can either download this file or save the link for later.</p>
-<p>We then start our R Studio environment or the free R Studio Cloud (<a href="https://rstudio.cloud">https://rstudio.cloud</a>) environment and <a href="http://coornet.org/">set up the CooRnet package</a>.</p>
-<p>To quickly get a list of URLs shared by our original list of pages we use the brand new CooRnet “get_urls_from_ct_histdata” function with the file that CrowdTangle sent us by email. You can either download this file and upload it to R Studio or you can simply copy/paste the link received by email to let CooRnet download the file for you (note that in this case no copy of the original CT output will be kept). The function outputs a dataset with a column “url” and “date” that can be used in the next step.</p>
+<p>In this tutorial we show how to use a list of entities sharing URLs
+on Facebook and/or Instagram to detect other entities linked to them by
+means of coordinated sharing of the same URLs, and therefore potentially
+associated with the same agenda. Detecting coordinated entities starting
+from a CrowdTangle list or saved searches has many applications
+including keeping a list of problematic entities updated over time and
+dipediving on a specific issue.</p>
+<p>For the sake of this tutorial, we start from the Facebook pages of
+German alternative news media listed in <a
+href="https://arxiv.org/abs/2004.02566?fbclid=IwAR1oxVcJnngUsMnhihK7nlanh1MAcnxlDTc1pp32mVe5ZgBkPBsf_9aVNfg">this
+paper</a></p>
+<p>First, we <a
+href="https://help.crowdtangle.com/en/articles/1140912-what-is-a-list">create
+a list on CrowdTangle</a> including all the pages from which the
+research will begin.</p>
+<p>Then, we use the <a
+href="https://help.crowdtangle.com/en/articles/1194215-using-crowdtangle-s-historical-data">CrowdTangle
+Historical Search</a> to get all the post including links that have been
+shared by the pages included in the starting list. The user has to
+indicate a time window. We used the same time frame used by the authors
+of the study we are building on (from January 7, 2020 to March 22,
+2020). You should get an email with a link to a CSV file containing the
+requested data (a list of link type posts). You can either download this
+file or save the link for later.</p>
+<p>We then start our R Studio environment or the free R Studio Cloud (<a
+href="https://rstudio.cloud">https://rstudio.cloud</a>) environment and
+<a href="http://coornet.org/">set up the CooRnet package</a>.</p>
+<p>To quickly get a list of URLs shared by our original list of pages we
+use the brand new CooRnet “get_urls_from_ct_histdata” function with the
+file that CrowdTangle sent us by email. You can either download this
+file and upload it to R Studio or you can simply copy/paste the link
+received by email to let CooRnet download the file for you (note that in
+this case no copy of the original CT output will be kept). The function
+outputs a dataset with a column “url” and “date” that can be used in the
+next step.</p>
 <pre class="r"><code>urls &lt;- get_urls_from_ct_histdata(ct_histdata_csv=&quot;./2020-04-09-11-29-46-CEST-Historical-Report-German-Alternative-Media-2020-01-07--2020-03-02.csv&quot;)</code></pre>
-<p>With our new “urls” data.frame, we can now call the “get_ctshares” function to get a list of posts that link or mention these URLs. We set the “clean_urls” equal TRUE for cleaning the URLs from the tracking parameters and keeping, whenever possible, just the canonical form of the URL.</p>
+<p>With our new “urls” data.frame, we can now call the “get_ctshares”
+function to get a list of posts that link or mention these URLs. We set
+the “clean_urls” equal TRUE for cleaning the URLs from the tracking
+parameters and keeping, whenever possible, just the canonical form of
+the URL.</p>
 <pre class="r"><code>ctshares &lt;- get_ctshares(urls, &quot;url&quot;, &quot;date&quot;, clean_urls = TRUE)</code></pre>
-<p>Now, we use the “get_coord_shares” function to obtain the list of the entities that shared the URLs in a coordinated way. We set the “parallel” option to TRUE to use parallel computing and speed up the process, the “clean_urls” equal TRUE to clean the URLs from the tracking parameters so as to avoid two identical links are recognized as different just because of the presence of unnecessary parameters, and the “keep_ourl_only” equal TRUE to be sure to limit the analysis to the original URLs we started from.</p>
+<p>Now, we use the “get_coord_shares” function to obtain the list of the
+entities that shared the URLs in a coordinated way. We set the
+“parallel” option to TRUE to use parallel computing and speed up the
+process, the “clean_urls” equal TRUE to clean the URLs from the tracking
+parameters so as to avoid two identical links are recognized as
+different just because of the presence of unnecessary parameters, and
+the “keep_ourl_only” equal TRUE to be sure to limit the analysis to the
+original URLs we started from.</p>
 <pre class="r"><code>output &lt;- get_coord_shares(ctshares , parallel = TRUE, clean_urls = TRUE, keep_ourl_only = TRUE)</code></pre>
-<p>Finally, we use the “get_outputs” function to access the results of the function. In this specific case we are interested just in the “highly_connected_coordinated_entities” file, thus we extract just this file by setting the other options equal FALSE.</p>
+<p>Finally, we use the “get_outputs” function to access the results of
+the function. In this specific case we are interested just in the
+“highly_connected_coordinated_entities” file, thus we extract just this
+file by setting the other options equal FALSE.</p>
 <pre class="r"><code>get_outputs(output, ct_shares_marked.df = FALSE, highly_connected_g = FALSE, highly_connected_coordinated_entities = TRUE)</code></pre>
-<p>The “highly_connected_coordinated_entities” is a csv file that includes the entities that performed coordinated link sharing around the starting list of links (those we downloaded thanks to the Historical Search of CrowdTangle).</p>
-<p>Such a list can be potentially interesting, since it can point out new entities that share the same agenda of the starting entities. We created a <a href="https://www.crowdtangle.com/resources/livedisplays">CrowdTangle Live Display Dashboard</a> with the new entities we discovered. You can access the Live Display by <a href="https://apps.crowdtangle.com/mine2018/boards/germancoordinatedentities?fbclid=IwAR2F7BDsAzuSzHaxkGill9k_kG59sNzoexnO9AK1UXZOzP1x_CvvZVpFPCA">clicking here</a>. In the first column you can see the activity of the original list of German alternative media, while in the second and third columns you can see the activity of the coordinated pages and groups discovered with CooRnet.</p>
+<p>The “highly_connected_coordinated_entities” is a csv file that
+includes the entities that performed coordinated link sharing around the
+starting list of links (those we downloaded thanks to the Historical
+Search of CrowdTangle).</p>
+<p>Such a list can be potentially interesting, since it can point out
+new entities that share the same agenda of the starting entities. We
+created a <a
+href="https://www.crowdtangle.com/resources/livedisplays">CrowdTangle
+Live Display Dashboard</a> with the new entities we discovered. You can
+access the Live Display by <a
+href="https://apps.crowdtangle.com/mine2018/boards/germancoordinatedentities?fbclid=IwAR2F7BDsAzuSzHaxkGill9k_kG59sNzoexnO9AK1UXZOzP1x_CvvZVpFPCA">clicking
+here</a>. In the first column you can see the activity of the original
+list of German alternative media, while in the second and third columns
+you can see the activity of the coordinated pages and groups discovered
+with CooRnet.</p>
 </div>
 
 

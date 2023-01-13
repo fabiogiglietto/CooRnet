@@ -14,7 +14,7 @@
 
 <title>MediaCloud tutorial</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -84,6 +85,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -141,11 +145,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -174,8 +182,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -183,16 +191,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -236,7 +237,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -252,7 +253,7 @@ $(document).ready(function () {
   <a href="abc.html">CooRnet and the A-B-C Framework</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Tutorials
      
     <span class="caret"></span>
@@ -266,6 +267,9 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="tutorial_websci22.html">WebSci 2022 tutorial</a>
+    </li>
+    <li>
+      <a href="https://github.com/fabiogiglietto/CooRnet_at_DMI_WS_2023">DMI Winter School 2023</a>
     </li>
   </ul>
 </li>
@@ -294,33 +298,76 @@ $(document).ready(function () {
 <div style="margin-top:15px;">
 <div id="mediacloud-tutorial" class="section level1">
 <h1>MediaCloud tutorial</h1>
-<p>In this tutorial we show how to combine <a href="https://mediacloud.org/">MediaCloud</a> and CooRnet to detect coordinated link sharing behavior on a dataset of news stories related to a specific topic.</p>
-<p>MediaCloud is an open-source platform for media analysis developed and maintained, as a joint project, by the MIT Center for Civic Media and the Berkman Klein Center for Internet &amp; Society at Harvard University.</p>
-<p>While it is possible to search and download a set of news stories from the MediaCloud web interface, in this example we instead use the <a href="https://github.com/jandix/mediacloudr">MediaCloudr</a> R package to download our stories directly from R.</p>
-<p>We are going to use the free R Studio Cloud (<a href="https://rstudio.cloud">https://rstudio.cloud</a>) environment for this project.</p>
-<p>First of all, we create a new project named CooRnet + MediaCloud in our R Studio Cloud environment. If you are not registered, you can register for free at <a href="https://rstudio.cloud">https://rstudio.cloud</a>. If you already use R, you can of course use your existing R environment to create a new project.</p>
-<p>MediaCloud has a handy R wrapper named MediaCloudr that makes it easy to search and gather news stories directly from R.</p>
-<p>Both MediaCloud and CooRnet require an API key to work. MediaCloud needs the MediaCloud API key and CooRnet needs instead the CrowdTangle API key. Both packages expect to find these keys as an environment variable of your R environment. For this screencast, we have saved our API keys in our .Renviron file. Please refer to the packages documentation to learn more about this step.</p>
-<p>Once your environment is configured to access both MediaCloud and CrowdTangle, we can start by installing MediaCloudr and CooRnet.</p>
+<p>In this tutorial we show how to combine <a
+href="https://mediacloud.org/">MediaCloud</a> and CooRnet to detect
+coordinated link sharing behavior on a dataset of news stories related
+to a specific topic.</p>
+<p>MediaCloud is an open-source platform for media analysis developed
+and maintained, as a joint project, by the MIT Center for Civic Media
+and the Berkman Klein Center for Internet &amp; Society at Harvard
+University.</p>
+<p>While it is possible to search and download a set of news stories
+from the MediaCloud web interface, in this example we instead use the <a
+href="https://github.com/jandix/mediacloudr">MediaCloudr</a> R package
+to download our stories directly from R.</p>
+<p>We are going to use the free R Studio Cloud (<a
+href="https://rstudio.cloud">https://rstudio.cloud</a>) environment for
+this project.</p>
+<p>First of all, we create a new project named CooRnet + MediaCloud in
+our R Studio Cloud environment. If you are not registered, you can
+register for free at <a
+href="https://rstudio.cloud">https://rstudio.cloud</a>. If you already
+use R, you can of course use your existing R environment to create a new
+project.</p>
+<p>MediaCloud has a handy R wrapper named MediaCloudr that makes it easy
+to search and gather news stories directly from R.</p>
+<p>Both MediaCloud and CooRnet require an API key to work. MediaCloud
+needs the MediaCloud API key and CooRnet needs instead the CrowdTangle
+API key. Both packages expect to find these keys as an environment
+variable of your R environment. For this screencast, we have saved our
+API keys in our .Renviron file. Please refer to the packages
+documentation to learn more about this step.</p>
+<p>Once your environment is configured to access both MediaCloud and
+CrowdTangle, we can start by installing MediaCloudr and CooRnet.</p>
 <p>MediaCloudr is now on CRAN and can be easily installed via:</p>
 <pre class="r"><code>install.packages(&quot;mediacloudr&quot;)</code></pre>
-<p>For CooRnet we need instead to install from source and we thus require also the devtools package.</p>
+<p>For CooRnet we need instead to install from source and we thus
+require also the devtools package.</p>
 <pre class="r"><code># install.packages(&quot;devtools&quot;)
 library(&quot;devtools&quot;)
 devtools::install_github(&quot;fabiogiglietto/CooRnet&quot;)</code></pre>
 <p>We can now load our packages.</p>
 <pre class="r"><code>library(&quot;mediacloudr&quot;)
 library(&quot;CooRnet&quot;)</code></pre>
-<p>We are now ready to gather our news stories from MediaCloud. We decided to collect recent stories on covid-19 from three main MediaCloud collections of US sources.</p>
+<p>We are now ready to gather our news stories from MediaCloud. We
+decided to collect recent stories on covid-19 from three main MediaCloud
+collections of US sources.</p>
 <pre class="r"><code># get 1000 news stories published during the last two days by main US sources (see tags_ids) on covid-19 (assumes a valid MEDIACLOUD_API_KEY in env)
 df &lt;- get_story_list(rows = 1000,
 fq = &quot;(text:coronavirus OR text:&#39;covid-19&#39; OR text:&#39;SARS-CoV-2&#39;) AND (tags_id_media:186572515 OR tags_id_media:186572435 OR tags_id_media:186572516 OR tags_id_media:162546808 OR tags_id_media:162546809) AND publish_date:[2020-03-30T00:00:00.000Z TO 2020-03-31T00:00:00.000Z]&quot;)</code></pre>
-<p>If all goes well, we should now have a new data frame in our R environment named “df”.</p>
-<p>The data frame “df” contains the metadata about our 1000 news stories (1000 is the maximum responses we can get from MediaCloud API in one shot, for more stories and better results you will need to make multiple queries or download directly the CSV file from MediaCloud Explorer). All we need from this data frame are the URLs and the publication date. To get a sense of df names we can run:</p>
+<p>If all goes well, we should now have a new data frame in our R
+environment named “df”.</p>
+<p>The data frame “df” contains the metadata about our 1000 news stories
+(1000 is the maximum responses we can get from MediaCloud API in one
+shot, for more stories and better results you will need to make multiple
+queries or download directly the CSV file from MediaCloud Explorer). All
+we need from this data frame are the URLs and the publication date. To
+get a sense of df names we can run:</p>
 <pre class="r"><code>names(df)</code></pre>
-<p>Inspecting the output we may easily realize that the variables we need are named “url” and “publish_date”. We need to specify these names when calling CooRnet::get_ctshares() function.</p>
-<p>The function “get_ct_shares” is a relatively simple wrapper to query CrowdTangle Link endpoint and collects the shares of the user-provided links which were performed by Facebook and/or Instagram pages, groups and/or verified profiles. Optionally, it can also clean both the input list of URLs for the unnecessary query parameters which may trick the algorithm to think those are different URLs.</p>
-<p>In our case, we are going to collect up to 100 Facebook or Instagram public shares of our news stories created up to a week after publication date. CooRnet focuses on the first 7 days of public shares since we observed that most of the shares around a news story happen within this period of time.</p>
+<p>Inspecting the output we may easily realize that the variables we
+need are named “url” and “publish_date”. We need to specify these names
+when calling CooRnet::get_ctshares() function.</p>
+<p>The function “get_ct_shares” is a relatively simple wrapper to query
+CrowdTangle Link endpoint and collects the shares of the user-provided
+links which were performed by Facebook and/or Instagram pages, groups
+and/or verified profiles. Optionally, it can also clean both the input
+list of URLs for the unnecessary query parameters which may trick the
+algorithm to think those are different URLs.</p>
+<p>In our case, we are going to collect up to 100 Facebook or Instagram
+public shares of our news stories created up to a week after publication
+date. CooRnet focuses on the first 7 days of public shares since we
+observed that most of the shares around a news story happen within this
+period of time.</p>
 <pre class="r"><code># get up to 100 public shares of MediaCloud URLs on Facebook and Instagram (assumes a valid CROWDTANGLE_API_KEY in env)
 ct_shares.df &lt;- CooRnet::get_ctshares(urls = df,
                                       url_column = &quot;url&quot;,
@@ -329,23 +376,53 @@ ct_shares.df &lt;- CooRnet::get_ctshares(urls = df,
                                       sleep_time = 1,
                                       nmax = 100,
                                       clean_urls = TRUE)</code></pre>
-<p>You can now go grab a coffee since this process is gonna take a few minutes.</p>
-<p>Once finished, a new ct_shares.df object should appear in our environment. Each observation in this data frame contains a post with a link to one of our news stories. Multiple posts may link to one of our news articles.</p>
-<p>It’s now time to execute CooRnet::get_coord_shares() function to detect coordinate link sharing behaviour. For this tutorial we also specify that we want to clean the URLs for unnecessary parameters (this time we are talking about the URLs in the CrowdTangle output) and restrict our analysis to shares of our original URLs. Due to the way CrowdTangle works, querying for a certain URL retrieves posts with our link. However, some posts contain more than one link (e.g. in the message text). Our ct_shares.df may thus include shares related to links not in our original list. Setting keep_ourl_only to TRUE makes sure that only shares of our original URLs are analyzed.</p>
+<p>You can now go grab a coffee since this process is gonna take a few
+minutes.</p>
+<p>Once finished, a new ct_shares.df object should appear in our
+environment. Each observation in this data frame contains a post with a
+link to one of our news stories. Multiple posts may link to one of our
+news articles.</p>
+<p>It’s now time to execute CooRnet::get_coord_shares() function to
+detect coordinate link sharing behaviour. For this tutorial we also
+specify that we want to clean the URLs for unnecessary parameters (this
+time we are talking about the URLs in the CrowdTangle output) and
+restrict our analysis to shares of our original URLs. Due to the way
+CrowdTangle works, querying for a certain URL retrieves posts with our
+link. However, some posts contain more than one link (e.g. in the
+message text). Our ct_shares.df may thus include shares related to links
+not in our original list. Setting keep_ourl_only to TRUE makes sure that
+only shares of our original URLs are analyzed.</p>
 <pre class="r"><code># estimates a coordination interval and detects CLSB
 output &lt;- CooRnet::get_coord_shares(ct_shares.df = ct_shares.df,
 clean_urls = TRUE,
 keep_ourl_only = TRUE)</code></pre>
-<p>Following a certain amount of time that depends on the number of posts we collected and analyzed, an object named “output” should appear in our environment.</p>
-<p>“Output” is in fact a list of three main CooRnet outputs. The following function:</p>
+<p>Following a certain amount of time that depends on the number of
+posts we collected and analyzed, an object named “output” should appear
+in our environment.</p>
+<p>“Output” is in fact a list of three main CooRnet outputs. The
+following function:</p>
 <pre class="r"><code>CooRnet::get_outputs(output)</code></pre>
-<p>will create three objects: 1. ct_shares_marked.df: it’s basically ct_shares.df with an additional column (is_coordinated) that is TRUE if the post had been considered as part of a coordinated link sharing effort;</p>
+<p>will create three objects: 1. ct_shares_marked.df: it’s basically
+ct_shares.df with an additional column (is_coordinated) that is TRUE if
+the post had been considered as part of a coordinated link sharing
+effort;</p>
 <ol start="2" style="list-style-type: decimal">
-<li><p>highly_connected_coordinated_entities: a data.frame with a list of all the entities that performed CLSB around our URLs. This list also includes many additional information about the entity such as the subscriber number (likes for pages, members for groups), entity name and URL. It also includes a component number that identifies the network the entity belongs to;</p></li>
-<li><p>Highly_connected_g: is an igraph graph that can be easily saved and exported to further analysis or network visualizations (e.g. in Gephi).</p></li>
+<li><p>highly_connected_coordinated_entities: a data.frame with a list
+of all the entities that performed CLSB around our URLs. This list also
+includes many additional information about the entity such as the
+subscriber number (likes for pages, members for groups), entity name and
+URL. It also includes a component number that identifies the network the
+entity belongs to;</p></li>
+<li><p>Highly_connected_g: is an igraph graph that can be easily saved
+and exported to further analysis or network visualizations (e.g. in
+Gephi).</p></li>
 </ol>
-<p>In the current directory you will also find a log.txt file that summarises all the options used and basic stats about the number of urls, shares, coordinated entities and components/networks.</p>
-<p>This tutorial only covers a small part of the functions made available by CooRnet. Feel free to experiment to discover all the potentials!</p>
+<p>In the current directory you will also find a log.txt file that
+summarises all the options used and basic stats about the number of
+urls, shares, coordinated entities and components/networks.</p>
+<p>This tutorial only covers a small part of the functions made
+available by CooRnet. Feel free to experiment to discover all the
+potentials!</p>
 </div>
 
 
