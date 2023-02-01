@@ -4,10 +4,12 @@
 \alias{get_cluster_summary}
 \title{get_cluster_summary}
 \usage{
-get_cluster_summary(output)
+get_cluster_summary(output, labels = FALSE)
 }
 \arguments{
 \item{output}{the output list resulting from the function get_coord_shares}
+
+\item{labels}{auto-generate a cluster label using account's title and descriptions. Relies on Openai APIs. Expects the API Bearer in OPENAI_API_KEY environment variable.}
 }
 \value{
 A data frame containing summary data by each coordinated cluster:

@@ -3,6 +3,8 @@
 #' A function to get summary data by coordinated cluster
 #'
 #' @param output the output list resulting from the function get_coord_shares
+#' @param labels auto-generate a cluster label using account's title and descriptions. Relies on Openai APIs. Expects the API Bearer in OPENAI_API_KEY environment variable.
+#'
 #'
 #' @return A data frame containing summary data by each coordinated cluster:
 #' the average subscribers number of entities in a cluster,
@@ -28,13 +30,14 @@
 #'   clusters <- hclust(dist(cluster_summary[, 2:4]))
 #'   plot(clusters)
 #'
-#' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise
+#' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise n
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
+#' @importFrom openai create_completion
 #'
 #' @export
 
-get_cluster_summary <- function(output){
+get_cluster_summary <- function(output, labels=FALSE){
 
   ct_shares_marked.df <- output[[1]]
   highly_connected_coordinated_entities <- output[[3]]
@@ -56,69 +59,137 @@ get_cluster_summary <- function(output){
   summary_entities <- highly_connected_coordinated_entities %>%
     dplyr::group_by(component, cluster) %>%
     dplyr::summarise(entities = n(),
-              avg.subscriberCount = mean(account.avg.subscriberCount),
-              cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
-              cooRscore.avg = mean(strength/degree),
-              pageAdminTopCountry = unique(account.pageAdminTopCountry, na.rm = TRUE)[which.max(tabulate(match(account.pageAdminTopCountry, unique(account.pageAdminTopCountry))))],
-              facebook_page = length(account.accountType[account.accountType=="facebook_page"]),
-              facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
-              facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
+                     avg.subscriberCount = mean(account.avg.subscriberCount),
+                     cooRshare_ratio.avg = mean(coord.shares/(shares+coord.shares)),
+                     cooRscore.avg = mean(strength/degree),
+                     pageAdminTopCountry = unique(account.pageAdminTopCountry, na.rm = TRUE)[which.max(tabulate(match(account.pageAdminTopCountry, unique(account.pageAdminTopCountry))))],
+                     facebook_page = length(account.accountType[account.accountType=="facebook_page"]),
+                     facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
+                     facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
 
-    # query the the newsguardtech.com API
-    if (!(Sys.getenv('NG_KEY')=="" & Sys.getenv('NG_SECRET')=="")){
+  if (labels & Sys.getenv("OPENAI_API_KEY")!="") {
 
-      cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
+    summary_entities$label <- NA
 
-      domain_score <- data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA)
-      total <- nrow(domain_score) # progress bar
+    cat("\nAuto-labelling clusters with OpenAI text-davinci-003 (https://platform.openai.com/)...\n")
 
-      pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
-      ng_bearer <- get_ng_bearer()
+    pb <- utils::txtProgressBar(min = 0, max = nrow(summary_entities), width = 100, style = 3)
 
-      for (i in 1:nrow(domain_score)) {
+    for (j in 1:nrow(summary_entities)) {
 
-        utils::setTxtProgressBar(pb, pb$getVal()+1)
-        parent_domain <- domain_score$parent_domain[i]
-        query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
-                           httr::add_headers(Authorization = paste0("Bearer ",ng_bearer)))
-        tryCatch(
+      cluster_accounts <- subset(highly_connected_coordinated_entities, highly_connected_coordinated_entities$cluster==j)
+      cluster_accounts <- arrange(cluster_accounts, strength)
+
+      n <- ifelse(nrow(cluster_accounts)/100*20>5, round(nrow(cluster_accounts)/100*20,0), 5)
+
+      cluster_accounts <- dplyr::slice_head(.data = cluster_accounts, n = n)
+      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription!="NA", cluster_accounts$account.pageDescription, ""))
+
+      text <- paste(trimws(cluster_accounts$comtxt), collapse = "\n")
+
+      res <- tryCatch(
+        {
+          openai::create_completion(
+            model = "text-davinci-003",
+            prompt = paste0("What do these Meta accounts have in common? Provide a short label\n\n", text, "\n\n", "label:\n"),
+            stop = "\n",
+            temperature = 0,
+            top_p = 1,
+            max_tokens = 24,
+            echo = FALSE)
+        },
+        error=function(cond) {
+          return(NULL)
+        })
+
+      if (!is.null(res)) {
+
+        summary_entities$label[j] <- res$choices$text
+
+      } else {
+        # try one more time
+
+        res <- tryCatch(
           {
-            if (query$status_code == 200) {
-              json <- httr::content(query, as = "text", encoding = "UTF-8")
-              c <- jsonlite::fromJSON(json, flatten = TRUE)
-              if (length(c$score) > 0) {
-                domain_score$newsguard_score[i] <- c$score
-              }
-            }
-            else {
-              print(paste(query$status_code, i))
-              write(paste("Unexpected http response code by the News Guard API", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
-            }
+            openai::create_completion(
+              model = "text-davinci-003",
+              prompt = paste0("What do these Meta accounts have in common? Provide a short label\n\n", text, "\n\n", "label:\n"),
+              stop = "\n",
+              temperature = 0,
+              top_p = 1,
+              max_tokens = 24,
+              echo = FALSE)
           },
           error=function(cond) {
-            print(paste("Error:", message(cond), "on URL:", i))
-            write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
-          },
-          finally={
-            Sys.sleep(0.01)
+            return(NA)
           })
+
+        if (!is.null(res)) {
+          summary_entities$label[j] <- res$choices$text
+        } else {
+          summary_entities$label[j] <- "API failed!"
+        }
       }
-
-      cat("\nAlmost done...\n")
-
-      # add the newsguardtech.com score to the domains
-      ct_shares_marked.df <- merge(x=ct_shares_marked.df,
-                                   y=domain_score,
-                                   by="parent_domain")
-
-      summary_domains <- ct_shares_marked.df %>%
-        dplyr::group_by(cluster) %>%
-        summarise(unique.full_domain = length(unique(full_domain)),
-                  unique.parent_domain = length(unique(parent_domain)),
-                  newsguard.parent_domain.score = mean(newsguard_score, na.rm = T),
-                  newsguard.parent_domain.rated = length(unique(parent_domain[!is.na(newsguard_score)]))) %>%
-        mutate(newsguard.parent_domain.prop = newsguard.parent_domain.rated/unique.parent_domain)
+      utils::setTxtProgressBar(pb, pb$getVal()+1)
+      Sys.sleep(0.5)
     }
+  }
+
+  # query the the newsguardtech.com API
+  if (!(Sys.getenv('NG_KEY')=="" & Sys.getenv('NG_SECRET')=="")){
+
+    cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
+
+    domain_score <- data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA)
+    total <- nrow(domain_score) # progress bar
+
+    pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
+    ng_bearer <- get_ng_bearer()
+
+    for (i in 1:nrow(domain_score)) {
+
+      utils::setTxtProgressBar(pb, pb$getVal()+1)
+      parent_domain <- domain_score$parent_domain[i]
+      query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
+                         httr::add_headers(Authorization = paste0("Bearer ",ng_bearer)))
+      tryCatch(
+        {
+          if (query$status_code == 200) {
+            json <- httr::content(query, as = "text", encoding = "UTF-8")
+            c <- jsonlite::fromJSON(json, flatten = TRUE)
+            if (length(c$score) > 0) {
+              domain_score$newsguard_score[i] <- c$score
+            }
+          }
+          else {
+            print(paste(query$status_code, i))
+            write(paste("Unexpected http response code by the News Guard API", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
+          }
+        },
+        error=function(cond) {
+          print(paste("Error:", message(cond), "on URL:", i))
+          write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
+        },
+        finally={
+          Sys.sleep(0.01)
+        })
+    }
+
+    cat("\nAlmost done...\n")
+
+    # add the newsguardtech.com score to the domains
+    ct_shares_marked.df <- merge(x=ct_shares_marked.df,
+                                 y=domain_score,
+                                 by="parent_domain")
+
+    summary_domains <- ct_shares_marked.df %>%
+      dplyr::group_by(cluster) %>%
+      summarise(unique.full_domain = length(unique(full_domain)),
+                unique.parent_domain = length(unique(parent_domain)),
+                newsguard.parent_domain.score = mean(newsguard_score, na.rm = T),
+                newsguard.parent_domain.rated = length(unique(parent_domain[!is.na(newsguard_score)]))) %>%
+      mutate(newsguard.parent_domain.prop = newsguard.parent_domain.rated/unique.parent_domain)
+  }
   else{
     summary_domains <- ct_shares_marked.df %>%
       dplyr::group_by(cluster) %>%
@@ -132,13 +203,13 @@ get_cluster_summary <- function(output){
   summary <- summary %>%
     dplyr::rowwise() %>%
     dplyr::mutate(gini.full_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "full_domain"]))),
-           gini.parent_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "parent_domain"])))) %>%
+                  gini.parent_domain = DescTools::Gini(prop.table(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "parent_domain"])))) %>%
     dplyr::mutate(gini.full_domain = ifelse(is.nan(gini.full_domain), 1, gini.full_domain),
-           gini.parent_domain = ifelse(is.nan(gini.parent_domain), 1, gini.parent_domain)) %>%
+                  gini.parent_domain = ifelse(is.nan(gini.parent_domain), 1, gini.parent_domain)) %>%
     dplyr::mutate(top.full_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "full_domain"])), desc(Freq)),
-                                         n=5, wt="Freq")$Var1, collapse = ", "),
-           top.parent_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "parent_domain"])), desc(Freq)),
-                                           n=5, wt="Freq")$Var1, collapse = ", "))
+                                                n=5, wt="Freq")$Var1, collapse = ", "),
+                  top.parent_domain = paste(top_n(arrange(data.frame(table(ct_shares_marked.df[ct_shares_marked.df$cluster==cluster, "parent_domain"])), desc(Freq)),
+                                                  n=5, wt="Freq")$Var1, collapse = ", "))
 
   cat("Cluster summary done!\n")
 
