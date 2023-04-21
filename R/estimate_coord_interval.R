@@ -95,7 +95,7 @@ estimate_coord_interval <- function(ct_shares.df, q=0.1, p=0.5, clean_urls=FALSE
     unique()
 
   summary_secs <- summary(as.numeric(ranked_shares_sub$sec_from_first_share))
-  coordination_interval <- paste0(quantile(ranked_shares_sub$sec_from_first_share, p), " secs")
+  coordination_interval <- paste0(quantile(ranked_shares_sub$sec_from_first_share, 0.5), " secs")
 
   # get results in case of median equal 0 secs
   if(coordination_interval == "0 secs") {
