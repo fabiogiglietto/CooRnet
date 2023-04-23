@@ -21,7 +21,7 @@ ui <- fluidPage(
       textInput("percentileedgeweight"," "),
 
       # Input: Select a file ----
-      fileInput("file1", "Choose CSV File",
+      fileInput("file1", "Choose CSV File with your URLs",
                 multiple = TRUE,
                 accept = c("text/csv",
                          "text/comma-separated-values,text/plain",
@@ -56,7 +56,7 @@ server <- function(input, output) {
 
     validateInput <- function(inputText) {
     if (!stringr::str_detect(inputText, "^[0-9]+[.]?[0-9]*$")) {
-      return("Il valore che inserisci deve essere un valore numerico!")
+      return("The value must be a positive number!")
     }
   }
 
@@ -69,7 +69,7 @@ server <- function(input, output) {
     else{
       avviso_html <- ""
     }
-    updateTextInput(inputId = "coordinationinterval", label = paste0("Inserisci Coordination Interval", avviso_html))
+    updateTextInput(inputId = "coordinationinterval", label = paste0("Insert Coordination Interval", avviso_html))
   })
 
   observeEvent(input$percentileedgeweight, {
@@ -81,7 +81,7 @@ server <- function(input, output) {
     else{
       avviso_html <- ""
     }
-    updateTextInput(inputId = "percentileedgeweight", label = paste0("Inserisci Percentile Edge Weight", avviso_html))
+    updateTextInput(inputId = "percentileedgeweight", label = paste0("Insert Percentile Edge Weight", avviso_html))
   })
 
 
@@ -89,21 +89,21 @@ server <- function(input, output) {
 
 
     observeEvent(input$file1, {
-      withProgress(message = 'calcolo in corso...',value = 0,{
+      withProgress(message = 'calculating...',value = 0,{
         urls <- read.csv(input$file1$datapath)
-        incProgress(0.3,detail = paste0("Sto facendo le richieste API, attendere il tempo necessario"))
+        incProgress(0.3,detail = paste0("I'm making API requests, please wait as long as necessary"))
         ct_shares.urls <- get_ctshares(head(urls),
                                         sleep_time = 1,
                                         get_history = FALSE,
                                         clean_urls = TRUE)
-        incProgress(0.5,detail = paste0("Ho fatto le richieste api"))
+        incProgress(0.5,detail = paste0("I made API requests"))
         output_coornet <<- get_coord_shares(ct_shares.df = ct_shares.urls,
-                                    coordination_interval = paste(as.character(input$coordinationinterval),"secs") ,
+                                    coordination_interval = if(input$coordinationinterval == "") '60 secs' else paste(as.character(input$coordinationinterval),"secs"),
                                     parallel = FALSE,
-                                    percentile_edge_weight = as.double(input$percentileedgeweight),#a scelta dell'utente
+                                    percentile_edge_weight = if(input$percentileedgeweight == "") 0.995 else as.double(input$percentileedgeweight),
                                     keep_ourl_only = TRUE,
                                     clean_urls = TRUE)
-        incProgress(0.2,detail = paste0("Ho terminato"))
+        incProgress(0.2,detail = paste0("I finished"))
         enable("create_df")
         enable("downloadData")
       })
