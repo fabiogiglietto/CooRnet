@@ -51,7 +51,7 @@ ui <- fluidPage(
 
 # Define server logic to read selected file ----
 server <- function(input, output) {
-    options(shiny.maxRequestSize = 150 * 1024^2)
+    options(shiny.maxRequestSize = 15000 * 1024^2)
     finaldf <- reactiveValues(data = NULL)
 
     validateInput <- function(inputText) {
@@ -92,7 +92,7 @@ server <- function(input, output) {
       withProgress(message = 'calculating...',value = 0,{
         urls <- read.csv(input$file1$datapath)
         incProgress(0.3,detail = paste0("I'm making API requests, please wait as long as necessary"))
-        ct_shares.urls <- get_ctshares(head(urls),
+        ct_shares.urls <- get_ctshares(urls,
                                         sleep_time = 1,
                                         get_history = FALSE,
                                         clean_urls = TRUE)
