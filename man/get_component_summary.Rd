@@ -4,10 +4,12 @@
 \alias{get_component_summary}
 \title{get_component_summary}
 \usage{
-get_component_summary(output)
+get_component_summary(output, machine_readable = FALSE)
 }
 \arguments{
 \item{output}{the output list resulting from the function get_coord_shares}
+
+\item{machine_readable}{a boolean value used to create a summary where is easy to extract share frequencies and domains. This summary format doesn't provide CSV export format (use instead machine_readable=FALSE). Default value is FALSE.}
 }
 \value{
 A data frame containing summary data by each coordinated component:
