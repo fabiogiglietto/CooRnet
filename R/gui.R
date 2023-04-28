@@ -3,6 +3,7 @@
 #' @import igraph
 #' @import devtools
 #' @import readr
+#' @importFrom utils read.csv
 #' @export
 gui <- function(){
 
