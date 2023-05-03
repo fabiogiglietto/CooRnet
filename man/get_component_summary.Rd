@@ -4,18 +4,22 @@
 \alias{get_component_summary}
 \title{get_component_summary}
 \usage{
-get_component_summary(output)
+get_component_summary(output, labels = FALSE)
 }
 \arguments{
 \item{output}{the output list resulting from the function get_coord_shares}
+
+\item{labels}{auto-generate a cluster label using account's title and
+descriptions. Relies on Openai APIs. Expects the API Bearer in
+OPENAI_API_KEY environment variable.}
 }
 \value{
-A data frame containing summary data by each coordinated component:
-the average subscribers number of entities in a component,
-the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
-a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1). Higher values correspond to an higher concentration (less different domains linked),
-the top 5 coordinatedly shared domains (ranked by n. of shares),
-the total number coordinatedly shared of domains
+A data frame that summarizes data for each coordinated component. The data includes:
+- The average number of subscribers of entities in a component.
+- The proportion of coordinated shares over the total shares (coorshare_ratio).
+- The average coordinated score (avg_cooRscore), which measures the dispersion (gini) in the distribution of domains that are coordinatedly shared by the component (0-1). Higher values correspond to higher concentration (fewer different domains linked).
+- The top coordinatedly shared domains (ranked by the number of shares) and the total number of coordinatedly shared domains.
+If the NewsGuard API is provided, this function also returns an estimate of the trustworthiness of the domains used by the component. If the label parameter is set to TRUE and an OpenAI token is provided, the function also returns an automatically generated label for each component.
 }
 \description{
 A function to get summary data by coordinated component
@@ -31,7 +35,7 @@ The cooRshare_ratio.avg is an addional measure of component coordination ranging
 }
 \examples{
   # get the top ten posts containing URLs shared by each network component and by engagement
-  component_summary <- get_component_summary(output)
+  component_summary <- get_component_summary(output, label=TRUE)
 
   # clustering the components rowwise mutate
   clusters <- hclust(dist(component_summary[, 2:4]))

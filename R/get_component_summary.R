@@ -3,13 +3,16 @@
 #' A function to get summary data by coordinated component
 #'
 #' @param output the output list resulting from the function get_coord_shares
+#' @param labels auto-generate a cluster label using account's title and
+#' descriptions. Relies on Openai APIs. Expects the API Bearer in
+#' OPENAI_API_KEY environment variable.
 #'
-#' @return A data frame containing summary data by each coordinated component:
-#' the average subscribers number of entities in a component,
-#' the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
-#' a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the component (0-1). Higher values correspond to an higher concentration (less different domains linked),
-#' the top 5 coordinatedly shared domains (ranked by n. of shares),
-#' the total number coordinatedly shared of domains
+#' @return A data frame that summarizes data for each coordinated component. The data includes:
+#' - The average number of subscribers of entities in a component.
+#' - The proportion of coordinated shares over the total shares (coorshare_ratio).
+#' - The average coordinated score (avg_cooRscore), which measures the dispersion (gini) in the distribution of domains that are coordinatedly shared by the component (0-1). Higher values correspond to higher concentration (fewer different domains linked).
+#' - The top coordinatedly shared domains (ranked by the number of shares) and the total number of coordinatedly shared domains.
+#' If the NewsGuard API is provided, this function also returns an estimate of the trustworthiness of the domains used by the component. If the label parameter is set to TRUE and an OpenAI token is provided, the function also returns an automatically generated label for each component.
 #'
 #'
 #' @details The gini values are computed by using the Gini coefficient on the proportions of unique domains each component shared. The Gini coefficient is a measure of the degree of concentration (inequality) of a variable in a distribution.
@@ -22,7 +25,7 @@
 #'
 #' @examples
 #'   # get the top ten posts containing URLs shared by each network component and by engagement
-#'   component_summary <- get_component_summary(output)
+#'   component_summary <- get_component_summary(output, label=TRUE)
 #'
 #'   # clustering the components rowwise mutate
 #'   clusters <- hclust(dist(component_summary[, 2:4]))
@@ -31,10 +34,11 @@
 #' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
+#' @importFrom openai create_chat_completion
 #'
 #' @export
 
-get_component_summary <- function(output){
+get_component_summary <- function(output, labels=FALSE){
 
   ct_shares_marked.df <- output[[1]]
   highly_connected_coordinated_entities <- output[[3]]
@@ -63,6 +67,76 @@ get_component_summary <- function(output){
               facebook_page = length(account.accountType[account.accountType=="facebook_page"]),
               facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
               facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
+
+  if (labels & Sys.getenv("OPENAI_API_KEY")!="") {
+
+    summary_entities$label <- NA
+
+    cat("\nAuto-labelling clusters with OpenAI gpt-3.5-turbo (https://platform.openai.com/)...\n")
+
+    pb <- utils::txtProgressBar(min = 0, max = nrow(summary_entities), width = 100, style = 3)
+
+    for (j in 1:nrow(summary_entities)) {
+
+      cluster_accounts <- subset(highly_connected_coordinated_entities, highly_connected_coordinated_entities$cluster==j)
+      cluster_accounts <- arrange(cluster_accounts, strength)
+
+      n <- ifelse(nrow(cluster_accounts)/100*20>5, round(nrow(cluster_accounts)/100*20,0), 5)
+
+      cluster_accounts <- dplyr::slice_head(.data = cluster_accounts, n = n)
+      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription!="NA", cluster_accounts$account.pageDescription, ""))
+
+      text <- paste(trimws(cluster_accounts$comtxt), collapse = "\n")
+
+      msg <- list(list("role" = "system",
+                       "content" = "You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"),
+                  list("role" = "user",
+                       "content" = paste("I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:\n\n",
+                                         text,
+                                         "\n\n",
+                                         "English label:")))
+
+      res <- tryCatch(
+        {
+          openai::create_chat_completion(model = "gpt-3.5-turbo",
+                                         messages = msg,
+                                         temperature = 0,
+                                         top_p = 1,
+                                         max_tokens = 256)
+        },
+        error=function(cond) {
+          return(NULL)
+        })
+
+      if (!is.null(res)) {
+
+        summary_entities$label[j] <- res$choices$message.content
+
+      } else {
+        # try one more time
+
+        res <- tryCatch(
+          {
+            openai::create_chat_completion(model = "gpt-3.5-turbo",
+                                           messages = msg,
+                                           temperature = 0,
+                                           top_p = 1,
+                                           max_tokens = 256)
+          },
+          error=function(cond) {
+            return(NA)
+          })
+
+        if (!is.null(res)) {
+          summary_entities$label[j] <- res$choices$message.content
+        } else {
+          summary_entities$label[j] <- "API failed!"
+        }
+      }
+      utils::setTxtProgressBar(pb, pb$getVal()+1)
+      Sys.sleep(0.5)
+    }
+  }
 
     if (!(Sys.getenv('NG_KEY')=="" & Sys.getenv('NG_SECRET')=="")){
       # query the the newsguardtech.com API

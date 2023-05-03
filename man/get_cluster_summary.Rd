@@ -12,12 +12,12 @@ get_cluster_summary(output, labels = FALSE)
 \item{labels}{auto-generate a cluster label using account's title and descriptions. Relies on Openai APIs. Expects the API Bearer in OPENAI_API_KEY environment variable.}
 }
 \value{
-A data frame containing summary data by each coordinated cluster:
-the average subscribers number of entities in a cluster,
-the proportion of coordinated shares over the total shares (coorshare_ratio), the average coordinated score (avg_cooRscore),
-a measure of dispersion (gini) in the distribution of domains coordinatedly shared by the cluster (0-1). Higher values correspond to an higher concentration (less different domains linked),
-the top 5 coordinatedly shared domains (ranked by n. of shares),
-the total number coordinatedly shared of domains
+A data frame that summarizes data for each coordinated cluster. The data includes:
+- The average number of subscribers of entities in a cluster.
+- The proportion of coordinated shares over the total shares (coorshare_ratio).
+- The average coordinated score (avg_cooRscore), which measures the dispersion (gini) in the distribution of domains that are coordinatedly shared by the cluster (0-1). Higher values correspond to higher concentration (fewer different domains linked).
+- The top coordinatedly shared domains (ranked by the number of shares) and the total number of coordinatedly shared domains.
+If the NewsGuard API is provided, this function also returns an estimate of the trustworthiness of the domains used by the cluster. If the label parameter is set to TRUE and an OpenAI token is provided, the function also returns an automatically generated label for each cluster.
 }
 \description{
 A function to get summary data by coordinated cluster
@@ -33,7 +33,7 @@ The cooRshare_ratio.avg is an addional measure of cluster coordination ranging f
 }
 \examples{
   # get the top ten posts containing URLs shared by each network cluster and by engagement
-  cluster_summary <- get_cluster_summary(output)
+  cluster_summary <- get_cluster_summary(output, label=TRUE)
 
   # clustering the clusters rowwise mutate
   clusters <- hclust(dist(cluster_summary[, 2:4]))
