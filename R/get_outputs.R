@@ -45,10 +45,10 @@ get_outputs <- function(coord_shares_output,
             highly_connected_coordinated_entities <<- coord_shares_output[[3]]
         if (component_summary)
             # creates component_summary to the main environment
-            component_summary <<- CooRnet::get_component_summary(output = coord_shares_output)
+            component_summary <<- CooRnet::get_component_summary(output = coord_shares_output, labels = TRUE)
         if (cluster_summary)
             # creates cluster_summary to the main environment
-            cluster_summary <<- CooRnet::get_cluster_summary(output = coord_shares_output)
+            cluster_summary <<- CooRnet::get_cluster_summary(output = coord_shares_output, labels = TRUE)
         if (top_coord_urls)
             # creates top_coord_url to the main environment
             top_coord_urls <<- CooRnet::get_top_coord_urls(output = coord_shares_output)
