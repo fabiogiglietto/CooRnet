@@ -71,13 +71,13 @@ You can also set up your credentials to access the [OpenAI API](https://openai.c
 
 The labels are obtained using the following system and user directive
 
-`"You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"`
-
-`"I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:"`
-
-`[ADD ACCOUNTS TITLE/DESCRIPTION HERE]`
-
-`"English label:"`
+> "You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\\n\\n"
+>
+> "I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:"
+>
+> [ADD ACCOUNTS TITLE/DESCRIPTION HERE]
+>
+> "English label:"
 
 To add the API key to your R environment file, follow these steps:
 

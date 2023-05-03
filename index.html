@@ -372,10 +372,18 @@ href="https://platform.openai.com/docs/models/gpt-3-5">GPT-3.5-Turbo
 OpenAI model</a>.</p>
 <p>The labels are obtained using the following system and user
 directive</p>
-<p><code>"You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"</code></p>
-<p><code>"I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:"</code></p>
-<p><code>[ADD ACCOUNTS TITLE/DESCRIPTION HERE]</code></p>
-<p><code>"English label:"</code></p>
+<blockquote>
+<p>“You are a researcher investigating coordinated and inauthentic
+behavior on Facebook and Instagram. Your objective is to generate
+concise, descriptive labels in English that capture the shared
+characteristics of clusters of Facebook or Instagram accounts.\n\n”</p>
+<p>“I will supply a list of accounts for each cluster. For each account,
+you will receive a text that combines the account title and, if
+available, the account description. Identify the shared features among
+these accounts:”</p>
+<p>[ADD ACCOUNTS TITLE/DESCRIPTION HERE]</p>
+<p>“English label:”</p>
+</blockquote>
 <p>To add the API key to your R environment file, follow these
 steps:</p>
 <p>Open your .Renviron file.</p>
