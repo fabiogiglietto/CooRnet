@@ -15,7 +15,7 @@
 <title>CooRnet: an r package to detect coordinated link sharing
 behaviour</title>
 
-<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
@@ -34,8 +34,8 @@ behaviour</title>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -308,10 +308,12 @@ $(document).ready(function () {
 </script>
 </head>
 <div style="margin-top:15px;">
+
 <p><img
 src="https://docs.google.com/drawings/d/e/2PACX-1vQ8V_WGl9RZ7rYzWA6sfXhbODgsZv4UwJGgS3sgoE3b_wXLh-3zJYRWtHwLyXveLZkmSW7C1iZAqC6w/pub?w=414&amp;h=113" /></p>
-<p><em><a href="https://twitter.com/fabiogiglietto">Fabio Giglietto</a>,
-<a href="https://github.com/nicolarighetti">Nicola Righetti</a>, <a
+<p><a href="https://twitter.com/fabiogiglietto"><em>Fabio
+Giglietto</em></a><em>, <a
+href="https://github.com/nicolarighetti">Nicola Righetti</a>, <a
 href="https://github.com/lrossi79">Luca Rossi</a></em></p>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
@@ -323,20 +325,20 @@ behavior.</p>
 class="section level2">
 <h2>What do we mean by coordinated link sharing behavior?</h2>
 <p>CLSB refers to a specific coordinated activity performed by a network
-of Facebook pages, groups and verified public profiles (Facebook public
-entities) that repeatedly shared the same news articles in a very short
-time from each other.</p>
-<p>To identify such networks, we designed, implemented and tested an
-algorithm that detects sets of Facebook public entities which performed
-CLSB by (1) estimating a time threshold that identifies URLs shares
+of Facebook pages, groups, and verified public profiles (Facebook public
+entities) that repeatedly share the same news articles in a very short
+time frame.</p>
+<p>To identify such networks, we designed, implemented, and tested an
+algorithm that detects sets of Facebook public entities that perform
+CLSB by (1) estimating a time threshold that identifies URL shares
 performed by multiple distinguished entities within an unusually short
-period of time (as compared to the entire dataset), and (2) grouping the
-entities that repeatedly shared the same news story within this
-coordination interval. The rationale is that, while it may be common
-that several entities share the same URLs, it is unlikely, unless a
+period of time compared to the entire dataset, and (2) grouping the
+entities that repeatedly share the same news story within this
+coordination interval. The rationale is that while it may be common for
+several entities to share the same URLs, it is unlikely, unless a
 consistent coordination exists, that this occurs within the time
 threshold and repeatedly.</p>
-<p>See also <A HREF="#References">references</A> for a more detailed
+<p>See also <a href="#references">references</a> for a more detailed
 description and real-world applications.</p>
 </div>
 <div id="installation" class="section level2">
@@ -350,45 +352,52 @@ devtools::install_github(&quot;fabiogiglietto/CooRnet&quot;)</code></pre>
 <div id="api-keys" class="section level2">
 <h2>API keys</h2>
 <div id="crowdtangle-required" class="section level3">
-<h3>CrowdTangle (required)</h3>
-<p>This package requires a
-<A HREF="https://github.com/CrowdTangle/API">CrowdTangle API</A> key
-entry in your R environment file. The R environment file is loaded every
-time R is started/restarted.</p>
-<p>The following steps show how to add the key to your R environment
-file.</p>
-<ol style="list-style-type: decimal">
-<li>Open your .Renviron file. The file is usually located in your home
-directory. If the file does not exist, just create one and name it
-.Renviron.</li>
-<li>Add a new line and enter your API key in the following format:
-CROWDTANGLE_API_KEY=“YOUR_API_KEY”.</li>
-<li>Save the file and restart your current R session to start using
-CooRnet.</li>
-</ol>
+<h3><strong>CrowdTangle (required)</strong></h3>
+<p>To use this package, you need to have a <a
+href="https://www.crowdtangle.com/">CrowdTangle</a> API key. To add the
+key to your R environment file, follow these steps:</p>
+<p>Open your .Renviron file, which is usually located in your home
+directory. If the file does not exist, create one and name it
+.Renviron.</p>
+<p>Add a new line and enter your API key in the following format:
+<code>CROWDTANGLE_API_KEY="YOUR_API_KEY"</code></p>
+<p>Save the file and restart your R session to start using CooRnet.</p>
+</div>
+<div id="openai-optional" class="section level3">
+<h3><strong>OpenAI (optional)</strong></h3>
+<p>You can also set up your credentials to access the <a
+href="https://openai.com/blog/openai-api">OpenAI API</a>, which returns
+a descriptive label for each cluster/component auto-generated by the <a
+href="https://platform.openai.com/docs/models/gpt-3-5">GPT-3.5-Turbo
+OpenAI model</a>.</p>
+<p>The labels are obtained using the following system and user
+directive</p>
+<p><code>"You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"</code></p>
+<p><code>"I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:"</code></p>
+<p><code>[ADD ACCOUNTS TITLE/DESCRIPTION HERE]</code></p>
+<p><code>"English label:"</code></p>
+<p>To add the API key to your R environment file, follow these
+steps:</p>
+<p>Open your .Renviron file.</p>
+<p>Add two new lines and enter your API key in the following format:
+<code>OPENAI_API_KEY = "YOUR_API_TOKEN"</code></p>
+<p>Save the file and restart your R session to start using CooRnet.</p>
 </div>
 <div id="newsguard-optional" class="section level3">
-<h3>NewsGuard (optional)</h3>
-<p>Optionally, you can also set your credential to access NewsGuard API.
-The integration returns the average
-<A HREF="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard
-rating score</A> obtained by the domains shared by a coordinated
-network.</p>
-<p>This process requires an active subscription to
-<A HREF="https://www.newsguardtech.com">NewsGuard API</A> and key
-entries in your R environment file. The R environment file is loaded
-every time R is started/restarted.</p>
-<p>The following steps show how to add the key to your R environment
-file.</p>
-<ol style="list-style-type: decimal">
-<li><p>Open your .Renviron file. The file is usually located in your
-home directory. If the file does not exist, just create one and name it
-.Renviron.</p></li>
-<li><p>Add two new line and enter your API key in the following format:
-NG_KEY=“YOUR_API_KEY” NG_SECRET=“YOUR_API_SECRET”</p></li>
-<li><p>Save the file and restart your current R session to start using
-CooRnet.</p></li>
-</ol>
+<h3><strong>NewsGuard (optional)</strong></h3>
+<p>If you have an active subscription to the <a
+href="https://www.newsguardtech.com/it/">NewsGuard API</a>, you can also
+set up your credentials to access it. This integration returns the
+average <a
+href="https://www.newsguardtech.com/ratings/rating-process-criteria/">NewsGuard
+rating score</a> obtained by the domains shared by a coordinated
+network. To add the API key to your R environment file, follow these
+steps:</p>
+<p>Open your .Renviron file.</p>
+<p>Add two new lines and enter your API key in the following format:</p>
+<p><code>NG_KEY = "YOUR_API_KEY"</code></p>
+<p><code>NG_SECRET = "YOUR_API_SECRET"</code></p>
+<p>Save the file and restart your R session to start using CooRnet.</p>
 </div>
 </div>
 <div id="usage" class="section level2">
@@ -434,8 +443,7 @@ get_outputs(output)
 write.csv(highly_connected_coordinated_entities, file = &quot;highly_connected_coordinated_entities.csv&quot;)
 
 # save highly_connected_g in .GRAPHML format for further analysis with Gephi or similar softwares
-igraph::write.graph(highly_connected_g, file = &quot;highly_connected_g.graphml&quot;, format = &quot;graphml&quot;)
-</code></pre>
+igraph::write.graph(highly_connected_g, file = &quot;highly_connected_g.graphml&quot;, format = &quot;graphml&quot;)</code></pre>
 <p>For a more step-by-step approach, you may want to take a look to our
 <A HREF="https://fabiogiglietto.github.io/CooRnet/TUTORIAL.html">MediaCloud+CooRnet
 tutorial</A>.</p>
@@ -461,8 +469,7 @@ coordinatedly shared by the component (0-1)</li>
 <pre class="r"><code>comp_summary &lt;- get_component_summary(output)
 
 # save comp_summary in .CSV format for further analysis
-write.csv(comp_summary, file = &quot;comp_summary.csv&quot;)
-</code></pre>
+write.csv(comp_summary, file = &quot;comp_summary.csv&quot;)</code></pre>
 </div>
 <div id="top-urls" class="section level3">
 <h3>Top URLs</h3>
@@ -482,8 +489,7 @@ top_urls_all &lt;- get_top_coord_urls(output, order_by = &quot;engagement&quot;,
 write.csv(top_urls_per_components, file = &quot;top_urls_per_components.csv&quot;)
 
 # save top_urls_all in .CSV format for further analysis
-write.csv(top_urls_all, file = &quot;top_urls_all.csv&quot;)
-</code></pre>
+write.csv(top_urls_all, file = &quot;top_urls_all.csv&quot;)</code></pre>
 </div>
 <div id="top-shares" class="section level3">
 <h3>Top Shares</h3>
@@ -504,8 +510,7 @@ top_shares_all &lt;- get_top_coord_shares(output, order_by = &quot;engagement&qu
 write.csv(top_shares_per_components, file = &quot;top_shares_per_components.csv&quot;)
 
 # save top_shares_all in .CSV format for further analysis
-write.csv(top_shares_all, file = &quot;top_shares_all.csv&quot;)
-</code></pre>
+write.csv(top_shares_all, file = &quot;top_shares_all.csv&quot;)</code></pre>
 </div>
 </div>
 <div id="acknowledgements" class="section level2">
