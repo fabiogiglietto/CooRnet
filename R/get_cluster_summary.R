@@ -67,9 +67,9 @@ get_cluster_summary <- function(output, labels=FALSE){
                      facebook_group = length(account.accountType[account.accountType=="facebook_group"]),
                      facebook_profile = length(account.accountType[account.accountType=="facebook_profile"]))
 
-  if (labels & Sys.getenv("OPENAI_API_KEY")!="") {
+  if (labels & Sys.getenv("OPENAI_API_KEY") != "") {
 
-    summary_entities$label <- NA
+    temp_df <- data.frame(cluster_id = integer(), label = character())
 
     cat("\nAuto-labelling clusters with OpenAI gpt-3.5-turbo (https://platform.openai.com/)...\n")
 
@@ -77,13 +77,15 @@ get_cluster_summary <- function(output, labels=FALSE){
 
     for (j in 1:nrow(summary_entities)) {
 
-      cluster_accounts <- subset(highly_connected_coordinated_entities, highly_connected_coordinated_entities$cluster==j)
+      cluster_accounts <- subset(highly_connected_coordinated_entities,
+                                 highly_connected_coordinated_entities$cluster == j)
       cluster_accounts <- arrange(cluster_accounts, strength)
 
-      n <- ifelse(nrow(cluster_accounts)/100*20>5, round(nrow(cluster_accounts)/100*20,0), 5)
+      n <- ifelse(nrow(cluster_accounts) / 100 * 20 > 5,
+                  round(nrow(cluster_accounts) / 100 * 20, 0), 5)
 
       cluster_accounts <- dplyr::slice_head(.data = cluster_accounts, n = n)
-      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription!="NA", cluster_accounts$account.pageDescription, ""))
+      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription != "NA", cluster_accounts$account.pageDescription, ""))
 
       text <- paste(trimws(cluster_accounts$comtxt), collapse = "\n")
 
@@ -103,17 +105,15 @@ get_cluster_summary <- function(output, labels=FALSE){
                                          top_p = 1,
                                          max_tokens = 256)
         },
-        error=function(cond) {
+        error = function(cond) {
           return(NULL)
         })
 
       if (!is.null(res)) {
-
-        summary_entities$label[j] <- res$choices$message.content
-
+        temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = res$choices$message.content))
+        # print(paste(j, "-", res$choices$message.content))
       } else {
         # try one more time
-
         res <- tryCatch(
           {
             openai::create_chat_completion(model = "gpt-3.5-turbo",
@@ -122,19 +122,22 @@ get_cluster_summary <- function(output, labels=FALSE){
                                            top_p = 1,
                                            max_tokens = 256)
           },
-          error=function(cond) {
+          error = function(cond) {
             return(NA)
           })
 
         if (!is.null(res)) {
-          summary_entities$label[j] <- res$choices$message.content
+          temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = res$choices$message.content))
         } else {
-          summary_entities$label[j] <- "API failed!"
+          temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = "API failed!"))
         }
       }
-      utils::setTxtProgressBar(pb, pb$getVal()+1)
+      utils::setTxtProgressBar(pb, pb$getVal() + 1)
+      text <- NULL
       Sys.sleep(0.5)
     }
+
+    summary_entities <- merge(summary_entities, temp_df, by.x = "cluster", by.y = "cluster_id")
   }
 
   # query the the newsguardtech.com API
