@@ -159,3 +159,65 @@ get_ng_bearer <- function() {
 
   return(bearer_token)
 }
+
+check_reticulate <- function() {
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    stop("The 'reticulate' package is required but not available. Please install it using 'install.packages(\"reticulate\")'")
+  }
+
+  if (is.null(reticulate::py_config())) {
+    stop("Python is not properly configured. Please ensure the virtual environment is set up correctly.")
+  }
+}
+
+# Helper function to calculate the number of tokens in a string
+num_tokens_from_string <- function(string, encoding_name, model) {
+
+  check_reticulate()
+  tt <- reticulate::import("tiktoken")
+
+  encoding <- tt$get_encoding(encoding_name)
+  encoding <- tt$encoding_for_model(model)
+  num_tokens <- length(encoding$encode(string))
+  return(num_tokens)
+}
+
+get_newsguard_domain_scores <- function(domain_score) {
+
+  cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
+
+  total <- nrow(domain_score) # progress bar
+
+  pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
+  ng_bearer <- get_ng_bearer()
+
+  for (i in 1:nrow(domain_score)) {
+    utils::setTxtProgressBar(pb, pb$getVal() + 1)
+    parent_domain <- domain_score$parent_domain[i]
+    query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
+                       httr::add_headers(Authorization = paste0("Bearer ", ng_bearer)))
+    tryCatch(
+      {
+        if (query$status_code == 200) {
+          json <- httr::content(query, as = "text", encoding = "UTF-8")
+          c <- jsonlite::fromJSON(json, flatten = TRUE)
+          if (length(c$score) > 0) {
+            domain_score$newsguard_score[i] <- c$score
+          }
+        }
+        else {
+          print(paste(query$status_code, i))
+          write(paste("Unexpected http response code by the News Guard API", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
+        }
+      },
+      error = function(cond) {
+        print(paste("Error:", message(cond), "on URL:", i))
+        write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
+      },
+      finally = {
+        Sys.sleep(0.01)
+      })
+  }
+
+  return(domain_score)
+}

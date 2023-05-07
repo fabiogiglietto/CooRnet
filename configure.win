@@ -1,0 +1,7 @@
+# Get the location of the R script
+R_SCRIPT <- "Rscript"
+
+# Run the R script to create the virtual environment and install Python
+system(paste(R_SCRIPT, '-e "reticulate::virtualenv_create(\"coornet_env\", python = \"auto\")"'))
+system(paste(R_SCRIPT, '-e "reticulate::virtualenv_install(\"coornet_env\", c(\"tiktoken==0.3.3\"))"'))
+

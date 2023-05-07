@@ -1,39 +1,38 @@
 #' get_cluster_summary
 #'
-#' A function to get summary data by coordinated cluster
+#' A function to obtain a summary of data by coordinated cluster.
 #'
-#' @param output the output list resulting from the function get_coord_shares
-#' @param labels auto-generate a cluster label using account's title and descriptions. Relies on Openai APIs. Expects the API Bearer in OPENAI_API_KEY environment variable.
+#' @param output A list output resulting from the function get_coord_shares.
+#' @param labels Automatically generate a cluster label using account titles and descriptions. This relies on OpenAI APIs and expects the API Bearer in the OPENAI_API_KEY environment variable.
 #'
-#'
-#' @return A data frame that summarizes data for each coordinated cluster. The data includes:
-#' - The average number of subscribers of entities in a cluster.
+#' @return A data frame that summarizes data for each coordinated cluster, including:
+#' - The average number of subscribers of entities within a cluster.
 #' - The proportion of coordinated shares over the total shares (coorshare_ratio).
 #' - The average coordinated score (avg_cooRscore), which measures the dispersion (gini) in the distribution of domains that are coordinatedly shared by the cluster (0-1). Higher values correspond to higher concentration (fewer different domains linked).
 #' - The top coordinatedly shared domains (ranked by the number of shares) and the total number of coordinatedly shared domains.
 #' If the NewsGuard API is provided, this function also returns an estimate of the trustworthiness of the domains used by the cluster. If the label parameter is set to TRUE and an OpenAI token is provided, the function also returns an automatically generated label for each cluster.
 #'
+#' @details The Gini values are computed using the Gini coefficient on the proportions of unique domains each cluster shared. The Gini coefficient is a measure of the degree of concentration (inequality) of a variable in a distribution.
+#' It ranges between 0 and 1: the more equal the distribution, the lower its Gini index. When a cluster shared just one domain, the value of the variable is set to 1. It is calculated separately for full_domains (e.g. www.foxnews.com, video.foxnews.com) and parent domains (foxnews.com).
 #'
-#' @details The gini values are computed by using the Gini coefficient on the proportions of unique domains each cluster shared. The Gini coefficient is a measure of the degree of concentration (inequality) of a variable in a distribution.
-#' It ranges between 0 and 1: the more nearly equal the distribution, the lower its Gini index. When a cluster shared just one domain, the value of the variable is set to 1. It is calculated separately for full_domains (e.g. www.foxnews.com, video.foxnews.com) and parent domains (foxnews.com)
-#'
-#' The cooRscore.avg is a measures of cluster coordination. Higher values implies higher coordination.
+#' The avg_cooRscore is a measure of cluster coordination. Higher values imply higher coordination.
 #' Its value is calculated by dividing, for each entity in a coordinated network, its \code{\link[igraph]{strength}} by its \code{\link[igraph]{degree}}, and then calculating the average by cluster of these values.
 #'
-#' The cooRshare_ratio.avg is an addional measure of cluster coordination ranging from 0 (no shares coordinated) to 1 (all shares coordinated).
+#' The coorshare_ratio.avg is an additional measure of cluster coordination ranging from 0 (no shares coordinated) to 1 (all shares coordinated).
 #'
 #' @examples
-#'   # get the top ten posts containing URLs shared by each network cluster and by engagement
-#'   cluster_summary <- get_cluster_summary(output, label=TRUE)
+#' # Build the cluster summary
+#' cluster_summary <- get_cluster_summary(output, label=TRUE)
 #'
-#'   # clustering the clusters rowwise mutate
-#'   clusters <- hclust(dist(cluster_summary[, 2:4]))
-#'   plot(clusters)
+#' # Cluster the clusters rowwise mutate
+#' clusters <- hclust(dist(cluster_summary[, 2:4]))
+#' plot(clusters)
 #'
-#' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise n
+#' @importFrom dplyr %>% group_by summarise mutate top_n arrange rowwise n slice_head select
 #' @importFrom urltools suffix_extract domain
 #' @importFrom DescTools Gini
 #' @importFrom openai create_chat_completion
+#' @import reticulate
 #'
 #' @export
 
@@ -69,9 +68,14 @@ get_cluster_summary <- function(output, labels=FALSE){
 
   if (labels & Sys.getenv("OPENAI_API_KEY")!="") {
 
+    # Create a list to store the indices of each link in the cluster
+    cluster_indices <- lapply(1:nrow(summary_entities), function(x) list())
+
+    temp_df <- data.frame(cluster_id = integer(), label = character())
+
     summary_entities$label <- NA
 
-    cat("\nAuto-labelling clusters with OpenAI gpt-3.5-turbo (https://platform.openai.com/)...\n")
+    cat("\nAuto-labeling clusters with OpenAI gpt-3.5-turbo (https://platform.openai.com/)...\n")
 
     pb <- utils::txtProgressBar(min = 0, max = nrow(summary_entities), width = 100, style = 3)
 
@@ -79,13 +83,35 @@ get_cluster_summary <- function(output, labels=FALSE){
 
       cluster_accounts <- subset(highly_connected_coordinated_entities, highly_connected_coordinated_entities$cluster==j)
       cluster_accounts <- arrange(cluster_accounts, strength)
+      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription!="NA", paste0(" - ", cluster_accounts$account.pageDescription), ""))
+      cluster_text <- select(cluster_accounts, c("comtxt"))
 
-      n <- ifelse(nrow(cluster_accounts)/100*20>5, round(nrow(cluster_accounts)/100*20,0), 5)
+      n <- nrow(cluster_accounts)
 
-      cluster_accounts <- dplyr::slice_head(.data = cluster_accounts, n = n)
-      cluster_accounts$comtxt <- paste(cluster_accounts$account.name, ifelse(cluster_accounts$account.pageDescription!="NA", cluster_accounts$account.pageDescription, ""))
+      # Store the indices of the cluster links
+      cluster_indices[[j]] <- 1:nrow(cluster_text)
 
-      text <- paste(trimws(cluster_accounts$comtxt), collapse = "\n")
+      while (TRUE) {
+        # maximize account samples
+
+        cluster_sample_indices <- cluster_indices[[j]][1:n]
+        cluster_sample <- cluster_text[cluster_sample_indices, , drop = FALSE]
+        cluster_accounts <- dplyr::slice_head(.data = cluster_accounts, n = n)
+        text <- paste(trimws(cluster_accounts$comtxt), collapse = "\n")
+
+        # Calculate the total tokens in the message, including the completion tokens
+        total_tokens <- num_tokens_from_string(text, "cl100k_base", "gpt-3.5-turbo") + 256
+
+        if (total_tokens <= 3900) {
+          # Update the cluster_indices list to remove the processed indices
+          cluster_indices[[j]] <- setdiff(cluster_indices[[j]], cluster_sample_indices)
+          break
+        }
+
+        if (total_tokens > 3900*2) {
+          n <- n - 10
+        } else { n <- n -1}
+      }
 
       msg <- list(list("role" = "system",
                        "content" = "You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"),
@@ -103,17 +129,14 @@ get_cluster_summary <- function(output, labels=FALSE){
                                          top_p = 1,
                                          max_tokens = 256)
         },
-        error=function(cond) {
+        error = function(cond) {
           return(NULL)
         })
 
       if (!is.null(res)) {
-
-        summary_entities$label[j] <- res$choices$message.content
-
+        temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = res$choices$message.content))
       } else {
         # try one more time
-
         res <- tryCatch(
           {
             openai::create_chat_completion(model = "gpt-3.5-turbo",
@@ -122,60 +145,28 @@ get_cluster_summary <- function(output, labels=FALSE){
                                            top_p = 1,
                                            max_tokens = 256)
           },
-          error=function(cond) {
+          error = function(cond) {
             return(NA)
           })
 
         if (!is.null(res)) {
-          summary_entities$label[j] <- res$choices$message.content
+          temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = res$choices$message.content))
         } else {
-          summary_entities$label[j] <- "API failed!"
+          temp_df <- rbind(temp_df, data.frame(cluster_id = j, label = "API failed!"))
         }
       }
-      utils::setTxtProgressBar(pb, pb$getVal()+1)
+      utils::setTxtProgressBar(pb, pb$getVal() + 1)
+      text <- NULL
       Sys.sleep(0.5)
     }
+
+    summary_entities <- merge(summary_entities, temp_df, by.x = "cluster", by.y = "cluster_id")
   }
 
   # query the the newsguardtech.com API
   if (!(Sys.getenv('NG_KEY')=="" & Sys.getenv('NG_SECRET')=="")){
 
-    cat("\nGetting domains rating from NewsGuard (https://www.newsguardtech.com)...\n")
-
-    domain_score <- data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA)
-    total <- nrow(domain_score) # progress bar
-
-    pb <- utils::txtProgressBar(min = 0, max = total, width = 100, style = 3)
-    ng_bearer <- get_ng_bearer()
-
-    for (i in 1:nrow(domain_score)) {
-
-      utils::setTxtProgressBar(pb, pb$getVal()+1)
-      parent_domain <- domain_score$parent_domain[i]
-      query <- httr::GET(paste0("https://api.newsguardtech.com/v3/check/", parent_domain),
-                         httr::add_headers(Authorization = paste0("Bearer ",ng_bearer)))
-      tryCatch(
-        {
-          if (query$status_code == 200) {
-            json <- httr::content(query, as = "text", encoding = "UTF-8")
-            c <- jsonlite::fromJSON(json, flatten = TRUE)
-            if (length(c$score) > 0) {
-              domain_score$newsguard_score[i] <- c$score
-            }
-          }
-          else {
-            print(paste(query$status_code, i))
-            write(paste("Unexpected http response code by the News Guard API", query$status_code, "on domain", parent_domain), file = "log.txt", append = TRUE)
-          }
-        },
-        error=function(cond) {
-          print(paste("Error:", message(cond), "on URL:", i))
-          write(paste("Error:", message(cond), "on URL:", i), file = "log.txt", append = TRUE)
-        },
-        finally={
-          Sys.sleep(0.01)
-        })
-    }
+    domain_score <- get_newsguard_domain_scores(data.frame(parent_domain = unique(ct_shares_marked.df$parent_domain), newsguard_score = NA))
 
     cat("\nAlmost done...\n")
 
