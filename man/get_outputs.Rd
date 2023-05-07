@@ -6,7 +6,7 @@
 \usage{
 get_outputs(
   coord_shares_output,
-  ct_shares_marked.df = TRUE,
+  ct_shares_marked.df = FALSE,
   highly_connected_g = TRUE,
   highly_connected_coordinated_entities = TRUE,
   component_summary = FALSE,
@@ -19,7 +19,7 @@ get_outputs(
 \arguments{
 \item{coord_shares_output}{the list from the get_coord_shares function}
 
-\item{ct_shares_marked.df}{a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares was coordinated (default TRUE)}
+\item{ct_shares_marked.df}{a dataframe that contains all the retrieved social media shares plus an extra boolean variable (is_coordinated) that identify if the shares were coordinated (default FALSE)}
 
 \item{highly_connected_g}{graph of coordinated networks of pages/groups/accounts (default TRUE)}
 
@@ -33,7 +33,7 @@ get_outputs(
 
 \item{top_coord_shares}{the result of CooRnet::get_top_coord_shares (default FALSE)}
 
-\item{gdrive_folder_id}{a Google Drive folder id where to uploads selected files (output.rds, highly_connected_g.graphml, highly_connected_coordinated_entities.csv, component_summary.csv, top_coord_urls.csv, top_coord_shares) files (default NULL)}
+\item{gdrive_folder_id}{a Google Drive folder id where to upload selected files (output.rds, highly_connected_g.graphml, highly_connected_coordinated_entities.csv, component_summary.csv, top_coord_urls.csv, top_coord_shares) files (default NULL)}
 }
 \description{
 A function to get the outputs of the get_coord_shares function

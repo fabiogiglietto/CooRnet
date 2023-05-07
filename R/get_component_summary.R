@@ -75,8 +75,6 @@ get_component_summary <- function(output, labels=FALSE){
 
     temp_df <- data.frame(cluster_id = integer(), label = character())
 
-    summary_entities$label <- NA
-
     cat("\nAuto-labeling components with OpenAI gpt-3.5-turbo (https://platform.openai.com/)...\n")
 
     pb <- utils::txtProgressBar(min = 0, max = nrow(summary_entities), width = 100, style = 3)
