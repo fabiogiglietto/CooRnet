@@ -112,7 +112,7 @@ get_cluster_summary <- function(output, labels=FALSE){
       }
 
       msg <- list(list("role" = "system",
-                       "content" = "You are a researcher investigating coordinated and inauthentic behavior on Facebook and Instagram. Your objective is to generate concise, descriptive labels in English that capture the shared characteristics of clusters of Facebook or Instagram accounts.\n\n"),
+                       "content" = "You are a supportive assistant to a researcher studying coordinated and inauthentic behavior on Facebook and Instagram. Your goal is to create brief, informative labels in English that highlight the common features among groups of Facebook or Instagram accounts.\n\n"),
                   list("role" = "user",
                        "content" = paste("I will supply a list of accounts for each cluster. For each account, you will receive a text that combines the account title and, if available, the account description. Identify the shared features among these accounts:\n\n",
                                          text,
