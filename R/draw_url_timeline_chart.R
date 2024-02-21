@@ -15,8 +15,7 @@
 #'   # get the top ten posts containing URLs shared in a coordinated way, by engagement
 #'   df <- get_top_news(output, order_by = "engagement", top=10)
 #'
-#' @importFrom tidytable unnest.
-#' @importFrom dplyr group_by mutate arrange %>% bind_rows filter ungroup select
+#' @importFrom dplyr group_by mutate arrange %>% filter ungroup select
 #' @importFrom lubridate as_datetime
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_size scale_x_datetime theme_minimal labs aes
 #' @importFrom plotly ggplotly layout

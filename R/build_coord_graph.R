@@ -23,6 +23,21 @@ build_coord_graph <- function(ct_shares.df, coordinated_shares, percentile_edge_
   g2.bp <- igraph::simplify(g2.bp, remove.multiple = T, remove.loops = T, edge.attr.comb = "min") # simplify the bipartite network to avoid problems with resulting edge weight in projected network
   full_g <- suppressWarnings(igraph::bipartite.projection(g2.bp, multiplicity = T)$proj2) # project entity-entity network
 
+  # Function to check and add missing columns with default values
+  add_missing_columns <- function(df, columns) {
+    missing_columns <- setdiff(columns, names(df))
+    for (col in missing_columns) {
+      df[[col]] <- NA  # Assign NA to missing columns or choose a more appropriate default value
+    }
+    return(df)
+  }
+
+  # Define the columns we're interested in
+  necessary_columns <- c("account.handle", "account.pageAdminTopCountry", "account.pageDescription", "account.pageCategory", "account.pageCreatedDate")
+
+  # Add missing columns with NA as default value
+  ct_shares.df <- add_missing_columns(ct_shares.df, necessary_columns)
+
   all_account_info <- ct_shares.df %>%
     dplyr::group_by(account.url) %>%
     dplyr::mutate(account.name.changed = ifelse(length(unique(account.name))>1, TRUE, FALSE), # deal with account.data that may have changed (name, handle, pageAdminTopCountry, pageDescription, pageCategory)

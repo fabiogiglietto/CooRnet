@@ -36,7 +36,7 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom foreach foreach %dopar%
 #' @importFrom doSNOW registerDoSNOW
-#' @importFrom tidytable unnest. bind_rows.
+#' @importFrom tidytable unnest bind_rows
 #'
 #' @export
 
@@ -97,11 +97,11 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
   # keep only shares of URLs shared more than one time
   ct_shares.df <- subset(ct_shares.df, ct_shares.df$expanded %in% URLs$URL)
-  
+
   if (nrow(URLs) == 0) {
   stop("### Not enought URLs! ###")
   }
-  
+
   if (nrow(ct_shares.df) == 0) {
   stop("### Not enought shares! ###")
   }
@@ -150,13 +150,13 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
 
     parallel::stopCluster(cl)
 
-    dat.summary <- tidytable::bind_rows.(dat.summary)
+    dat.summary <- tidytable::bind_rows(dat.summary)
 
     if(nrow(dat.summary)==0){
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- tidytable::unnest.(dat.summary)
+    coordinated_shares <- tidytable::unnest(dat.summary)
 
     rm(dat.summary, cores, cl, pb, progress, progress_bar)
 
@@ -223,13 +223,13 @@ get_coord_shares <- function(ct_shares.df, coordination_interval=NULL, parallel=
       }
     }
 
-    datalist <- tidytable::bind_rows.(datalist)
+    datalist <- tidytable::bind_rows(datalist)
 
     if(nrow(datalist)==0){
       stop("there are not enough shares!")
     }
 
-    coordinated_shares <- tidytable::unnest.(datalist)
+    coordinated_shares <- tidytable::unnest(datalist)
     rm(datalist)
 
     # mark the coordinated shares in the data set
