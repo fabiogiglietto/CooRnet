@@ -24,7 +24,7 @@
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr group_by filter %>%
 #' @importFrom utils setTxtProgressBar txtProgressBar menu
-#' @importFrom tidytable unnest. bind_rows.
+#' @importFrom tidytable unnest bind_rows
 #' @importFrom urltools url_encode
 #'
 #' @export
@@ -140,7 +140,7 @@ get_ctshares <- function(urls,
       }
 
       if (length(url_datalist) != 0) {
-        url_ct_shares.df <- tidytable::bind_rows.(url_datalist)
+        url_ct_shares.df <- tidytable::bind_rows(url_datalist)
       }
       else {
         url_ct_shares.df <- NULL
@@ -192,7 +192,7 @@ get_ctshares <- function(urls,
   }
 
   if (length(datalist) > 0) {
-    ct_shares.df <- tidytable::bind_rows.(datalist)
+    ct_shares.df <- tidytable::bind_rows(datalist)
     rm(datalist)
   } else {
     stop("\nNo ct_shares were found!")
@@ -214,7 +214,7 @@ get_ctshares <- function(urls,
   # get rid of duplicates
   ct_shares.df <- ct_shares.df[!duplicated(ct_shares.df),]
 
-  ct_shares.df <- tidytable::unnest.(ct_shares.df, expandedLinks, .drop = FALSE)
+  ct_shares.df <- tidytable::unnest(ct_shares.df, expandedLinks, .drop = FALSE)
   ct_shares.df$original <- NULL
 
   # remove duplicates created by the unnesting
