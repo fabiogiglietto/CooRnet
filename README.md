@@ -2,6 +2,10 @@
 
 *Fabio Giglietto, [Nicola Righetti](https://github.com/nicolarighetti), [Luca Rossi](https://github.com/lrossi79)*
 
+## Final update
+
+CooRnet requires CrowdTangle for data access. As of August 14, 2024, CrowdTangle is no longer available. Consequently, this repository is now archived. As alternatives for detecting coordinated sharing behavior on social media, we suggest [CooRTweet](https://github.com/nicolarighetti/CooRTweet) for R users and [coordination-network-toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit) for Pyhton users.
+
 ## Overview
 
 Given a set of URLs, this package detects coordinated link sharing behavior (CLSB) and outputs the network of entities that performed such behavior.
